@@ -1,0 +1,7 @@
+node_modules
+dist
+.DS_Store
+*.local
+
+# source copies of the videos (served copies live in public/videos)
+source-images/*.mp4

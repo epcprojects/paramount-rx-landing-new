@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+/* Medora's system (measured): Inter Display + Gentium Plus italic accent, 30px gutters,
+   40px section padding, warm card fill, 12–16px radii. Accent swapped to Paramount sky. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Gentium Plus", ui-serif, Georgia, serif;
+
+  --color-ink: #0a0a0a;
+  --color-night: #07152a;      /* header / menu bar — Paramount-tinted black */
+  --color-navy: #104584;
+  --color-sky: #3ab5fe;         /* replaces Medora's lime #C0F85F */
+  --color-card: #f1f3f6;        /* replaces Medora's warm #F3F1EB with a cool brand tint */
+  --color-body: #4d4d4d;
+  --color-soft: #a8a8a8;
+  --color-line: #e6e6e6;
+}
+
+html { scroll-behavior: auto; }
+body {
+  background: #fff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-optical-sizing: auto; /* large sizes pick Inter's Display cut */
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--color-sky); color: var(--color-ink); }
+
+/* Type scale measured on Medora */
+.t-hero { font-size: clamp(2.75rem, 6.1vw, 5.5rem); /* up to 88px on large screens */ line-height: 0.98; letter-spacing: -0.04em; font-weight: 400; }
+.t-hero-accent { font-family: var(--font-serif); font-style: italic; font-size: 1.115em; letter-spacing: -0.04em; }
+.t-h2 { font-size: clamp(1.75rem, 3vw, 2.25rem); line-height: 1.2; letter-spacing: -0.03em; font-weight: 500; }
+.t-h3 { font-size: clamp(1.5rem, 2.6vw, 2rem); line-height: 1.3; letter-spacing: -0.02em; font-weight: 500; }
+.t-lead { font-size: 1.125rem; line-height: 1.4; letter-spacing: -0.02em; }
+.t-body { font-size: 1rem; line-height: 1.3; letter-spacing: -0.02em; color: var(--color-body); }
+.t-tag { font-size: 0.875rem; line-height: 1.3; letter-spacing: -0.02em; text-transform: uppercase; }
+
+/* Apple-style "Liquid Glass" control: frosted + saturated backdrop, bright rim, top specular sheen. */
+.glass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden; /* clip content: the fill, blur, sheen and rim all stay inside the rounded shape */
+  clip-path: inset(0 round 9999px);
+  color: #fff;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 100%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(255,255,255,0.12),
+    inset 0 0 12px rgba(255,255,255,0.08),
+    0 8px 24px -10px rgba(0,0,0,0.35);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(.16,1,.3,1);
+}
+.glass::before { /* specular sheen on the upper half */
+  content: "";
+  position: absolute;
+  inset: 1px 1px 50% 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0));
+  pointer-events: none;
+  z-index: -1;
+}
+/* Brand gradient rim (#3AB5FE) — drawn as a masked ring so the glass fill stays untouched. */
+/* No outer border/drop shadow here: the frosted fill and blur stop exactly at the rim instead of spilling past it. */
+.glass-brand {
+  border: 0;
+  background-clip: padding-box;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 0 12px rgba(255,255,255,0.06);
+}
+.glass-brand::after {
+  content: "";
+  position: absolute;
+  inset: 1px; /* ring sits just inside the edge, so the clip never cuts it */
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, #3ab5fe 0%, rgba(58,181,254,0.25) 45%, rgba(255,255,255,0.55) 60%, #3ab5fe 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+.glass-brand:hover::after { background: linear-gradient(120deg, #3ab5fe 0%, rgba(58,181,254,0.6) 45%, rgba(255,255,255,0.75) 60%, #3ab5fe 100%); }
+.glass:hover { background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.12) 100%); transform: translateY(-1px); }
+.glass:active { transform: scale(0.97); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: rgba(20, 30, 45, 0.6); }
+}
+
+/* Brand glass CTA: #3AB5FE-tinted Liquid Glass with a gradient light orbiting the rim. */
+@property --cta-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.cta-glass {
+  position: relative;
+  isolation: isolate;
+  color: #fff;
+  background: linear-gradient(90deg, rgba(58,181,254,0.55) 0%, rgba(110,200,255,0.45) 55%, rgba(58,181,254,0.55) 100%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  transition: background 0.35s ease, transform 0.35s cubic-bezier(.16,1,.3,1);
+}
+.cta-glass::after { /* animated gradient rim — sits on the edge so the fill meets it with no gap */
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--cta-angle), rgba(58,181,254,0.25) 0deg, #3ab5fe 70deg, #ffffff 110deg, #3ab5fe 150deg, rgba(58,181,254,0.25) 220deg, rgba(58,181,254,0.25) 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: cta-orbit 3.2s linear infinite;
+  pointer-events: none;
+}
+@keyframes cta-orbit { to { --cta-angle: 360deg; } }
+/* Large hero version: richer fill + thicker orbiting rim for focus. */
+.cta-glass.cta-lg { background: linear-gradient(90deg, rgba(16,69,132,0.88) 0%, rgba(30,120,198,0.78) 55%, rgba(58,181,254,0.72) 100%); }
+.cta-glass.cta-lg::after { /* white light orbiting the rim */
+  padding: 2px;
+  background: conic-gradient(from var(--cta-angle), rgba(255,255,255,0.18) 0deg, rgba(255,255,255,0.95) 70deg, #ffffff 110deg, rgba(255,255,255,0.95) 150deg, rgba(255,255,255,0.18) 220deg, rgba(255,255,255,0.18) 360deg);
+}
+.cta-glass.cta-lg:hover { background: linear-gradient(90deg, rgba(16,69,132,0.95) 0%, rgba(36,135,215,0.88) 55%, rgba(58,181,254,0.85) 100%); }
+.cta-glass:hover {
+  background: linear-gradient(90deg, rgba(58,181,254,0.7) 0%, rgba(130,210,255,0.6) 55%, rgba(58,181,254,0.7) 100%);
+  transform: translateY(-1px);
+}
+.cta-glass:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) { .cta-glass::after { animation: none; } }
+
+/* Hero → white cube transition tiles (built in Top.jsx) */
+.hero-tile {
+  position: absolute;
+  background-repeat: no-repeat;
+  -webkit-backface-visibility: hidden; backface-visibility: hidden; /* flipped tiles vanish → section beneath shows */
+  will-change: transform;
+}
+
+.js [data-appear] { opacity: 0; }
+
+/* Smart Choice avatars bob gently, staggered (same timing as the live site). */
+@keyframes avatar-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+.floating-avatars img { will-change: translate; animation: avatar-float 2.6s ease-in-out infinite; }
+.floating-avatars img:nth-child(2) { animation-delay: -0.25s; }
+.floating-avatars img:nth-child(3) { animation-delay: -0.5s; }
+.floating-avatars img:nth-child(4) { animation-delay: -0.75s; }
+.floating-avatars img:nth-child(5) { animation-delay: -1s; }
+.floating-avatars img:nth-child(6) { animation-delay: -1.25s; }
+.floating-avatars img:nth-child(7) { animation-delay: -1.5s; }
+/* Body map: pulsing category pins, fading category note, hidden scrollbars (same as the products prototype) */
+.pin-dot { position: relative; width: 9px; height: 9px; border-radius: 9999px; background: #104584; box-shadow: 0 0 0 2px #fff, 0 1px 4px #10458466; transition: transform .3s; }
+.pin-ring { position: absolute; inset: 4px; border-radius: 9999px; background: #2f8fe024; border: 1.5px solid #10458480; animation: pin-pulse 2.4s ease-out infinite; }
+.pin:hover .pin-dot { transform: scale(1.25); }
+.pin-active .pin-ring { inset: -2px; background: #2f8fe038; border-color: #104584cc; }
+.pin-active .pin-dot { transform: scale(1.3); }
+@keyframes pin-pulse { 0% { opacity: 1; transform: scale(.7); } 80%, 100% { opacity: 0; transform: scale(1.5); } }
+.anim-fade-up { animation: fade-up .6s cubic-bezier(.22,1,.36,1) both; }
+@keyframes fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.font-system { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"; font-optical-sizing: auto; }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+/* Step caption swaps in when the active step changes */
+@keyframes step-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+:focus-visible { outline: 2px solid var(--color-sky); outline-offset: 3px; border-radius: 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-appear] { opacity: 1; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
