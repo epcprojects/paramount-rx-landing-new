@@ -155,7 +155,6 @@ function ProductArt({ form, className }) {
 
 const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, reduced, inline, topOffset }, ref) {
   const box = useRef(null)
-  const thumb = useRef(null)
   const programmatic = useRef(false) // a tab click is scrolling the list
   const userScrolled = useRef(false)
   const raf = useRef(0)
@@ -211,41 +210,13 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
     if (g !== focusRef.current) onScrollFocus(g)
   }, [inline, line, groupAtLine, onScrollFocus])
 
-  // A custom scroll-position thumb, not the native scrollbar: most browsers/OSes (notably macOS with
-  // trackpad) run "overlay" scrollbars that stay invisible except mid-scroll, even when styled via
-  // ::-webkit-scrollbar — so a native scrollbar can't give a *resting* visible cue that this panel
-  // scrolls. This one is always on, in our own markup, and reads correctly everywhere.
-  const updateThumb = useCallback(() => {
-    const el = box.current
-    const t = thumb.current
-    if (!el || !t) return
-    const trackH = el.scrollHeight
-    const viewH = el.clientHeight
-    if (trackH <= viewH + 1) { t.style.opacity = '0'; return }
-    t.style.opacity = '1'
-    const heightPct = Math.max(8, (viewH / trackH) * 100)
-    const maxScroll = trackH - viewH
-    const topPct = maxScroll > 0 ? (el.scrollTop / maxScroll) * (100 - heightPct) : 0
-    t.style.height = `${heightPct}%`
-    t.style.top = `${topPct}%`
-  }, [])
-
-  const scrollFlash = useRef(0)
   const onScroll = useCallback(() => {
     cancelAnimationFrame(raf.current)
     raf.current = requestAnimationFrame(() => {
       setCurrent(groupAtLine())
       if (!programmatic.current && userScrolled.current) syncFocus()
-      updateThumb()
     })
-    // Briefly brighten the thumb while actively scrolling, the way macOS/iOS flash their scroll
-    // indicator, layered on top of its already-visible resting state.
-    if (!inline && thumb.current) {
-      thumb.current.classList.add('is-scrolling')
-      clearTimeout(scrollFlash.current)
-      scrollFlash.current = setTimeout(() => thumb.current?.classList.remove('is-scrolling'), 700)
-    }
-  }, [groupAtLine, syncFocus, inline, updateThumb])
+  }, [groupAtLine, syncFocus])
   const onUserInput = useCallback(() => { cancelAnimationFrame(anim.current); userScrolled.current = true; programmatic.current = false }, [])
 
   useEffect(() => {
@@ -255,17 +226,7 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
     evs.forEach((e) => window.addEventListener(e, onUserInput, { passive: true }))
     return () => { window.removeEventListener('scroll', onScroll); evs.forEach((e) => window.removeEventListener(e, onUserInput)) }
   }, [inline, onScroll, onUserInput])
-  useEffect(() => { setCurrent(groupAtLine()); return () => { cancelAnimationFrame(raf.current); cancelAnimationFrame(anim.current); clearTimeout(scrollFlash.current) } }, [groupAtLine])
-
-  // Measure the thumb once laid out, and again if the box or its content ever resizes (font load,
-  // category availability changing by state, etc.) — scroll alone doesn't cover a height change.
-  useEffect(() => {
-    if (inline || !box.current) return
-    updateThumb()
-    const ro = new ResizeObserver(updateThumb)
-    ro.observe(box.current)
-    return () => ro.disconnect()
-  }, [inline, updateThumb])
+  useEffect(() => { setCurrent(groupAtLine()); return () => { cancelAnimationFrame(raf.current); cancelAnimationFrame(anim.current) } }, [groupAtLine])
 
   useImperativeHandle(ref, () => ({
     scrollToCategory(id) {
@@ -285,7 +246,6 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
   }), [smoothTo, inline, topOffset])
 
   return (
-    <div className={inline ? undefined : 'group relative h-full'}>
     <div
       ref={box}
       onScroll={inline ? undefined : onScroll}
@@ -297,7 +257,7 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
       aria-label="Treatments by category"
       className={inline ? 'relative' : 'no-scrollbar relative h-full overflow-y-auto overscroll-contain outline-none [mask-image:linear-gradient(to_bottom,transparent,black_9%,black_86%,transparent)]'}
     >
-      <div className={inline ? 'pt-10 pb-10 md:pt-12' : 'pt-[18vh] pr-3 pb-[45vh]'}>
+      <div className={inline ? 'pt-10 pb-10 md:pt-12' : 'pt-[18vh] pb-[45vh]'}>
         {groups.map((gr) => {
           const items = inCategory(gr.id)
           const on = gr.id === current
@@ -347,12 +307,6 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
           )
         })}
       </div>
-    </div>
-    {!inline && (
-      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-[3px] rounded-full bg-[#104584]/10">
-        <div ref={thumb} className="scroll-thumb absolute right-0 w-full rounded-full opacity-0" style={{ height: '20%', top: 0 }} />
-      </div>
-    )}
     </div>
   )
 })
