@@ -9,7 +9,7 @@ import { Cta } from '../components/ui.jsx'
  *  the reference card analysed from goodlifemeds.com (bg-black/25, backdrop-blur, number + sparkline/ring
  *  animating in once scrolled into view), rebuilt in plain SVG + GSAP instead of a Lottie export. */
 const floatingStats = [
-  { key: 'metabolism', label: 'Boost Metabolism', to: 23, prefix: '+', suffix: '%', chart: 'up', deltaLabel: 'Metabolic rate', className: 'top-[30%] left-[54%] xl:top-[32%]' },
+  { key: 'metabolism', label: 'Boost Metabolism', to: 23, prefix: '+', suffix: '%', chart: 'up', deltaLabel: 'Metabolic rate', className: 'top-[calc(30%+30px)] left-[54%] xl:top-[calc(32%+30px)]' },
   { key: 'weight', label: 'Sustainable Weight Loss', to: 18, prefix: '-', suffix: '%', chart: 'down', deltaLabel: 'Avg. over 6 months', className: 'bottom-[32%] left-[78%]' },
   { key: 'confidence', label: 'Greater Confidence', to: 94, prefix: '', suffix: '%', chart: 'ring', deltaLabel: 'Patient reported', className: 'bottom-[14%] left-[44%] xl:bottom-[16%]' },
 ]
