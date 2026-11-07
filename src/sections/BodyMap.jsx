@@ -262,18 +262,18 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
           const items = inCategory(gr.id)
           const on = gr.id === current
           return (
-            <section key={gr.id} data-group={gr.id} className="pb-7 [&:not(:first-child)]:border-t [&:not(:first-child)]:border-gray-100 [&:not(:first-child)]:pt-7">
-              <h3 className={`mb-4 text-[22px] tracking-tight transition-colors duration-500 ${on ? 'text-[#242424]' : 'text-neutral-400'}`}>
+            <section key={gr.id} data-group={gr.id} className="pb-4 [&:not(:first-child)]:border-t [&:not(:first-child)]:border-gray-100 [&:not(:first-child)]:pt-4">
+              <h3 className={`mb-2.5 text-[18px] tracking-tight transition-colors duration-500 ${on ? 'text-[#242424]' : 'text-neutral-400'}`}>
                 {gr.label} <span className="text-neutral-400">({items.length})</span>
               </h3>
-              <ul className="flex flex-col gap-3">
+              <ul className="flex flex-col gap-2">
                 {items.length === 0 && (
-                  <li className="flex flex-col gap-4 rounded-2xl bg-[#eef5fd] p-4 ring-1 ring-[#d9e7f7] md:p-5">
+                  <li className="flex flex-col gap-2.5 rounded-xl bg-[#eef5fd] p-3 ring-1 ring-[#d9e7f7] md:p-3.5">
                     <div>
-                      <p className="text-sm font-semibold text-[#242424]">Not available in your state yet</p>
-                      <p className="mt-1 text-[13px] leading-snug text-neutral-500">A provider can still discuss {gr.label.toLowerCase()} options with you.</p>
+                      <p className="text-[13px] font-semibold text-[#242424]">Not available in your state yet</p>
+                      <p className="mt-0.5 text-xs leading-snug text-neutral-500">A provider can still discuss {gr.label.toLowerCase()} options with you.</p>
                     </div>
-                    <a href={links.products} className="inline-flex items-center justify-center gap-1.5 self-end rounded-full bg-navy px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[#0c3a6f]">
+                    <a href={links.products} className="inline-flex items-center justify-center gap-1.5 self-end rounded-full bg-navy px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#0c3a6f]">
                       Start a consultation
                       <svg viewBox="0 0 16 16" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </a>
@@ -288,15 +288,15 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
                         type="button"
                         aria-pressed={sel}
                         onClick={() => setPicked(sel ? null : key)}
-                        className={`group flex h-[68px] w-full cursor-pointer items-center gap-3 rounded-2xl border bg-white p-1.5 pr-3 text-left transition-colors duration-300 hover:border-navy md:h-[80px] ${sel ? 'border-navy' : 'border-neutral-300'}`}
+                        className={`group flex h-[52px] w-full cursor-pointer items-center gap-2.5 rounded-xl border bg-white p-1 pr-2.5 text-left transition-colors duration-300 hover:border-navy md:h-[60px] ${sel ? 'border-navy' : 'border-neutral-300'}`}
                       >
-                        <span className={`grid aspect-square h-full shrink-0 place-items-center rounded-xl transition-colors duration-300 group-hover:bg-[#eef5fd] ${sel ? 'bg-[#eef5fd]' : 'bg-neutral-100'}`}>
-                          <ProductArt form={t.form} className="h-[42px] transition-transform duration-500 group-hover:scale-105 md:h-[52px]" />
+                        <span className={`grid aspect-square h-full shrink-0 place-items-center rounded-lg transition-colors duration-300 group-hover:bg-[#eef5fd] ${sel ? 'bg-[#eef5fd]' : 'bg-neutral-100'}`}>
+                          <ProductArt form={t.form} className="h-[30px] transition-transform duration-500 group-hover:scale-105 md:h-[36px]" />
                         </span>
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-base font-medium text-[#242424]">{t.name}</span>
-                          <span className="mt-1 block truncate text-sm text-neutral-500">{t.form} · from {usd(t.price)}</span>
-                          {sel && <span className="mt-1 block truncate text-xs text-neutral-400">{t.strength}</span>}
+                          <span className="block truncate text-sm font-medium text-[#242424]">{t.name}</span>
+                          <span className="block truncate text-xs text-neutral-500">{t.form} · from {usd(t.price)}</span>
+                          {sel && <span className="block truncate text-[11px] text-neutral-400">{t.strength}</span>}
                         </span>
                       </button>
                     </li>
