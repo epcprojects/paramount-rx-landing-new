@@ -17,12 +17,12 @@ const cards = [
 export function About() {
   // The cards' unfold lives in the hero's pinned timeline (Top.jsx), so the page holds until they're all flat.
   return (
-    <section id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-5 py-10 sm:px-[30px] sm:py-14">
+    <section id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-3 py-10 sm:px-[30px] sm:py-14">
       <div className="relative z-10 w-full">
         {/* Heading — wording from the live site's "Choose a Health Journey" treatment picker */}
         <div data-fan-head className="mx-auto mb-8 flex max-w-[985px] flex-col items-center text-center sm:mb-14">
           <Tag dot={false}>Treatments</Tag>
-          <h2 id="treatments-heading" className="t-h2 mt-3 max-w-[640px]">Choose your health journey</h2>
+          <h2 id="treatments-heading" className="t-h2 mt-3 max-w-none !text-[28px] sm:!text-[36px] md:!text-[56px] md:whitespace-nowrap">Choose Your Health Journey</h2>
         </div>
         {/* Treatment cards — same art, icons and copy as the live paramounthealthrx.com cards (3 × 2).
             Width is capped by the viewport height so the heading and both rows (three on phones) fit on one screen. */}
@@ -32,17 +32,17 @@ export function About() {
               <a
                 href={links.products}
                 aria-label={`Explore ${c.name}`}
-                className="group relative block aspect-[259/254] overflow-hidden rounded-[22px] border-2 border-white/50 text-left text-white shadow-[0_18px_40px_-24px_rgba(10,26,47,0.55)]"
+                className="group relative block aspect-[4/5] overflow-hidden rounded-[22px] border-2 border-white/50 text-left text-white shadow-[0_18px_40px_-24px_rgba(10,26,47,0.55)] sm:aspect-[259/254]"
               >
                 <div aria-hidden className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105" style={{ backgroundImage: `url(${c.image})` }} />
-                <div className="relative z-10 flex h-full flex-col items-start justify-between p-4 sm:p-5">
-                  <span className="flex size-12 items-center justify-center rounded-full border border-white/30 bg-black/50 backdrop-blur-[52px] transition-colors duration-300 group-hover:bg-sky sm:size-[54px]">
+                <div className="relative z-10 flex h-full flex-col items-start justify-between p-3 sm:p-5">
+                  <span className="flex size-10 items-center justify-center rounded-full border border-white/30 bg-black/50 backdrop-blur-[52px] transition-colors duration-300 group-hover:bg-sky sm:size-[54px]">
                     <c.Icon />
                   </span>
                   <span className="block w-full">
-                    <span className="block text-[18px] leading-tight font-semibold tracking-[-0.01em] sm:text-[22px]">{c.name}</span>
-                    <span className="mt-1.5 flex items-end justify-between gap-3">
-                      <span className="text-[13px] leading-snug text-white/90 sm:text-[15px]">{c.tagline}</span>
+                    <span className="block text-[16px] leading-tight font-semibold tracking-[-0.01em] sm:text-[22px]">{c.name}</span>
+                    <span className="mt-1 flex items-end justify-between gap-2">
+                      <span className="text-[11px] leading-[1.3] text-white/90 sm:text-[15px] sm:leading-snug">{c.tagline}</span>
                       <svg viewBox="0 0 16 16" className="mb-0.5 h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 3.5L10.5 8 6 12.5" /></svg>
                     </span>
                   </span>

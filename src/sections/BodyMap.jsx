@@ -340,8 +340,6 @@ export function BodyMap() {
           <Tabs active={cat} onChange={choose} size="sm" className="no-scrollbar -mx-5 flex-nowrap overflow-x-auto px-5 pb-1 md:-mx-10 md:px-10 lg:hidden" />
           <div className="relative -mx-5 h-[clamp(220px,34svh,300px)] md:mx-0 md:h-[clamp(280px,38svh,400px)] lg:h-auto lg:min-h-0 lg:flex-1">
             <div className="pointer-events-none absolute inset-x-[12%] bottom-[4%] h-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(16,69,132,0.09),rgba(47,143,224,0.06)_45%,transparent)]" />
-            {/* soft contact shadow under the feet */}
-            <div className="pointer-events-none absolute bottom-[9%] left-1/2 h-6 w-[min(260px,40%)] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(closest-side,rgba(91,100,112,0.28),transparent)] lg:bottom-[calc(4rem+18px)]" />
             <Suspense fallback={null}>
               <BodyScene category={cat} onSelect={choose} scroll={scroll} reducedMotion={reduced} />
             </Suspense>

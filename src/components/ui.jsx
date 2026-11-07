@@ -9,10 +9,11 @@ export function Arrow({ className = '' }) {
 
 /** Medora CTA pill (measured): 46px tall, 30px radius, padding 4/4/4/16, 18px label, white arrow chip. */
 export function Cta({ href, children, className = '', variant = 'solid', size = 'md', ...rest }) {
-  const look = variant === 'glass' ? 'cta-glass' : 'bg-sky text-ink transition-colors duration-300 hover:bg-[#6cc8ff]'
+  const look = variant === 'glass' ? 'cta-glass' : variant === 'white' ? 'bg-white text-ink transition-colors duration-300' : variant === 'black' ? 'bg-ink text-white transition-colors duration-300' : 'bg-sky text-ink transition-colors duration-300 hover:bg-[#6cc8ff]'
   const lg = size === 'lg'
-  const box = lg ? 'h-14 gap-3 pl-5 pr-1.5 text-[19px] font-medium cta-lg' : 'h-[46px] gap-3 pl-4 pr-1 text-[18px]'
+  const box = lg ? `h-14 gap-3 pl-5 pr-1.5 text-[19px] font-medium ${variant === 'glass' ? 'cta-lg' : ''}` : 'h-[46px] gap-3 pl-4 pr-1 text-[18px]'
   const chip = lg ? 'h-11 w-11' : 'h-[38px] w-[38px]'
+  const chipTone = variant === 'white' ? 'bg-ink text-white' : variant === 'black' ? 'bg-white text-ink' : 'bg-white text-navy'
   return (
     <a
       href={href}
@@ -20,7 +21,7 @@ export function Cta({ href, children, className = '', variant = 'solid', size = 
       {...rest}
     >
       {children}
-      <span className={`grid ${chip} place-items-center overflow-hidden rounded-full bg-white text-navy`}>
+      <span className={`grid ${chip} place-items-center overflow-hidden rounded-full ${chipTone}`}>
         <span className="relative block h-5 w-5">
           <Arrow className="absolute inset-0 !h-5 !w-5 transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-5 group-hover:-translate-y-5" />
           <Arrow className="absolute inset-0 !h-5 !w-5 -translate-x-5 translate-y-5 transition-transform duration-500 ease-[cubic-bezier(.16,1,.3,1)] group-hover:translate-x-0 group-hover:translate-y-0" />

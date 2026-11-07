@@ -33,24 +33,26 @@ export function Header() {
   return (
     <>
     <DesktopHeader />
-    <header className="fixed inset-x-0 top-0 z-50 bg-night text-white lg:hidden">
-      <div className="flex h-[64px] items-center justify-between px-5 sm:h-[78px] sm:px-[30px]">
-        <a href="#top" aria-label="Paramount HealthRx — home"><img src="/images/logo-white.svg" alt="Paramount HealthRx" className="h-8 w-auto sm:h-9" /></a>
-        <div className="flex items-center gap-3">
-          <AccountButtons />
-          <button
-            ref={btn}
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-            aria-controls="menu-panel"
-            aria-label={open ? 'Close menu' : 'Open menu'}
-            className="grid h-9 w-9 place-items-center rounded-full bg-white text-ink transition-transform duration-300 hover:scale-105"
-          >
-            <span className="relative block h-3 w-3.5" aria-hidden>
-              <span className={`absolute left-0 h-[1.5px] w-full bg-current transition-all duration-300 ${open ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0.5'}`} />
-              <span className={`absolute left-0 h-[1.5px] w-full bg-current transition-all duration-300 ${open ? 'top-1/2 -translate-y-1/2 -rotate-45' : 'bottom-0.5'}`} />
-            </span>
-          </button>
+    <header className="site-header sticky top-0 z-50 -mb-[76px] pt-3 text-white sm:-mb-[90px] lg:hidden">
+      <div className="px-4 sm:px-[30px]">
+        <div className="hdr-pill flex h-[64px] items-center justify-between rounded-2xl px-4 sm:h-[78px] sm:px-6">
+          <a href="#top" aria-label="Paramount HealthRx — home"><Logo className="h-8 sm:h-9" /></a>
+          <div className="flex items-center gap-3">
+            <AccountButtons />
+            <button
+              ref={btn}
+              onClick={() => setOpen((o) => !o)}
+              aria-expanded={open}
+              aria-controls="menu-panel"
+              aria-label={open ? 'Close menu' : 'Open menu'}
+              className="grid h-9 w-9 place-items-center rounded-full bg-white text-ink transition-transform duration-300 hover:scale-105"
+            >
+              <span className="relative block h-3 w-3.5" aria-hidden>
+                <span className={`absolute left-0 h-[1.5px] w-full bg-current transition-all duration-300 ${open ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0.5'}`} />
+                <span className={`absolute left-0 h-[1.5px] w-full bg-current transition-all duration-300 ${open ? 'top-1/2 -translate-y-1/2 -rotate-45' : 'bottom-0.5'}`} />
+              </span>
+            </button>
+          </div>
         </div>
       </div>
       <nav
@@ -80,19 +82,30 @@ export function Header() {
   )
 }
 
+/** White mark over the hero, brand-colored mark once the pill goes solid (`.is-scrolled`, see index.css). */
+function Logo({ className = '' }) {
+  return (
+    <span className={`relative inline-block ${className}`}>
+      <img src="/images/logo-white.svg" alt="Paramount HealthRx" className="logo-light relative block h-full w-auto" />
+      <img src="/images/logo.svg" alt="" aria-hidden className="logo-dark absolute inset-0 block h-full w-full object-contain object-left" />
+    </span>
+  )
+}
+
 const desktopNav = [
+  { label: 'Products', href: links.products },
   { label: 'How it Works', href: links.howItWorks },
+  { label: 'About Us', href: '#why' },
   { label: 'FAQ', href: links.faqs },
 ]
 
 /** Login + Consult List pills, matching the live paramounthealthrx.com header.
  *  The Consult List (cart) lives in the production app, so here it links to /products where the cart is available. */
 function AccountButtons({ className = '' }) {
-  const pill = 'glass glass-brand flex items-center rounded-full py-2 text-sm font-medium md:h-11 md:text-[15px]'
   return (
     <div className={`flex items-center gap-2.5 ${className}`}>
-      <a href={links.portal} className={`${pill} px-3 md:px-5`}>Login</a>
-      <a href={links.products} aria-label="Consult List (opens products)" className={`${pill} hidden gap-2 pr-3 pl-5 md:flex`}>
+      <a href={links.portal} className="flex h-9 items-center rounded-full px-3 text-sm font-medium text-[var(--login-fg)] transition-colors duration-300 hover:bg-[var(--login-hover-bg)] hover:text-[var(--login-hover-fg)] md:h-11 md:px-5 md:text-[15px]">Login</a>
+      <a href={links.products} aria-label="Consult List (opens products)" className="hidden items-center gap-2 rounded-full bg-[var(--consult-bg)] py-2 pr-3 pl-5 text-sm font-medium whitespace-nowrap text-[var(--consult-fg)] transition-colors duration-300 md:flex md:h-11 md:text-[15px]">
         <svg width="17" height="17" viewBox="0 0 16 16" fill="none" aria-hidden>
           <path d="M8 1.9l1.68 4.06 4.4.33-3.36 2.86 1.04 4.28L8 11.1l-3.76 2.33 1.04-4.28L1.92 6.29l4.4-.33L8 1.9z" stroke="currentColor" strokeWidth="1.1" strokeLinejoin="round" />
         </svg>
@@ -103,39 +116,71 @@ function AccountButtons({ className = '' }) {
   )
 }
 
-/** Medora desktop header (measured at 1440px): transparent, 20px from the top, 82px tall, 1280px container,
- *  logo left · 16px/500 white links centred · CTA pill right. It sits on the hero and scrolls away with it. */
+/** Medora desktop header (measured at 1440px): logo left · 16px/500 white links centred · CTA pill right.
+ *
+ *  Sticky rule (Function Health pattern): the header is `position: sticky` with a negative bottom margin
+ *  equal to its own height, so it reserves no flow space — the hero renders directly underneath it,
+ *  overlapping the top of the viewport, and it's stuck there from the very first pixel of scroll.
+ *
+ *  Scroll-state rule: the pill stays frosted-dark glass (legible over the hero photo) until the pinned hero
+ *  stage has been scrolled completely past — not at a fixed pixel offset, since the hero's own tile-flip
+ *  ScrollTrigger pins #intro-stage for `+=240%` and that distance changes with viewport/content. Using
+ *  `trigger: '#intro-stage', start: 'bottom top'` fires exactly when the hero (pin included) fully clears
+ *  the viewport, toggling `.is-scrolled` on <html>. index.css reads that class to flip `.hdr-pill` to white
+ *  frosted glass, and the nav links / divider / account buttons all switch via the CSS custom properties
+ *  defined there — so the mobile pill (same `.hdr-pill` class) picks up the same light/dark swap for free.
+ *
+ *  Hide-on-scroll rule: from the very first pixel of scroll, scrolling down toggles `.nav-hidden` on <html>,
+ *  which index.css reads to slide `.site-header` (both pills share that class) up off-screen; scrolling back
+ *  up — or returning to the very top — removes it. Scroll direction comes from GSAP's own `self.direction` on
+ *  a second, page-long ScrollTrigger, kept separate from the hero one above so hiding isn't gated on the hero
+ *  having fully cleared the viewport. */
 function DesktopHeader() {
   const ref = useRef(null)
   useGSAP(() => {
-    if (reducedMotion()) return
-    gsap.fromTo(ref.current, { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 1.2, ease: ease.spring, delay: 0.2 })
+    if (!reducedMotion()) gsap.fromTo(ref.current, { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 1.2, ease: ease.spring, delay: 0.2, onComplete: () => gsap.set(ref.current, { clearProps: 'opacity,transform' }) })
+    ScrollTrigger.create({
+      trigger: '#intro-stage',
+      start: 'bottom top',
+      end: 'max',
+      toggleClass: { targets: document.documentElement, className: 'is-scrolled' },
+    })
+    ScrollTrigger.create({
+      trigger: document.documentElement,
+      start: 'top top',
+      end: 'max',
+      onUpdate: (self) => document.documentElement.classList.toggle('nav-hidden', self.direction === 1 && self.scroll() > 10),
+      onLeaveBack: () => document.documentElement.classList.remove('nav-hidden'),
+    })
   })
   return (
-    <header id="desktop-header" ref={ref} className="absolute inset-x-0 top-5 z-40 hidden text-white lg:block">
-      <div className="mx-auto grid h-[82px] max-w-[1280px] grid-cols-[1fr_auto_1fr] items-center px-[30px] min-[1340px]:px-0">
-        <a href="#top" aria-label="Paramount HealthRx — home" className="justify-self-start">
-          <img src="/images/logo-white.svg" alt="Paramount HealthRx" className="h-[46px] w-auto" />
-        </a>
-        <nav aria-label="Primary">
-          <ul className="flex items-center gap-8">
-            {desktopNav.map((n) => (
-              <li key={n.label}>
-                <a href={n.href} className="relative text-[16px] font-normal text-white/70 transition-colors duration-300 hover:text-white focus-visible:text-white after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-current after:transition-transform after:duration-500 hover:after:origin-left hover:after:scale-x-100">
-                  {n.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <AccountButtons className="justify-self-end" />
+    <header id="desktop-header" ref={ref} className="site-header sticky top-0 z-40 -mb-[102px] hidden pt-5 text-white lg:block">
+      <div className="mx-auto max-w-[1280px] px-[30px] min-[1340px]:px-0">
+        <div className="hdr-pill grid h-[82px] grid-cols-[1fr_auto_1fr] items-center rounded-2xl px-8">
+          <a href="#top" aria-label="Paramount HealthRx — home" className="justify-self-start">
+            <Logo className="h-[46px]" />
+          </a>
+          <nav aria-label="Primary">
+            <ul className="flex items-center">
+              {desktopNav.map((n, i) => (
+                <li key={n.label} className="flex items-center">
+                  {i > 0 && <span className="mx-5 h-4 w-px bg-[var(--nav-divider)] transition-colors duration-300" aria-hidden />}
+                  <a href={n.href} className="relative text-[16px] font-normal text-[var(--nav-fg)] transition-colors duration-300 hover:text-[var(--nav-fg-hover)] focus-visible:text-[var(--nav-fg-hover)] after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-current after:transition-transform after:duration-500 hover:after:origin-left hover:after:scale-x-100">
+                    {n.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <AccountButtons className="justify-self-end" />
+        </div>
       </div>
     </header>
   )
 }
 
 const HERO_SRC = '/img/hero-1800.webp'
-const HERO_FOCUS = [0.55, 0.35] // matches object-position 55% 35%
+const HERO_FOCUS = [0.5, 0.22] // matches object-position 50% 22%
 
 /** Builds the tile grid: one element per tile showing its exact slice of the hero photo
  *  (reproducing object-cover + focus maths). Its back is hidden, so a flipped tile reveals whatever is underneath. */
@@ -145,9 +190,9 @@ function buildTiles(layer, img) {
   const H = layer.clientHeight
   const cols = W < 768 ? 26 : W < 1200 ? 42 : 62
   const rows = Math.max(4, Math.round((H / W) * cols))
-  // hero photo is 1649 × 954 (both srcset sizes share this ratio) — only the ratio matters here
-  const iw = 1649
-  const ih = 954
+  // hero photo is 1800 × 1200 (both srcset sizes share this ratio) — only the ratio matters here
+  const iw = 1800
+  const ih = 1200
   const s = Math.max(W / iw, H / ih)
   const dw = iw * s
   const dh = ih * s
@@ -178,7 +223,6 @@ export function Hero() {
     const q = gsap.utils.selector(root)
     // Reduced motion: no overlay transition — the hero simply sits in normal flow above "Who we are".
     if (reducedMotion()) { gsap.set(q('[data-rise]'), { opacity: 1, y: 0 }); gsap.set(root.current, { position: 'relative' }); return }
-    gsap.fromTo(q('[data-img]'), { scale: 1.2 }, { scale: 1, duration: 1.5, ease: ease.image })
     gsap.fromTo(q('[data-rise]'), { opacity: 0, y: 400 }, { opacity: 1, y: 0, duration: 1.8, ease: ease.spring, delay: 0.1 })
 
     const layer = q('[data-tiles]')[0]
@@ -205,7 +249,6 @@ export function Hero() {
       // fades the copy's outer wrapper (the entrance animates the inner [data-rise]), so the two never fight
       tl.fromTo(q('[data-copy]'), { opacity: 1, y: 0 }, { opacity: 0, y: -60, ease: 'power1.in', duration: 0.18, immediateRender: false }, 0)
         .fromTo(q('[data-shade]'), { opacity: 1 }, { opacity: 0, ease: 'none', duration: 0.25, immediateRender: false }, 0)
-        .fromTo(document.getElementById('desktop-header'), { opacity: 1 }, { opacity: 0, ease: 'none', duration: 0.15, immediateRender: false }, 0)
         // swap the single photo for its identical tiled copy the moment the transition starts
         .set(layer, { autoAlpha: 1 }, 0.001)
         .set(img, { autoAlpha: 0 }, 0.002)
@@ -243,7 +286,7 @@ export function Hero() {
   return (
     <section id="top" ref={root} className="absolute inset-x-0 top-0 z-20 h-svh min-h-[620px] overflow-hidden bg-white text-white">
       <div className="absolute inset-0">
-        <Img data-img base="/img/hero" widths={[1000, 1800]} alt="A woman with closed eyes resting in a sunlit field of wildflowers" fetchPriority="high" className="h-full w-full object-cover object-[55%_35%]" />
+        <Img data-img base="/img/hero" widths={[1000, 1800]} alt="A man in a tank top holding a high plank, looking directly at the camera" fetchPriority="high" className="h-full w-full object-cover object-[50%_22%]" />
       </div>
       <div data-tiles aria-hidden className="invisible absolute inset-0 opacity-0 [perspective:1400px]" />
       <div data-shade aria-hidden className="absolute inset-0 bg-[linear-gradient(0deg,rgba(7,21,42,0.75)_0%,rgba(7,21,42,0.25)_45%,rgba(7,21,42,0)_70%),linear-gradient(180deg,rgba(7,21,42,0.45)_0%,rgba(7,21,42,0)_22%)]" />
@@ -258,7 +301,7 @@ export function Hero() {
           </div>
           <div className="max-w-[430px] md:pb-2">
             <p className="t-lead text-[#e0e0e0]">Evidence-based treatment, provider-guided care, and a healthier, more confident you — all from the comfort of home.</p>
-            <Cta href={links.products} variant="glass" size="lg" className="mt-7">Explore Treatments</Cta>
+            <Cta href={links.products} variant="white" size="lg" className="mt-7">Explore Treatments</Cta>
           </div>
         </div>
       </div>

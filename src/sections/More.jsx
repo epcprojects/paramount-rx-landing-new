@@ -240,34 +240,32 @@ export function Steps() {
         <div className="relative isolate flex h-full flex-col items-center justify-center overflow-hidden rounded-[40px] bg-black/65 px-5">
           {steps.map((st, i) => (
             <img key={st.img} src={`/img/steps-bg-${i + 1}-1800.webp`} alt="" aria-hidden loading="lazy"
-              className={`absolute inset-0 -z-10 h-full w-full scale-105 object-cover blur-[4px] transition-opacity duration-700 ease-out ${i === active ? 'opacity-100' : 'opacity-0'}`} />
+              className={`absolute inset-0 -z-10 h-full w-full object-cover transition-opacity duration-700 ease-out ${i === active ? 'opacity-100' : 'opacity-0'}`} />
           ))}
           {/* 65% dark overlay over the photo, as in the reference */}
           <div aria-hidden className="absolute inset-0 -z-[5] bg-black/65" />
           <div className="mx-auto flex h-full w-full max-w-[1100px] justify-between gap-20">
             {/* step list: the current step sits at ~42% of the panel height and the list slides up past it */}
             <div className="relative h-full flex-1 overflow-hidden" role="tablist" aria-label="How it works">
-              <div ref={list} className="absolute inset-x-0 top-[calc(42%-50px)] will-change-transform">
+              <div ref={list} className="absolute inset-x-0 top-[calc(42%-56px)] will-change-transform">
                 {steps.map((st, i) => (
                   <button key={st.title} type="button" role="tab" aria-selected={i === active} onClick={() => jump(i)}
-                    className="flex h-[100px] w-full cursor-pointer items-center text-left text-[clamp(40px,4.2vw,64px)] leading-[1.2] tracking-[-0.03em] whitespace-nowrap text-[#f4f4f4] transition-opacity duration-300 hover:!opacity-100"
+                    className="flex w-full cursor-pointer flex-col items-start gap-1 py-2 text-left transition-opacity duration-300 hover:!opacity-100"
                     style={{ opacity: i === 0 ? 1 : fadeFor(i) }}>
-                    {st.title}
+                    <span aria-hidden className={`text-xs font-medium tracking-[0.1em] text-white uppercase transition-opacity duration-300 ${i === active ? 'opacity-100' : 'opacity-0'}`}>Step 0{i + 1}</span>
+                    <span className="text-[clamp(40px,4.2vw,64px)] leading-[1.2] tracking-[-0.03em] whitespace-nowrap text-[#f4f4f4]">{st.title}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* heading + the current step's description */}
-            <div className="flex max-w-[440px] flex-1 flex-col justify-center gap-[120px] self-center">
-              <p className="text-2xl leading-[1.2] text-[#f4f4f4]">How it works</p>
+            {/* the current step's description */}
+            <div className="flex max-w-[440px] flex-1 flex-col justify-center self-center">
               <div className="relative min-h-[220px]" role="tabpanel">
                 {steps.map((st, i) => (
                   <div key={st.title} aria-hidden={i !== active}
                     className={`absolute inset-x-0 top-0 flex flex-col items-start gap-8 transition-opacity duration-500 ${i === active ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
-                    <div className="flex items-center gap-6">
-                      <span className="rounded-full bg-sky px-4 py-1.5 text-sm font-medium text-white">Step 0{i + 1}</span>                    </div>
-                    <p className="text-lg leading-[1.5] text-white/[0.64]">{st.body}</p>
+                    <p className="text-[24px] leading-[1.5] text-white/[0.64]">{st.body}</p>
                     <PillButton href={links.products} light>Explore Treatments</PillButton>
                   </div>
                 ))}
@@ -282,47 +280,6 @@ export function Steps() {
 
 
 /* ---------- This isn't wellness. This is medicine—done right. ---------- */
-
-const pillars = [
-  { title: 'Individualized protocols', img: 'pillar-protocols' },
-  { title: 'Real labs, real doctors', img: 'pillar-labs' },
-  { title: 'Compounded by licensed pharmacies', img: 'pillar-pharmacy' },
-  { title: 'Continuous monitoring & refinement', img: 'pillar-monitoring' },
-]
-
-export function Medicine() {
-  const root = useRef(null)
-  useGSAP(() => appear(root.current), { scope: root })
-  return (
-    <section ref={root} className="relative z-10 bg-white px-4 xl:px-5">
-      <div className="flex flex-col gap-10 rounded-[20px] bg-[linear-gradient(180deg,#091B61,#103F8D,#3AB5FE)] pt-10 xl:gap-[120px] xl:rounded-[40px] xl:pt-24">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-10 px-10 xl:grid-cols-2 xl:gap-[106px] xl:px-8">
-          <div data-appear className="flex flex-col items-start gap-4 md:gap-8">
-            <div className="flex flex-col space-y-2">
-              <h2 className="text-2xl leading-[1.2] font-medium text-white md:text-4xl xl:text-5xl">
-                <span className="text-white/60">This isn&apos;t</span> wellness. <span className="text-white/60">This is</span> medicine—done right.
-              </h2>
-              <p className="text-sm leading-[1.6] text-white xl:text-lg">Paramount HealthRx was built to deliver integrated, physician-guided optimization—not isolated products.</p>
-            </div>
-            <PillButton href={links.products} light>Explore Treatments</PillButton>
-            <p className="text-base text-white">Because average isn&apos;t the goal.</p>
-          </div>
-          <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-1 xl:gap-[38px]">
-            {pillars.map((p) => (
-              <li key={p.title} data-appear className="rounded-3xl border border-white/[0.18] bg-black/30 p-2 backdrop-blur-[40px]">
-                <div className="flex items-center gap-3 xl:gap-[38px]">
-                  <img src={`/img/${p.img}-260.webp`} alt="" loading="lazy" className="h-20 w-[100px] rounded-[18px] object-cover md:h-[100px] md:w-[130px]" />
-                  <p className="text-sm text-wrap text-white xl:text-2xl">{p.title}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <img src="/img/paramount-banner-1400.webp" srcSet="/img/paramount-banner-1400.webp 1400w, /img/paramount-banner-2600.webp 2600w" sizes="100vw" alt="Paramount" loading="lazy" width="3901" height="1091" className="w-full rounded-b-[20px] xl:rounded-b-[40px]" />
-      </div>
-    </section>
-  )
-}
 
 /* ---------- Your biology is unique ---------- */
 

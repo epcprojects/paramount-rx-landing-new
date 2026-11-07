@@ -84,6 +84,7 @@ float glowBlob(vec3 p, vec3 c, vec3 r) { return 1.0 - smoothstep(0.45, 1.0, leng
 export default function BodyScene({ category, onSelect, scroll, reducedMotion }) {
   const wrap = useRef(null)
   const pinEls = useRef([])
+  const shadowEl = useRef(null)
   const api = useRef(null)
   const [ready, setReady] = useState(false)
   const [supported, setSupported] = useState(true)
@@ -106,7 +107,7 @@ export default function BodyScene({ category, onSelect, scroll, reducedMotion })
     gl.setPixelRatio(Math.min(window.devicePixelRatio, coarse ? 1.5 : 1.75))
     gl.toneMapping = THREE.ACESFilmicToneMapping
     gl.toneMappingExposure = 0.98
-    gl.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block'
+    gl.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1'
     el.prepend(gl.domElement)
 
     const scene = new THREE.Scene()
@@ -212,6 +213,7 @@ export default function BodyScene({ category, onSelect, scroll, reducedMotion })
     const axis = new THREE.Vector3()
     const up = new THREE.Vector3(0, 1, 0)
     const q = new THREE.Vector3(); const n = new THREE.Vector3(); const toCam = new THREE.Vector3(); const proj = new THREE.Vector3()
+    const feetProj = new THREE.Vector3()
     const clock = new THREE.Clock()
     let visible = true
     let raf = 0
@@ -267,6 +269,16 @@ export default function BodyScene({ category, onSelect, scroll, reducedMotion })
       glow.uTime.value = t
       holder.updateMatrixWorld(true)
       gl.render(scene, camera)
+      // ground contact shadow tracks the feet: project the model's floor point (holder-local origin)
+      // through the same camera, so it follows every rotation, drag-tilt, and scroll dolly/lift.
+      if (shadowEl.current) {
+        feetProj.set(0, 0, 0).applyMatrix4(holder.matrixWorld).project(camera)
+        const sx = (feetProj.x * 0.5 + 0.5) * W
+        const sy = (-feetProj.y * 0.5 + 0.5) * H
+        const zoom = fit * (1 + sc.dolly)
+        const scale = THREE.MathUtils.clamp(1 / zoom, 0.55, 1.6)
+        shadowEl.current.style.transform = `translate3d(${sx.toFixed(1)}px, ${sy.toFixed(1)}px, 0) translate(-50%, -50%) scale(${scale.toFixed(3)})`
+      }
       // project pins onto the canvas; fade them out as they turn away from the camera
       anchorList.forEach((a, i) => {
         const pin = pinEls.current[i]
@@ -351,6 +363,9 @@ export default function BodyScene({ category, onSelect, scroll, reducedMotion })
       {!supported && (
         <div className="grid h-full place-items-center px-8 text-center text-sm text-neutral-400">3D view isn&apos;t available in this browser. Use the categories to browse treatments.</div>
       )}
+      {/* soft contact shadow under the feet, repositioned every frame to track the body's rotation, tilt and zoom;
+          sits behind the canvas (z-0 vs the canvas's z-1) so the body occludes it like a real ground shadow */}
+      <div ref={shadowEl} aria-hidden className="pointer-events-none absolute top-0 left-0 z-0 h-6 w-[220px] rounded-[50%] bg-[radial-gradient(closest-side,rgba(91,100,112,0.32),transparent)] will-change-transform" />
       <div className="pointer-events-none absolute inset-0 z-[5] overflow-hidden">
         {anchors.map((a, i) => {
           const active = a.id === category

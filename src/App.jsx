@@ -2,10 +2,10 @@ import { Header, Hero } from './sections/Top.jsx'
 import { About } from './sections/Story.jsx'
 import { BestSelf } from './sections/BestSelf.jsx'
 import { BodyMap } from './sections/BodyMap.jsx'
-import { SmartChoice, Steps, Medicine, Biology, Faq, Footer } from './sections/More.jsx'
+import { SmartChoice, Steps, Biology, Faq, Footer } from './sections/More.jsx'
 
 // Page: header → hero (tiles flip away to reveal the treatment cards) → cards → body map → "Be Your Best Self"
-// → the live site's remaining sections: Smart Choice, 4 easy steps, This isn't wellness, Your biology is unique, FAQ, footer.
+// → the live site's remaining sections: Smart Choice, 4 easy steps, Your biology is unique, FAQ, footer.
 export default function App() {
   return (
     <>
@@ -21,7 +21,6 @@ export default function App() {
         <BestSelf />
         <SmartChoice />
         <Steps />
-        <Medicine />
         <Biology />
         <Faq />
       </main>
