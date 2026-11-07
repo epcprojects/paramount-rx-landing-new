@@ -1,40 +1,60 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap, useGSAP, ScrollTrigger, reducedMotion } from '../motion.js'
 import { links } from '../content.js'
 import { Cta, Tag, Img } from '../components/ui.jsx'
 import { IconTestosterone, IconPeptides, IconSexualHealth, IconWeightLoss, IconHairLoss, IconPerformance } from '../components/TreatmentIcons.jsx'
 
-/** TEMPORARY diagnostic overlay — remove once the real mobile viewport numbers are confirmed.
- *  Shows the actual measured viewport/grid values live on-device so they don't have to be guessed. */
-function DebugViewportProbe() {
-  const ref = useRef(null)
+const FAN_ROW_GAP = 12 // px — matches the grid's gap-3
+const FAN_COL_GAP = 12 // px — matches the grid's gap-3
+const FAN_CARD_RATIO = 254 / 259 // card height = width * 254/259, matches the cards' aspect-[259/254]
+
+/** Sizes the below-`md` (mobile/narrow-tablet) card grid to use the full available width while still
+ *  guaranteeing the heading + all 3 card rows fit within one screen's height — this section is pinned
+ *  during its unfold (see Top.jsx), so there's no way to scroll further to reach a row cut off below.
+ *  This used to be a hand-tuned `calc()` guess at how much vertical space the heading/padding leave
+ *  free, which on a real phone — where Safari's toolbar shrinks `100svh` well below what desktop tools
+ *  report — produced a grid far narrower than necessary, reading as oversized side padding. Measuring
+ *  the real rendered heading height and viewport instead means it uses exactly the space available. */
+function useMobileFanGridWidth(sectionRef, headingRef) {
+  const [width, setWidth] = useState(null)
+
   useEffect(() => {
-    const update = () => {
-      if (!ref.current) return
-      const ul = document.querySelector('[data-fanwrap]')
-      const ulRect = ul ? ul.getBoundingClientRect() : null
-      const vv = window.visualViewport
-      const probeEl = document.createElement('div')
-      probeEl.style.cssText = 'height:100svh;position:absolute;visibility:hidden;width:0;'
-      document.body.appendChild(probeEl)
-      const svhPx = probeEl.getBoundingClientRect().height
-      probeEl.remove()
-      ref.current.textContent = [
-        `win ${window.innerWidth}x${window.innerHeight}`,
-        `vv ${vv ? Math.round(vv.width) + 'x' + Math.round(vv.height) : 'n/a'}`,
-        `docEl ${document.documentElement.clientWidth}x${document.documentElement.clientHeight}`,
-        `100svh=${Math.round(svhPx)}`,
-        `gridW=${ulRect ? Math.round(ulRect.width) : 'n/a'}`,
-        `dpr=${window.devicePixelRatio}`,
-      ].join(' | ')
+    const compute = () => {
+      const section = sectionRef.current
+      const heading = headingRef.current
+      if (!section || !heading || window.innerWidth >= 768) { setWidth(null); return }
+
+      const svh = window.visualViewport ? window.visualViewport.height : window.innerHeight
+      const sectionCS = getComputedStyle(section)
+      const reservedV = parseFloat(sectionCS.paddingTop) + parseFloat(sectionCS.paddingBottom)
+      const headingCS = getComputedStyle(heading)
+      const headingSpace = heading.getBoundingClientRect().height + parseFloat(headingCS.marginBottom)
+
+      const availableForGrid = svh - reservedV - headingSpace
+      const rowHeight = (availableForGrid - 2 * FAN_ROW_GAP) / 3
+      const cardWidthByHeight = rowHeight / FAN_CARD_RATIO
+      const gridWidthByHeight = 2 * cardWidthByHeight + FAN_COL_GAP
+
+      const containerWidth = section.clientWidth - parseFloat(sectionCS.paddingLeft) - parseFloat(sectionCS.paddingRight)
+
+      // No "legibility floor" here on purpose: clamping up on a very short viewport would silently
+      // defeat the fit-within-height guarantee this hook exists for. 100px only guards against a
+      // zero/negative result from a measurement glitch, not a real design minimum.
+      setWidth(Math.round(Math.max(100, Math.min(containerWidth, gridWidthByHeight))))
+      // #about's height can change with this grid; keep ScrollTrigger's cached positions for
+      // sections below it in sync, the same way Top.jsx's own resize handler does.
+      ScrollTrigger.refresh()
     }
-    update()
-    window.addEventListener('resize', update)
-    window.addEventListener('scroll', update, { passive: true })
-    const id = setInterval(update, 400)
-    return () => { window.removeEventListener('resize', update); window.removeEventListener('scroll', update); clearInterval(id) }
-  }, [])
-  return <div ref={ref} className="fixed inset-x-0 bottom-0 z-[999] bg-red-600 px-2 py-1 text-[9px] leading-tight break-words text-white md:hidden" />
+    compute()
+    window.addEventListener('resize', compute)
+    window.addEventListener('orientationchange', compute)
+    return () => {
+      window.removeEventListener('resize', compute)
+      window.removeEventListener('orientationchange', compute)
+    }
+  }, [sectionRef, headingRef])
+
+  return width
 }
 
 const cards = [
@@ -49,30 +69,34 @@ const cards = [
 /** Treatment cards revealed under the hero tiles, unfolding from edge-on. */
 export function About() {
   // The cards' unfold lives in the hero's pinned timeline (Top.jsx), so the page holds until they're all flat.
+  const sectionRef = useRef(null)
+  const headingRef = useRef(null)
+  const mobileGridWidth = useMobileFanGridWidth(sectionRef, headingRef)
+
   return (
-    <section id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-3 py-10 sm:px-[30px] sm:py-14">
-      <DebugViewportProbe />
+    <section ref={sectionRef} id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-3 py-10 sm:px-[30px] sm:py-14">
       <div className="relative z-10 w-full">
         {/* Heading — wording from the live site's "Choose a Health Journey" treatment picker */}
-        <div data-fan-head className="mx-auto mb-8 flex max-w-[985px] flex-col items-center text-center sm:mb-14">
+        <div ref={headingRef} data-fan-head className="mx-auto mb-8 flex max-w-[985px] flex-col items-center text-center sm:mb-14">
           <Tag dot={false}>Treatments</Tag>
           <h2 id="treatments-heading" className="t-h2 mt-3 max-w-none !text-[28px] sm:!text-[36px] md:!text-[56px] md:whitespace-nowrap">Choose Your Health Journey</h2>
         </div>
         {/* Treatment cards — same art, icons and copy as the live paramounthealthrx.com cards (3 × 2).
-            Width is capped by the viewport height so the heading and both rows (three on phones) fit on one screen,
-            since this section is pinned (see Top.jsx) with no way to scroll further to reach a card cut off below.
-            The mobile budget (100svh-230px)*0.70 gives a bit more width than the old *0.68 figure, which — tuned in
-            an environment that doesn't deduct Safari's address/toolbar chrome from svh — shrank the grid well below
-            the available width on a real phone, reading as oversized side padding. Still intentionally conservative:
-            widening it further measurably increases the risk of the bottom card row landing below the fold on a
-            short-viewport phone during the pin. */}
-        <ul data-fanwrap className="mx-auto grid w-full max-w-[min(985px,calc((100svh-230px)*0.70))] grid-cols-2 gap-3 [perspective:1200px] sm:gap-5 md:max-w-[min(985px,calc((100svh-290px)*1.53+40px))] md:grid-cols-3" aria-labelledby="treatments-heading">
+            Below md, width comes from useMobileFanGridWidth (measured, see above); the calc() here is
+            only the pre-measurement fallback for the first paint. md+ (tablet/desktop, 3 cols) keeps
+            its own formula untouched. */}
+        <ul
+          data-fanwrap
+          style={mobileGridWidth ? { maxWidth: `${mobileGridWidth}px` } : undefined}
+          className="mx-auto grid w-full max-w-[min(985px,calc((100svh-230px)*0.70))] grid-cols-2 gap-3 [perspective:1200px] sm:gap-5 md:max-w-[min(985px,calc((100svh-290px)*1.53+40px))] md:grid-cols-3"
+          aria-labelledby="treatments-heading"
+        >
           {cards.map((c, i) => (
             <li key={c.name} data-fan data-col={i % 3} data-row={Math.floor(i / 3)} className="will-change-transform">
               <a
                 href={links.products}
                 aria-label={`Explore ${c.name}`}
-                className="group relative block aspect-[4/5] overflow-hidden rounded-[22px] border-2 border-white/50 text-left text-white shadow-[0_18px_40px_-24px_rgba(10,26,47,0.55)] sm:aspect-[259/254]"
+                className="group relative block aspect-[259/254] overflow-hidden rounded-[22px] border-2 border-white/50 text-left text-white shadow-[0_18px_40px_-24px_rgba(10,26,47,0.55)]"
               >
                 <div aria-hidden className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105" style={{ backgroundImage: `url(${c.image})` }} />
                 <div className="relative z-10 flex h-full flex-col items-start justify-between p-3 sm:p-5">
