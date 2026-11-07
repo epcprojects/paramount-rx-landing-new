@@ -128,7 +128,9 @@ function StaticStatCard({ label, to, prefix = '', suffix = '', chart, deltaLabel
 /** Mobile-only: slow auto-scrolling marquee of the stat cards, styled like the desktop floating cards
  *  (same width, blurred glass). The real cards drive the reveal/counter; a duplicated, non-animated set
  *  pads the track so the loop is seamless. Falls back to a manually swipeable row when the user prefers
- *  reduced motion, so every card stays reachable without relying on the animation. */
+ *  reduced motion, so every card stays reachable without relying on the animation.
+ *  No mask-image edge fade here: a mask on an ancestor of a backdrop-blur element makes Chromium drop the
+ *  blur (it isolates the masked layer from what's behind it), so the track is a plain hard clip instead. */
 function MobileStatsMarquee() {
   if (reducedMotion()) {
     return (
@@ -138,10 +140,7 @@ function MobileStatsMarquee() {
     )
   }
   return (
-    <div
-      className="relative z-10 overflow-hidden"
-      style={{ WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)', maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)' }}
-    >
+    <div className="relative z-10 overflow-hidden">
       <div className="marquee-track flex w-max gap-3 px-4">
         {floatingStats.map(({ key, ...s }) => <StatWidget key={key} variant="marquee" {...s} />)}
         {floatingStats.map(({ key, ...s }) => <StaticStatCard key={`${key}-clone`} {...s} />)}
