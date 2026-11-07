@@ -1,8 +1,41 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { gsap, useGSAP, ScrollTrigger, reducedMotion } from '../motion.js'
 import { links } from '../content.js'
 import { Cta, Tag, Img } from '../components/ui.jsx'
 import { IconTestosterone, IconPeptides, IconSexualHealth, IconWeightLoss, IconHairLoss, IconPerformance } from '../components/TreatmentIcons.jsx'
+
+/** TEMPORARY diagnostic overlay — remove once the real mobile viewport numbers are confirmed.
+ *  Shows the actual measured viewport/grid values live on-device so they don't have to be guessed. */
+function DebugViewportProbe() {
+  const ref = useRef(null)
+  useEffect(() => {
+    const update = () => {
+      if (!ref.current) return
+      const ul = document.querySelector('[data-fanwrap]')
+      const ulRect = ul ? ul.getBoundingClientRect() : null
+      const vv = window.visualViewport
+      const probeEl = document.createElement('div')
+      probeEl.style.cssText = 'height:100svh;position:absolute;visibility:hidden;width:0;'
+      document.body.appendChild(probeEl)
+      const svhPx = probeEl.getBoundingClientRect().height
+      probeEl.remove()
+      ref.current.textContent = [
+        `win ${window.innerWidth}x${window.innerHeight}`,
+        `vv ${vv ? Math.round(vv.width) + 'x' + Math.round(vv.height) : 'n/a'}`,
+        `docEl ${document.documentElement.clientWidth}x${document.documentElement.clientHeight}`,
+        `100svh=${Math.round(svhPx)}`,
+        `gridW=${ulRect ? Math.round(ulRect.width) : 'n/a'}`,
+        `dpr=${window.devicePixelRatio}`,
+      ].join(' | ')
+    }
+    update()
+    window.addEventListener('resize', update)
+    window.addEventListener('scroll', update, { passive: true })
+    const id = setInterval(update, 400)
+    return () => { window.removeEventListener('resize', update); window.removeEventListener('scroll', update); clearInterval(id) }
+  }, [])
+  return <div ref={ref} className="fixed inset-x-0 bottom-0 z-[999] bg-red-600 px-2 py-1 text-[9px] leading-tight break-words text-white md:hidden" />
+}
 
 const cards = [
   { name: 'Testosterone', tagline: 'Optimize your hormones. Reclaim your edge.', image: '/img/card-testosterone-500.webp', Icon: IconTestosterone },
@@ -18,6 +51,7 @@ export function About() {
   // The cards' unfold lives in the hero's pinned timeline (Top.jsx), so the page holds until they're all flat.
   return (
     <section id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-3 py-10 sm:px-[30px] sm:py-14">
+      <DebugViewportProbe />
       <div className="relative z-10 w-full">
         {/* Heading — wording from the live site's "Choose a Health Journey" treatment picker */}
         <div data-fan-head className="mx-auto mb-8 flex max-w-[985px] flex-col items-center text-center sm:mb-14">
