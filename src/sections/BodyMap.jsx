@@ -288,10 +288,10 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
                         type="button"
                         aria-pressed={sel}
                         onClick={() => setPicked(sel ? null : key)}
-                        className={`group flex h-[88px] w-full cursor-pointer items-center gap-4 rounded-2xl border bg-white p-2 pr-4 text-left transition-colors duration-300 hover:border-navy md:h-[104px] ${sel ? 'border-navy' : 'border-neutral-300'}`}
+                        className={`group flex h-[68px] w-full cursor-pointer items-center gap-3 rounded-2xl border bg-white p-1.5 pr-3 text-left transition-colors duration-300 hover:border-navy md:h-[80px] ${sel ? 'border-navy' : 'border-neutral-300'}`}
                       >
                         <span className={`grid aspect-square h-full shrink-0 place-items-center rounded-xl transition-colors duration-300 group-hover:bg-[#eef5fd] ${sel ? 'bg-[#eef5fd]' : 'bg-neutral-100'}`}>
-                          <ProductArt form={t.form} className="h-[58px] transition-transform duration-500 group-hover:scale-105 md:h-[70px]" />
+                          <ProductArt form={t.form} className="h-[42px] transition-transform duration-500 group-hover:scale-105 md:h-[52px]" />
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-base font-medium text-[#242424]">{t.name}</span>
