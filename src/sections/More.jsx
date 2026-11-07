@@ -219,7 +219,7 @@ export function Steps() {
           {steps.map((st, i) => (
             <article key={st.title} data-appear className="flex flex-col gap-3">
               <div className="w-fit rounded-full bg-sky px-4 py-1.5"><span className="text-sm font-medium text-white">Step 0{i + 1}</span></div>
-              <img src={`/img/${st.img}-900.webp`} alt={st.title} loading="lazy" className="w-full rounded-2xl object-contain" />
+              <img src={`/img/steps-bg-${i + 1}-1800.webp`} alt={st.title} loading="lazy" className="w-full rounded-2xl object-contain" />
               <div className="flex flex-col gap-1 px-1">
                 <h3 className="text-base leading-[1.4] text-black md:text-lg">{i + 1}. {st.title}</h3>
                 <p className="text-sm leading-[1.6] text-neutral-600">{st.body}</p>
