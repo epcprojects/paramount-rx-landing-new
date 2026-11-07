@@ -162,14 +162,17 @@ html.is-scrolled .hdr-pill {
 }
 
 /* Hide-on-scroll: once past the hero, html.nav-hidden (toggled by the ScrollTrigger in Top.jsx, driven by
-   its own scroll direction) slides both header pills up and out; scrolling back up brings them back. */
+   its own scroll direction) slides the header pill up and out; scrolling back up brings it back. Desktop
+   (lg+) only — on mobile/tablet the menu pill stays visible at all times. */
 .site-header {
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
 }
-html.nav-hidden .site-header {
-  transform: translateY(-130%);
-  opacity: 0;
-  pointer-events: none;
+@media (min-width: 1024px) {
+  html.nav-hidden .site-header {
+    transform: translateY(-130%);
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
 /* Logo crossfade: the white mark shows over the hero, the brand-colored mark once .is-scrolled lands. */
