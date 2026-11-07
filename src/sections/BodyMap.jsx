@@ -297,7 +297,7 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
       aria-label="Treatments by category"
       className={inline ? 'relative' : 'no-scrollbar relative h-full overflow-y-auto overscroll-contain outline-none [mask-image:linear-gradient(to_bottom,transparent,black_9%,black_86%,transparent)]'}
     >
-      <div className={inline ? 'pt-10 pb-10 md:pt-12' : 'pt-[18vh] pb-[45vh]'}>
+      <div className={inline ? 'pt-10 pb-10 md:pt-12' : 'pt-[18vh] pr-3 pb-[45vh]'}>
         {groups.map((gr) => {
           const items = inCategory(gr.id)
           const on = gr.id === current
@@ -349,7 +349,7 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
       </div>
     </div>
     {!inline && (
-      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-[2px] w-[3px] rounded-full bg-[#104584]/10">
+      <div aria-hidden className="pointer-events-none absolute inset-y-0 right-0 w-[3px] rounded-full bg-[#104584]/10">
         <div ref={thumb} className="scroll-thumb absolute right-0 w-full rounded-full opacity-0" style={{ height: '20%', top: 0 }} />
       </div>
     )}
