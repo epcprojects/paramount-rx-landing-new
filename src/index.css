@@ -133,7 +133,8 @@ body {
    section has been scrolled completely past. html.is-scrolled is toggled by a single ScrollTrigger in
    Top.jsx (trigger: #intro-stage, start: "bottom top" — fires only once the pinned hero stage fully clears
    the viewport), shared by the desktop and mobile pill. Nav links, dividers and the account buttons all read
-   their colors from these custom properties so the light↔dark swap stays in one place. */
+   their colors from these custom properties so the light↔dark swap stays in one place. Mobile (<768px) keeps
+   the dark pill at all times — the light swap only kicks in from tablet width up. */
 .hdr-pill {
   --nav-fg: rgba(255, 255, 255, 0.7);
   --nav-fg-hover: #ffffff;
@@ -148,17 +149,19 @@ body {
   backdrop-filter: blur(20px);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
-html.is-scrolled .hdr-pill {
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 10px 30px -15px rgba(10, 10, 10, 0.18);
-  --nav-fg: rgba(10, 10, 10, 0.65);
-  --nav-fg-hover: var(--color-ink);
-  --nav-divider: rgba(10, 10, 10, 0.18);
-  --login-fg: var(--color-ink);
-  --login-hover-bg: var(--color-ink);
-  --login-hover-fg: #ffffff;
-  --consult-bg: var(--color-navy);
-  --consult-fg: #ffffff;
+@media (min-width: 768px) {
+  html.is-scrolled .hdr-pill {
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 10px 30px -15px rgba(10, 10, 10, 0.18);
+    --nav-fg: rgba(10, 10, 10, 0.65);
+    --nav-fg-hover: var(--color-ink);
+    --nav-divider: rgba(10, 10, 10, 0.18);
+    --login-fg: var(--color-ink);
+    --login-hover-bg: var(--color-ink);
+    --login-hover-fg: #ffffff;
+    --consult-bg: var(--color-navy);
+    --consult-fg: #ffffff;
+  }
 }
 
 /* Hide-on-scroll: once past the hero, html.nav-hidden (toggled by the ScrollTrigger in Top.jsx, driven by
@@ -175,11 +178,14 @@ html.is-scrolled .hdr-pill {
   }
 }
 
-/* Logo crossfade: the white mark shows over the hero, the brand-colored mark once .is-scrolled lands. */
+/* Logo crossfade: the white mark shows over the hero, the brand-colored mark once .is-scrolled lands.
+   Mobile (<768px) keeps the white mark at all times, matching the permanently dark nav pill. */
 .logo-dark { opacity: 0; transition: opacity 0.3s ease; }
 .logo-light { transition: opacity 0.3s ease; }
-html.is-scrolled .logo-dark { opacity: 1; }
-html.is-scrolled .logo-light { opacity: 0; }
+@media (min-width: 768px) {
+  html.is-scrolled .logo-dark { opacity: 1; }
+  html.is-scrolled .logo-light { opacity: 0; }
+}
 
 /* Hero → white cube transition tiles (built in Top.jsx) */
 .hero-tile {
