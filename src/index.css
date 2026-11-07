@@ -5,6 +5,7 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-manrope: "Manrope", ui-sans-serif, system-ui, sans-serif;
 
   --color-ink: #0a0a0a;
   --color-night: #07152a;      /* header / menu bar — Paramount-tinted black */

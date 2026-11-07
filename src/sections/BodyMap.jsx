@@ -356,9 +356,9 @@ export function BodyMap() {
             </h2>
             <p className="max-w-[21rem] text-sm leading-relaxed text-neutral-500 md:max-w-none md:text-[15px] lg:max-w-[21rem]">{treatments.length} treatments, prescribed by licensed providers and organised by focus area.</p>
           </div>
-          <div key={cat} className="anim-fade-up hidden max-w-[24rem] border-l-4 border-navy bg-[#eef5fd] px-4 py-3 md:block md:max-w-none md:px-5 md:py-4 lg:min-h-[5.5rem] lg:max-w-[24rem]" aria-live="polite">
-            <p className="text-sm font-semibold text-navy">{info.label}</p>
-            <p className="mt-1 max-w-[20rem] text-sm leading-relaxed text-neutral-500 md:max-w-none lg:max-w-[20rem]">{info.blurb}</p>
+          <div key={cat} className="anim-fade-up font-manrope hidden max-w-[24rem] border-l-4 border-navy bg-[#eef5fd] px-3.5 py-2.5 md:block md:max-w-none lg:max-w-[24rem]" aria-live="polite">
+            <p className="text-[13px] font-semibold text-navy">{info.label}</p>
+            <p className="mt-0.5 max-w-[20rem] text-xs leading-snug text-neutral-500 md:max-w-none lg:max-w-[20rem]">{info.blurb}</p>
           </div>
           <Tabs active={cat} onChange={choose} className="hidden max-w-[26rem] lg:flex" />
         </div>
