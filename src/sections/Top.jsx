@@ -188,7 +188,9 @@ function buildTiles(layer, img) {
   layer.innerHTML = ''
   const W = layer.clientWidth
   const H = layer.clientHeight
-  const cols = W < 768 ? 26 : W < 1200 ? 42 : 62
+  // Halved from the original 26/42/62: ~2,400 tiles at desktop width was costing over a second of
+  // main-thread blocking just to build the grid (plus the paint/compositing cost of that many layers).
+  const cols = W < 768 ? 18 : W < 1200 ? 30 : 44
   const rows = Math.max(4, Math.round((H / W) * cols))
   // hero photo is 1800 × 1200 (both srcset sizes share this ratio) — only the ratio matters here
   const iw = 1800
@@ -228,14 +230,25 @@ export function Hero() {
     const layer = q('[data-tiles]')[0]
     const img = q('[data-img]')[0]
     let tl
+    let lastWidth = 0
     const build = () => {
       tl?.scrollTrigger?.kill()
       tl?.kill()
+      lastWidth = window.innerWidth
       const { rows, cols } = buildTiles(layer, img)
       const cards = layer.querySelectorAll('[data-card]')
       const stage = root.current.parentElement // #intro-stage: hero overlay + "Who we are"
       tl = gsap.timeline({
-        scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=240%', pin: stage, scrub: 1, anticipatePin: 1, refreshPriority: 1 },
+        scrollTrigger: {
+          id: 'hero-pin', trigger: stage, start: 'top top', end: '+=240%', pin: stage, scrub: 1, anticipatePin: 1, refreshPriority: 1,
+          // Layer-promote the tiles only while the flip is in view, not for the page's whole lifetime
+          // (see index.css) — cheap to toggle, expensive to leave on for ~1,000+ elements. start is
+          // 'top top' on the very first section, so the trigger is already active on page load and
+          // onEnter never fires (nothing to "enter" into) — set the initial state directly instead.
+          onEnterBack: () => gsap.set(cards, { willChange: 'transform' }),
+          onLeave: () => gsap.set(cards, { willChange: 'auto' }),
+          onLeaveBack: () => gsap.set(cards, { willChange: 'auto' }),
+        },
       })
       // Row-by-row from the top, with a small deterministic jitter inside each row so the wave ripples.
       const delay = (i) => {
@@ -244,7 +257,7 @@ export function Hero() {
         const jitter = (Math.sin(c * 12.9898 + r * 78.233) * 43758.5453) % 1
         return (r / Math.max(1, rows - 1)) * 0.6 + Math.abs(jitter) * 0.09
       }
-      gsap.set(cards, { rotationY: 0, force3D: true })
+      gsap.set(cards, { rotationY: 0, force3D: true, willChange: 'transform' })
       // explicit from-values so scrolling back always restores the finished hero, even mid-entrance
       // fades the copy's outer wrapper (the entrance animates the inner [data-rise]), so the two never fight
       tl.fromTo(q('[data-copy]'), { opacity: 1, y: 0 }, { opacity: 0, y: -60, ease: 'power1.in', duration: 0.18, immediateRender: false }, 0)
@@ -273,14 +286,33 @@ export function Hero() {
       tl.to({}, { duration: 0.2 }) // short hold on the finished grid before the pin releases
       ScrollTrigger.refresh()
     }
-    // Build straight away: tile maths only needs the photo's (fixed) proportions, so the pin exists
-    // before the first scroll even if the image is still downloading.
-    build()
+    // Deferred one frame past first paint: building ~1,000 tile elements is heavy enough to block the
+    // browser from showing the hero photo/headline at all if done synchronously on mount. The grid is
+    // still invisible (opacity-0) until the user scrolls, so a one-frame-later pin is imperceptible.
+    let raf1, raf2
+    raf1 = requestAnimationFrame(() => { raf2 = requestAnimationFrame(build) })
 
     let t
-    const onResize = () => { clearTimeout(t); t = setTimeout(() => { build(); ScrollTrigger.refresh() }, 200) }
+    const onResize = () => {
+      clearTimeout(t)
+      t = setTimeout(() => {
+        // Mobile browsers fire resize when their toolbar shows/hides on scroll — that only changes
+        // height, and the tile grid is invisible until the user scrolls back into it, so skip the
+        // expensive rebuild unless the width actually moved (a real orientation/breakpoint change).
+        if (window.innerWidth === lastWidth) return
+        build()
+        ScrollTrigger.refresh()
+      }, 200)
+    }
     window.addEventListener('resize', onResize)
-    return () => { window.removeEventListener('resize', onResize); clearTimeout(t); tl?.scrollTrigger?.kill(); tl?.kill() }
+    return () => {
+      window.removeEventListener('resize', onResize)
+      clearTimeout(t)
+      cancelAnimationFrame(raf1)
+      cancelAnimationFrame(raf2)
+      tl?.scrollTrigger?.kill()
+      tl?.kill()
+    }
   }, { scope: root })
 
   return (

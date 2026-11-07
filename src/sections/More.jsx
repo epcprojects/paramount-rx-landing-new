@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap, useGSAP, ScrollTrigger, appear, reducedMotion } from '../motion.js'
 import { links, faqs } from '../content.js'
 
@@ -8,6 +8,50 @@ import { links, faqs } from '../content.js'
 
 
 /* ---------- shared bits ---------- */
+
+/** True once the ref'd element is within `margin` of the viewport (see BodyMap.jsx's identical hook —
+ *  kept local here too rather than shared, since it's a 10-line hook, not worth a cross-file import). */
+function useNearViewport(margin = '800px') {
+  const ref = useRef(null)
+  const [near, setNear] = useState(false)
+  useEffect(() => {
+    if (near || !ref.current) return
+    let io
+    let cancelled = false
+    const start = () => {
+      if (cancelled || !ref.current) return
+      io = new IntersectionObserver((entries) => { if (entries[0].isIntersecting) setNear(true) }, { rootMargin: margin })
+      io.observe(ref.current)
+    }
+    if (document.fonts?.ready) document.fonts.ready.then(start)
+    else start()
+    return () => { cancelled = true; io?.disconnect() }
+  }, [near, margin])
+  return [ref, near]
+}
+
+/** Autoplaying background video (steps/footer wordmark loops) that only fetches once it's actually
+ *  near the viewport — these were downloading in full on page load regardless of scroll position,
+ *  the single biggest piece of unnecessary weight on the page (the footer loop alone is ~13MB). */
+function LazyVideo({ src, poster, className, style, ...rest }) {
+  const [ref, near] = useNearViewport()
+  return (
+    <video
+      ref={ref}
+      autoPlay
+      muted
+      loop
+      playsInline
+      preload="none"
+      poster={poster}
+      src={near ? src : undefined}
+      className={className}
+      style={style}
+      aria-hidden
+      {...rest}
+    />
+  )
+}
 
 const ArrowUpRight = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
@@ -213,7 +257,7 @@ export function Steps() {
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 md:gap-14 md:py-16 lg:hidden">
         <div data-appear className="flex flex-col items-start gap-8">
           <StepsIntro />
-          <video autoPlay muted loop playsInline preload="metadata" className="h-[200px] w-full rounded-2xl object-cover md:h-[400px]" src="/videos/steps.mp4" aria-hidden />
+          <LazyVideo className="h-[200px] w-full rounded-2xl object-cover md:h-[400px]" src="/videos/steps.mp4" />
         </div>
         <div className="flex flex-col gap-5 md:gap-6">
           {steps.map((st, i) => (
@@ -232,7 +276,7 @@ export function Steps() {
       {/* desktop: intro row (heading, CTA, looping video) above the pinned panel, as on the live site */}
       <div className="mx-auto hidden max-w-6xl items-start justify-between gap-9 bg-white px-8 pt-12 pb-10 lg:flex">
         <div data-appear><StepsIntro large /></div>
-        <video autoPlay muted loop playsInline preload="metadata" className="h-[200px] w-[320px] rounded-[20px] object-cover" src="/videos/steps.mp4" aria-hidden />
+        <LazyVideo className="h-[200px] w-[320px] rounded-[20px] object-cover" src="/videos/steps.mp4" />
       </div>
 
       {/* desktop: pinned dark panel with a sliding step list (reference: roveia.com "Trusted by" section) */}
@@ -398,7 +442,7 @@ export function Footer() {
             <div className="w-full lg:col-start-3 lg:col-end-11">
               <p className="sr-only">Paramount HealthRx</p>
               <div role="img" aria-label="Paramount HealthRx" className="relative mx-auto aspect-[921/251] w-full max-w-[921px]">
-                <video src="/videos/footer.mp4" poster="/img/footer-poster-1448.webp" autoPlay muted loop playsInline disablePictureInPicture preload="metadata"
+                <LazyVideo src="/videos/footer.mp4" poster="/img/footer-poster-1448.webp" disablePictureInPicture
                   className="absolute inset-0 h-full w-full object-cover object-center"
                   style={{ maskImage: wordmarkMask, WebkitMaskImage: wordmarkMask, maskSize: '100% 100%', WebkitMaskSize: '100% 100%', maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat', maskPosition: 'center', WebkitMaskPosition: 'center' }} />
               </div>

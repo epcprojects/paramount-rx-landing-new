@@ -187,12 +187,13 @@ body {
   html.is-scrolled .logo-light { opacity: 0; }
 }
 
-/* Hero → white cube transition tiles (built in Top.jsx) */
+/* Hero → white cube transition tiles (built in Top.jsx). will-change is applied/cleared in JS only
+   while the flip is actually in view (~2,000 elements promoted to their own layer for the whole page's
+   lifetime was a real memory/jank cost for a section most visitors never scroll back into). */
 .hero-tile {
   position: absolute;
   background-repeat: no-repeat;
   -webkit-backface-visibility: hidden; backface-visibility: hidden; /* flipped tiles vanish → section beneath shows */
-  will-change: transform;
 }
 
 .js [data-appear] { opacity: 0; }

@@ -23,6 +23,32 @@ function useMedia(q) {
   return m
 }
 
+/** True once the ref'd element is within `margin` of the viewport — used to defer the 3D body scene
+ *  (three.js + a GLTF model, ~1-2MB) so it isn't fetched on page load fighting the hero for bandwidth,
+ *  only once the visitor has actually scrolled close to this section. */
+function useNearViewport(margin = '600px') {
+  const ref = useRef(null)
+  const [near, setNear] = useState(false)
+  useEffect(() => {
+    if (near || !ref.current) return
+    let io
+    let cancelled = false
+    // Wait for web fonts to finish swapping in before taking the first measurement: on a cold cache,
+    // the heading/body copy above this section still renders in the fallback font at mount time, which
+    // is shorter than the final Inter/Playfair layout — an observer snapshot taken during that window
+    // can wrongly report "already in view" and (since it only needs to fire once) never recheck.
+    const start = () => {
+      if (cancelled || !ref.current) return
+      io = new IntersectionObserver((entries) => { if (entries[0].isIntersecting) setNear(true) }, { rootMargin: margin })
+      io.observe(ref.current)
+    }
+    if (document.fonts?.ready) document.fonts.ready.then(start)
+    else start()
+    return () => { cancelled = true; io?.disconnect() }
+  }, [near, margin])
+  return [ref, near]
+}
+
 /* ---------- category tabs ---------- */
 
 function Tabs({ active, onChange, size = 'md', className = '' }) {
@@ -296,6 +322,7 @@ export function BodyMap() {
   const list = useRef(null)
   const scroll = useRef({ dolly: 0, lift: 0 })
   const info = getCategory(cat)
+  const [sceneAnchor, sceneNear] = useNearViewport()
 
   const topOffset = useCallback(() => {
     const el = stickyBar.current
@@ -341,11 +368,13 @@ export function BodyMap() {
             so the tab pills sit 10px clear of the header instead of flush under it. */}
         <div ref={stickyBar} className="sticky top-[74px] z-[4] -mx-5 bg-white px-5 pt-3 sm:top-[88px] md:-mx-10 md:px-10 lg:static lg:top-auto lg:mx-0 lg:flex lg:min-h-0 lg:flex-col lg:bg-transparent lg:p-0">
           <Tabs active={cat} onChange={choose} size="sm" className="no-scrollbar -mx-5 flex-nowrap overflow-x-auto px-5 pb-1 md:-mx-10 md:px-10 lg:hidden" />
-          <div className="relative -mx-5 h-[clamp(220px,34svh,300px)] md:mx-0 md:h-[clamp(280px,38svh,400px)] lg:h-auto lg:min-h-0 lg:flex-1">
+          <div ref={sceneAnchor} className="relative -mx-5 h-[clamp(220px,34svh,300px)] md:mx-0 md:h-[clamp(280px,38svh,400px)] lg:h-auto lg:min-h-0 lg:flex-1">
             <div className="pointer-events-none absolute inset-x-[12%] bottom-[4%] h-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(16,69,132,0.09),rgba(47,143,224,0.06)_45%,transparent)]" />
-            <Suspense fallback={null}>
-              <BodyScene category={cat} onSelect={choose} scroll={scroll} reducedMotion={reduced} />
-            </Suspense>
+            {sceneNear && (
+              <Suspense fallback={null}>
+                <BodyScene category={cat} onSelect={choose} scroll={scroll} reducedMotion={reduced} />
+              </Suspense>
+            )}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-white/0 to-white lg:hidden" />
             <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center md:bottom-4 lg:bottom-16">
               <svg width="320" height="63" viewBox="0 0 235 46" fill="none" className="h-auto w-[200px] max-w-[80%] md:w-[260px] lg:w-[320px]" role="img" aria-label="Drag to rotate">
