@@ -349,7 +349,6 @@ export function BodyMap() {
       <div className="mx-auto flex max-w-[96rem] flex-col px-5 pt-6 md:px-10 md:pt-8 lg:grid lg:h-[calc(100svh-108px)] lg:min-h-[40rem] lg:grid-cols-[minmax(18rem,26rem)_minmax(0,1fr)_minmax(22rem,27rem)] lg:gap-8 lg:pt-0">
         <div className="hero-side relative z-[3] flex flex-col gap-5 pb-4 md:gap-6 lg:justify-center lg:gap-10 lg:pb-8">
           <div className="flex flex-col gap-3">
-            <p className="t-tag text-ink">Products</p>
             <h2 className="text-[28px] leading-[1.1] font-normal tracking-tight text-[#242424] sm:text-[34px] md:text-[40px]">
               <span className="block whitespace-nowrap md:inline lg:block">Every treatment,</span>{' '}
               <span className="block whitespace-nowrap md:inline lg:block">mapped to the body.</span>
