@@ -25,8 +25,14 @@ export function About() {
           <h2 id="treatments-heading" className="t-h2 mt-3 max-w-none !text-[28px] sm:!text-[36px] md:!text-[56px] md:whitespace-nowrap">Choose Your Health Journey</h2>
         </div>
         {/* Treatment cards — same art, icons and copy as the live paramounthealthrx.com cards (3 × 2).
-            Width is capped by the viewport height so the heading and both rows (three on phones) fit on one screen. */}
-        <ul data-fanwrap className="mx-auto grid w-full max-w-[min(985px,calc((100svh-250px)*0.68))] grid-cols-2 gap-3 [perspective:1200px] sm:gap-5 md:max-w-[min(985px,calc((100svh-290px)*1.53+40px))] md:grid-cols-3" aria-labelledby="treatments-heading">
+            Width is capped by the viewport height so the heading and both rows (three on phones) fit on one screen,
+            since this section is pinned (see Top.jsx) with no way to scroll further to reach a card cut off below.
+            The mobile budget (100svh-230px)*0.70 gives a bit more width than the old *0.68 figure, which — tuned in
+            an environment that doesn't deduct Safari's address/toolbar chrome from svh — shrank the grid well below
+            the available width on a real phone, reading as oversized side padding. Still intentionally conservative:
+            widening it further measurably increases the risk of the bottom card row landing below the fold on a
+            short-viewport phone during the pin. */}
+        <ul data-fanwrap className="mx-auto grid w-full max-w-[min(985px,calc((100svh-230px)*0.70))] grid-cols-2 gap-3 [perspective:1200px] sm:gap-5 md:max-w-[min(985px,calc((100svh-290px)*1.53+40px))] md:grid-cols-3" aria-labelledby="treatments-heading">
           {cards.map((c, i) => (
             <li key={c.name} data-fan data-col={i % 3} data-row={Math.floor(i / 3)} className="will-change-transform">
               <a
