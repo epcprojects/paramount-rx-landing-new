@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { gsap, useGSAP, appear, ease, reducedMotion } from '../motion.js'
 import { links } from '../content.js'
 import { Cta } from '../components/ui.jsx'
@@ -21,7 +21,22 @@ const SPARK_PATH = {
 const RING_R = 26
 const RING_C = 2 * Math.PI * RING_R
 
-function StatWidget({ label, to, prefix = '', suffix = '', chart, deltaLabel, className = '' }) {
+/** Breakpoint-driven boolean, used to swap the mobile marquee for the tablet/desktop stat row entirely
+ *  (rather than rendering both and hiding one with CSS) so only one set of ScrollTrigger-tracked widgets
+ *  ever exists in the DOM at a time — mixing both sets at once is what caused an earlier crash. */
+function useBelow(breakpointPx) {
+  const [below, setBelow] = useState(() => typeof window !== 'undefined' && window.innerWidth < breakpointPx)
+  useEffect(() => {
+    const mql = window.matchMedia(`(max-width: ${breakpointPx - 1}px)`)
+    const onChange = () => setBelow(mql.matches)
+    onChange()
+    mql.addEventListener('change', onChange)
+    return () => mql.removeEventListener('change', onChange)
+  }, [breakpointPx])
+  return below
+}
+
+function StatWidget({ label, to, prefix = '', suffix = '', chart, deltaLabel, className = '', variant = 'row' }) {
   const wrap = useRef(null)
   const valueEl = useRef(null)
   const pathEl = useRef(null)
@@ -52,14 +67,16 @@ function StatWidget({ label, to, prefix = '', suffix = '', chart, deltaLabel, cl
     }
   }, { scope: wrap })
 
+  const marquee = variant === 'marquee'
+  const wrapClassName = marquee
+    ? 'flex w-[204px] shrink-0 flex-col gap-3 rounded-2xl bg-black/25 p-5 text-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] backdrop-blur-[30px]'
+    : `z-10 flex w-full flex-col gap-2 rounded-xl bg-black/80 p-3 text-white shadow-[0_12px_30px_-16px_rgba(0,0,0,0.5)] xl:absolute xl:w-[204px] xl:gap-3 xl:rounded-2xl xl:bg-black/25 xl:p-5 xl:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] xl:backdrop-blur-[30px] ${className}`
+
   return (
-    <div
-      ref={wrap}
-      className={`z-10 flex w-full flex-col gap-2 rounded-xl bg-black/80 p-3 text-white shadow-[0_12px_30px_-16px_rgba(0,0,0,0.5)] xl:absolute xl:w-[204px] xl:gap-3 xl:rounded-2xl xl:bg-black/25 xl:p-5 xl:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] xl:backdrop-blur-[30px] ${className}`}
-    >
-      <p className="text-[11px] font-medium text-white/70 xl:text-[12px]">{label}</p>
+    <div ref={wrap} className={wrapClassName}>
+      <p className={marquee ? 'text-[12px] font-medium text-white/70' : 'text-[11px] font-medium text-white/70 xl:text-[12px]'}>{label}</p>
       <div className="flex items-center justify-between gap-2">
-        <span ref={valueEl} className="text-[26px] leading-none font-semibold xl:text-[30px]">{prefix}0{suffix}</span>
+        <span ref={valueEl} className={marquee ? 'text-[30px] leading-none font-semibold' : 'text-[26px] leading-none font-semibold xl:text-[30px]'}>{prefix}0{suffix}</span>
         {chart === 'ring' && (
           <svg width="52" height="52" viewBox="0 0 60 60" className="-rotate-90" aria-hidden>
             <circle cx="30" cy="30" r={RING_R} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="6" />
@@ -72,7 +89,7 @@ function StatWidget({ label, to, prefix = '', suffix = '', chart, deltaLabel, cl
           <path ref={pathEl} d={SPARK_PATH[chart]} fill="none" stroke="#A8FF93" strokeWidth="2.5" strokeLinecap="round" />
         </svg>
       )}
-      <p className="flex items-center gap-1 text-[11px] text-white/60 xl:text-[12px]">
+      <p className={marquee ? 'flex items-center gap-1 text-[12px] text-white/60' : 'flex items-center gap-1 text-[11px] text-white/60 xl:text-[12px]'}>
         {chart !== 'ring' && <span className="text-[#A8FF93]">{chart === 'down' ? '↓' : '↑'}</span>}
         {deltaLabel}
       </p>
@@ -80,13 +97,67 @@ function StatWidget({ label, to, prefix = '', suffix = '', chart, deltaLabel, cl
   )
 }
 
+/** Decorative, non-animated duplicate of a stat card — pads out the marquee track for a seamless loop.
+ *  Final values are static (no GSAP/ScrollTrigger of its own) and it's hidden from assistive tech. */
+function StaticStatCard({ label, to, prefix = '', suffix = '', chart, deltaLabel }) {
+  return (
+    <div aria-hidden className="flex w-[204px] shrink-0 flex-col gap-3 rounded-2xl bg-black/25 p-5 text-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] backdrop-blur-[30px]">
+      <p className="text-[12px] font-medium text-white/70">{label}</p>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-[30px] leading-none font-semibold">{prefix}{to}{suffix}</span>
+        {chart === 'ring' && (
+          <svg width="52" height="52" viewBox="0 0 60 60" className="-rotate-90" aria-hidden>
+            <circle cx="30" cy="30" r={RING_R} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="6" />
+            <circle cx="30" cy="30" r={RING_R} fill="none" stroke="#A8FF93" strokeWidth="6" strokeLinecap="round" strokeDasharray={RING_C} strokeDashoffset={RING_C * (1 - to / 100)} />
+          </svg>
+        )}
+      </div>
+      {chart !== 'ring' && (
+        <svg viewBox="0 0 120 40" className="h-8 w-full" preserveAspectRatio="none" aria-hidden>
+          <path d={SPARK_PATH[chart]} fill="none" stroke="#A8FF93" strokeWidth="2.5" strokeLinecap="round" />
+        </svg>
+      )}
+      <p className="flex items-center gap-1 text-[12px] text-white/60">
+        {chart !== 'ring' && <span className="text-[#A8FF93]">{chart === 'down' ? '↓' : '↑'}</span>}
+        {deltaLabel}
+      </p>
+    </div>
+  )
+}
+
+/** Mobile-only: slow auto-scrolling marquee of the stat cards, styled like the desktop floating cards
+ *  (same width, blurred glass). The real cards drive the reveal/counter; a duplicated, non-animated set
+ *  pads the track so the loop is seamless. Falls back to a manually swipeable row when the user prefers
+ *  reduced motion, so every card stays reachable without relying on the animation. */
+function MobileStatsMarquee() {
+  if (reducedMotion()) {
+    return (
+      <div className="no-scrollbar relative z-10 mx-auto flex w-full max-w-7xl gap-3 overflow-x-auto px-4 pb-1">
+        {floatingStats.map(({ key, ...s }) => <StatWidget key={key} variant="marquee" {...s} />)}
+      </div>
+    )
+  }
+  return (
+    <div
+      className="relative z-10 overflow-hidden"
+      style={{ WebkitMaskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)', maskImage: 'linear-gradient(to right, transparent, black 24px, black calc(100% - 24px), transparent)' }}
+    >
+      <div className="marquee-track flex w-max gap-3 px-4">
+        {floatingStats.map(({ key, ...s }) => <StatWidget key={key} variant="marquee" {...s} />)}
+        {floatingStats.map(({ key, ...s }) => <StaticStatCard key={`${key}-clone`} {...s} />)}
+      </div>
+    </div>
+  )
+}
+
 export function BestSelf() {
   const root = useRef(null)
+  const isMobile = useBelow(768)
   useGSAP(() => appear(root.current), { scope: root })
 
   return (
     <section ref={root} id="best-self" className="relative z-10 bg-white px-4 py-0 md:px-5 md:py-8">
-      <div className="relative mx-auto flex min-h-[100svh] max-w-[96rem] flex-col justify-between overflow-hidden rounded-none py-10 md:block md:min-h-[74vh] md:rounded-[30px] md:px-10 md:pt-24 md:pb-32 xl:px-14">
+      <div className="relative mx-auto flex min-h-[100svh] max-w-[96rem] flex-col justify-between overflow-hidden rounded-[22px] py-10 md:block md:min-h-[74vh] md:rounded-[30px] md:px-10 md:pt-24 md:pb-32 xl:px-14">
         {/* runner photo, covers full width of the panel at every breakpoint */}
         <div aria-hidden className="absolute inset-0 bg-[url('/img/runners-duo-1920.webp')] bg-cover bg-center bg-no-repeat" />
         {/* mobile-only scrim so the white-on-photo text stays legible without a solid card behind it */}
@@ -107,11 +178,15 @@ export function BestSelf() {
           </div>
         </div>
 
-        {/* Single set of stat cards: compact inline row below xl, absolute floating glass cards from xl up
-            (wrapper becomes display:contents at xl so each card positions against the panel, not this wrapper). */}
-        <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-1 gap-3 px-4 md:grid-cols-3 md:gap-2 xl:contents xl:px-0">
-          {floatingStats.map(({ key, ...s }) => <StatWidget key={key} {...s} />)}
-        </div>
+        {isMobile ? (
+          <MobileStatsMarquee />
+        ) : (
+          /* Tablet: compact 3-up row. Desktop (xl): wrapper becomes display:contents so each card positions
+             absolutely against the panel instead of this wrapper. */
+          <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-3 gap-2 px-4 xl:contents xl:px-0">
+            {floatingStats.map(({ key, ...s }) => <StatWidget key={key} {...s} />)}
+          </div>
+        )}
       </div>
     </section>
   )

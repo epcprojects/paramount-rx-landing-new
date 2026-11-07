@@ -222,6 +222,14 @@ body {
 @keyframes step-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 :focus-visible { outline: 2px solid var(--color-sky); outline-offset: 3px; border-radius: 6px; }
 
+/* BestSelf mobile stat-card marquee: the track is rendered twice (real cards + a decorative clone set),
+   so translating by exactly -50% loops seamlessly back to the start. */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee-x 26s linear infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .js [data-appear] { opacity: 1; }
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
