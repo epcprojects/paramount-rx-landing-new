@@ -202,13 +202,8 @@ function StepsIntro({ large = false }) {
   )
 }
 
-// Fade of each list item by its distance from the current step (as in the reference: 1 → .5 → .25 → .1 → .05).
-const fadeFor = (d) => {
-  const stops = [1, 0.5, 0.25, 0.1, 0.05]
-  const i = Math.min(Math.floor(d), stops.length - 1)
-  const f = d - Math.floor(d)
-  return i >= stops.length - 1 ? stops[stops.length - 1] : stops[i] + (stops[i + 1] - stops[i]) * f
-}
+// Non-active steps sit at a flat dimmed opacity; the current step is fully opaque white.
+const INACTIVE_OPACITY = 0.4
 
 export function Steps() {
   const root = useRef(null)
@@ -226,8 +221,8 @@ export function Steps() {
       const itemH = () => items[0]?.offsetHeight || 100
       const paint = (p) => {
         gsap.set(list.current, { y: -p * itemH() })
-        items.forEach((el, i) => { el.style.opacity = fadeFor(Math.abs(i - p)).toFixed(3) })
         const a = Math.min(steps.length - 1, Math.round(p))
+        items.forEach((el, i) => { el.style.opacity = i === a ? '1' : String(INACTIVE_OPACITY) })
         setActive((cur) => (cur === a ? cur : a))
       }
       paint(0)
@@ -295,7 +290,7 @@ export function Steps() {
                 {steps.map((st, i) => (
                   <button key={st.title} type="button" role="tab" aria-selected={i === active} onClick={() => jump(i)}
                     className="flex w-full cursor-pointer flex-col items-start gap-1 py-2 text-left transition-opacity duration-300 hover:!opacity-100"
-                    style={{ opacity: i === 0 ? 1 : fadeFor(i) }}>
+                    style={{ opacity: i === 0 ? 1 : INACTIVE_OPACITY }}>
                     <span aria-hidden className={`text-xs font-medium tracking-[0.1em] text-white uppercase transition-opacity duration-300 ${i === active ? 'opacity-100' : 'opacity-0'}`}>Step 0{i + 1}</span>
                     <span className="text-[clamp(40px,4.2vw,64px)] leading-[1.2] tracking-[-0.03em] whitespace-nowrap text-[#f4f4f4]">{st.title}</span>
                   </button>
