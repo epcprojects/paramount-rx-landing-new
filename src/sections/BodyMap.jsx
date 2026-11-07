@@ -336,7 +336,10 @@ export function BodyMap() {
           <Tabs active={cat} onChange={choose} className="hidden max-w-[26rem] lg:flex" />
         </div>
 
-        <div ref={stickyBar} className="sticky top-16 z-[4] -mx-5 bg-white px-5 pt-3 md:-mx-10 md:px-10 lg:static lg:mx-0 lg:flex lg:min-h-0 lg:flex-col lg:bg-transparent lg:p-0">
+        {/* top offset = floating mobile header's own rendered bottom edge (12px top padding + its pill
+            height, 64px below 640px / 78px from 640px up), minus this box's own pt-3, plus a 10px gap —
+            so the tab pills sit 10px clear of the header instead of flush under it. */}
+        <div ref={stickyBar} className="sticky top-[74px] z-[4] -mx-5 bg-white px-5 pt-3 sm:top-[88px] md:-mx-10 md:px-10 lg:static lg:top-auto lg:mx-0 lg:flex lg:min-h-0 lg:flex-col lg:bg-transparent lg:p-0">
           <Tabs active={cat} onChange={choose} size="sm" className="no-scrollbar -mx-5 flex-nowrap overflow-x-auto px-5 pb-1 md:-mx-10 md:px-10 lg:hidden" />
           <div className="relative -mx-5 h-[clamp(220px,34svh,300px)] md:mx-0 md:h-[clamp(280px,38svh,400px)] lg:h-auto lg:min-h-0 lg:flex-1">
             <div className="pointer-events-none absolute inset-x-[12%] bottom-[4%] h-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(16,69,132,0.09),rgba(47,143,224,0.06)_45%,transparent)]" />
