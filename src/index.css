@@ -232,6 +232,23 @@ body {
 }
 .marquee-track { animation: marquee-x 26s linear infinite; }
 
+/* Scroll-progress ring: slow decorative spin on the outer dashed halo, a breathing glow behind the
+   arc, a comet dot that rides the progress tip, and a springy pop when the ring first appears. */
+@keyframes scroll-ring-spin { to { transform: rotate(360deg); } }
+.scroll-ring-outer { animation: scroll-ring-spin 10s linear infinite; transform-box: fill-box; transform-origin: center; }
+
+@keyframes scroll-ring-glow { 0%, 100% { opacity: 0.35; transform: scale(0.92); } 50% { opacity: 0.75; transform: scale(1.08); } }
+.scroll-ring-glow { animation: scroll-ring-glow 2.4s ease-in-out infinite; }
+
+@keyframes scroll-ring-comet { 0%, 100% { opacity: 0.6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.4); } }
+.scroll-ring-comet { animation: scroll-ring-comet 1.3s ease-in-out infinite; }
+
+@keyframes scroll-ring-ping { 0% { opacity: 0.6; transform: scale(1); } 100% { opacity: 0; transform: scale(2.6); } }
+.scroll-ring-ping { animation: scroll-ring-ping 1.6s cubic-bezier(.22,1,.36,1) infinite; }
+
+@keyframes scroll-ring-pop { 0% { opacity: 0; transform: scale(0.4) rotate(-50deg); } 65% { opacity: 1; transform: scale(1.15) rotate(6deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+.scroll-ring-pop { animation: scroll-ring-pop 0.65s cubic-bezier(.34,1.56,.64,1) both; }
+
 @media (prefers-reduced-motion: reduce) {
   .js [data-appear] { opacity: 1; }
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
