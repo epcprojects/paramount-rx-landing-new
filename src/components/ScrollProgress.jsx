@@ -61,7 +61,7 @@ export function ScrollProgress() {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={0}
-      className="fixed right-5 bottom-5 z-40 opacity-0 transition-opacity duration-300 ease-out sm:right-7 sm:bottom-7"
+      className="fixed right-7 bottom-7 z-40 hidden opacity-0 transition-opacity duration-300 ease-out lg:block"
       style={{ width: BOX, height: BOX }}
     >
       <div className="relative h-full w-full">
