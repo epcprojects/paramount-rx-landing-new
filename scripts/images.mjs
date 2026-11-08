@@ -21,8 +21,12 @@ const jobs = [
   [`${SRC}/HormonesCardImage.png`, 'hormones', [318], 85],
   [`${SRC}/PeptideNewImage.png`, 'peptide-portrait', [500], 80],
   [`${SRC}/IndividualProtocolImageNew.png`, 'pillar-protocols', [260], 82],
+  [`${SRC}/pillar-protocols-physio.webp`, 'pillar-protocols-photo', [600], 82], // Step 1 hover photo
+  [`${SRC}/pillar-labs-microscope.webp`, 'pillar-labs-photo', [600], 82], // Step 2 hover photo
   [`${SRC}/RealLabsImageNew.png`, 'pillar-labs', [260], 82],
+  [`${SRC}/pillar-pharmacy-pharmacist.webp`, 'pillar-pharmacy-photo', [600], 82], // Step 3 hover photo
   [`${SRC}/LicensedPharmacyImageNew.png`, 'pillar-pharmacy', [260], 82],
+  [`${SRC}/pillar-monitoring-sensors.webp`, 'pillar-monitoring-photo', [600], 82], // Step 4 hover photo
   [`${SRC}/ContinousMonitoringImageNew.png`, 'pillar-monitoring', [260], 82],
   // treatment cards — the live site's own card art (blur baked into the lower half for text)
   [`${SRC}/TestosteroneNewImage.png`, 'card-testosterone', [500], 82],
@@ -39,6 +43,7 @@ const jobs = [
   [`${SRC}/AvatarSixImage.png`, 'avatar-6', [40], 85],
   [`${SRC}/AvatarSevenImage.png`, 'avatar-7', [40], 85],
   // clean step photos (no UI cards) used as the backgrounds of the pinned "4 easy steps" panel
+  [`${SRC}/biology-swimmer.webp`, 'biology-bg', [900, 1800], 80], // "Your biology is unique" background
   [`${SRC}/step-clean-1.jpg`, 'steps-bg-1', [1800], 82],
   [`${SRC}/step-clean-2.webp`, 'steps-bg-2', [1800], 82],
   [`${SRC}/step-clean-3.jpg`, 'steps-bg-3', [1800], 82],
