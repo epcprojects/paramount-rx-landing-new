@@ -471,33 +471,8 @@ function BiologyHeader({ center = false, light = false }) {
 export function Biology() {
   const root = useRef(null)
   const stage = useRef(null)
-  const row = useRef(null)
-  const tint = useRef(null)
-  const [active, setActive] = useState(0)
 
   useGSAP(() => appear(root.current), { scope: root })
-
-  // Static layout: the active card's styling is painted once per click, with no scroll-driven animation or pin.
-  useEffect(() => {
-    if (!row.current) return
-    const cards = row.current.children
-    const mixFill = gsap.utils.interpolate(families.map((f) => f.fill))
-    tint.current.style.backgroundColor = mixFill(active / (families.length - 1))
-    Array.from(cards).forEach((el, i) => {
-      const w = i === active ? 1 : 0
-      const fill = families[i].fill
-      el.style.flexGrow = (1 + w).toFixed(3)
-      el.style.height = `${(104 + 138 * w).toFixed(1)}px`
-      el.style.borderColor = `rgba(255,255,255,${(0.12 * w).toFixed(3)})`
-      el.style.setProperty('--glass', w.toFixed(3)) // drives the Liquid Glass sheen + rim (index.css .bio-glass)
-      const [r, g, b] = [1, 3, 5].map((k) => parseInt(fill.slice(k, k + 2), 16))
-      const mix = (c, to) => Math.round(c * (1 - w) + to * w)
-      el.style.backgroundColor = `rgba(${mix(r, 6)},${mix(g, 12)},${mix(b, 14)},${(1 - 0.55 * w).toFixed(3)})` // filled pill → smoked black glass
-      el.querySelector('[data-more]').style.opacity = w.toFixed(3)
-    })
-  }, [active])
-
-  const jump = (i) => setActive(i)
 
   return (
     <section ref={root} className="relative z-10 bg-white">
@@ -523,21 +498,19 @@ export function Biology() {
         {/* rounded panel inside a 20px / 16px frame, matching the "4 easy steps" panel */}
         <div className="relative isolate flex h-full flex-col justify-between overflow-hidden rounded-[40px] pt-[clamp(108px,13vh,134px)] pb-[clamp(32px,6vh,56px)]">
         <img src="/img/biology-bg-1800.webp" srcSet="/img/biology-bg-900.webp 900w, /img/biology-bg-1800.webp 1800w" sizes="100vw" alt="" aria-hidden loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover" />
-        <div ref={tint} aria-hidden className="absolute inset-0 -z-10 opacity-30 mix-blend-multiply" style={{ backgroundColor: families[0].fill }} />
+        <div aria-hidden className="absolute inset-0 -z-10 opacity-30 mix-blend-multiply" style={{ backgroundColor: families[0].fill }} />
         <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.25)_45%,rgba(0,0,0,0.45))]" />
         <div className="mx-auto w-full max-w-[1336px] px-10" data-appear><BiologyHeader light /></div>
-        <div ref={row} className="mx-auto flex w-full max-w-[1336px] items-center gap-4 px-10" role="tablist" aria-label="Treatment families">
-          {families.map((f, i) => (
-            <div key={f.name} role="tab" tabIndex={0} aria-selected={i === active}
-              onClick={() => i !== active && jump(i)} onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && i !== active) { e.preventDefault(); jump(i) } }}
-              className={`relative min-w-0 basis-0 overflow-hidden rounded-[26px] border border-solid text-white bio-glass ${i === active ? '' : 'cursor-pointer'}`}
-              style={{ flexGrow: i === 0 ? 2 : 1, height: i === 0 ? 242 : 104, backgroundColor: i === 0 ? 'rgba(6,12,14,0.45)' : f.fill, borderColor: i === 0 ? 'rgba(255,255,255,0.35)' : 'transparent', '--glass': i === 0 ? 1 : 0 }}>
-              {/* title row (44px) sits 30px down in both states: centred in a 104px pill, top-aligned in the open card */}
+        <div className="mx-auto flex w-full max-w-[1336px] items-stretch gap-4 px-10">
+          {families.map((f) => (
+            <div key={f.name}
+              className="relative min-w-0 basis-0 flex-grow overflow-hidden rounded-[26px] border border-solid border-white/12 bg-[rgba(6,12,14,0.45)] text-white bio-glass"
+              style={{ height: 242, '--glass': 1 }}>
               <div className="flex h-full flex-col px-6 pt-[30px]">
                 <span className="flex items-center gap-5"><FamilyIcon icon={f.icon} color={f.fill} /><h3 className="text-[22px] leading-tight font-medium whitespace-nowrap">{f.name}</h3></span>
-                <div data-more className="mt-1.5 flex max-w-[440px] flex-col items-start gap-5 pl-16" style={{ opacity: i === 0 ? 1 : 0 }} aria-hidden={i !== active}>
+                <div className="mt-1.5 flex max-w-[440px] flex-col items-start gap-5 pl-16">
                   <p className="text-[15px] leading-[1.6] opacity-70">{f.body}</p>
-                  <a href={links.products} tabIndex={i === active ? 0 : -1} className="text-[15px] underline underline-offset-4 opacity-85 transition-opacity hover:opacity-100">Learn more about {f.name.toLowerCase()}</a>
+                  <a href={links.products} className="text-[15px] underline underline-offset-4 opacity-85 transition-opacity hover:opacity-100">Learn more about {f.name.toLowerCase()}</a>
                 </div>
               </div>
             </div>
