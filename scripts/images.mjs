@@ -44,10 +44,10 @@ const jobs = [
   [`${SRC}/AvatarSevenImage.png`, 'avatar-7', [40], 85],
   // clean step photos (no UI cards) used as the backgrounds of the pinned "4 easy steps" panel
   [`${SRC}/biology-swimmer.webp`, 'biology-bg', [900, 1800], 80], // "Your biology is unique" background
-  [`${SRC}/step-clean-1.jpg`, 'steps-bg-1', [1800], 82],
-  [`${SRC}/step-clean-2.webp`, 'steps-bg-2', [1800], 82],
-  [`${SRC}/step-clean-3.jpg`, 'steps-bg-3', [1800], 82],
-  [`${SRC}/step-clean-4.jpg`, 'steps-bg-4', [1800], 82],
+  [`${SRC}/step-clean-1.jpg`, 'steps-bg-1', [1800], 95],
+  [`${SRC}/step-clean-2.webp`, 'steps-bg-2', [1800], 95],
+  [`${SRC}/step-clean-3.jpg`, 'steps-bg-3', [1800], 95],
+  [`${SRC}/step-clean-4.jpg`, 'steps-bg-4', [1800], 95],
   [`${SRC}/OnlineAssessmentImageNew.jpg`, 'step1', [900, 1600], 80],
   [`${SRC}/MedicalReviewImageNew.jpg`, 'step2', [900, 1600], 80],
   [`${SRC}/PersonalizedPlanImageNewNew.jpg`, 'step3', [900, 1600], 80],
