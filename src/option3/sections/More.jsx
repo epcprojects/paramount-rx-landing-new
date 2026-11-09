@@ -402,7 +402,6 @@ export function Pillars() {
                 className="group flex cursor-pointer items-center justify-between gap-4 border-b border-gray-200 py-6 lg:py-8">
                 <div className="flex min-w-0 items-center gap-4 lg:gap-6">
                   <div className="flex min-w-0 flex-col gap-1 lg:gap-2">
-                    <span className={`text-xs font-medium transition-colors duration-300 lg:text-sm ${on ? 'text-navy' : 'text-gray-400'}`}>Step {i + 1}</span>
                     <h3 className={`text-xl font-semibold transition-colors duration-300 lg:text-3xl ${dim ? 'text-gray-950 lg:text-gray-300' : 'text-gray-950'}`}>{p.title}</h3>
                     <div className={`hidden transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:grid ${on ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                       <div className="overflow-hidden">
