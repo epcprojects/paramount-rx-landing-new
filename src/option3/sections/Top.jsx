@@ -270,7 +270,7 @@ export function Hero() {
   }, { scope: root })
 
   return (
-    <section id="top" ref={root} className="relative h-svh min-h-[620px] overflow-hidden rounded-b-[28px] bg-[#eaf6ff] sm:rounded-b-[40px]">
+    <section id="top" ref={root} className="relative h-svh min-h-[620px] overflow-hidden bg-[#eaf6ff]">
       <HeroFilm />
     </section>
   )
