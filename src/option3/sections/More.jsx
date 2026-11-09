@@ -504,7 +504,7 @@ export function Biology() {
         <div className="mx-auto flex w-full max-w-[1336px] items-stretch gap-4 px-10">
           {families.map((f) => (
             <div key={f.name}
-              className="relative min-w-0 basis-0 flex-grow overflow-hidden rounded-[26px] border border-solid border-white/12 bg-[rgba(6,12,14,0.45)] text-white bio-glass"
+              className="relative min-w-0 basis-0 flex-grow overflow-hidden rounded-[26px] bg-[rgba(6,12,14,0.45)] text-white bio-glass bio-glass--no-rim"
               style={{ height: 242, '--glass': 1 }}>
               <div className="flex h-full flex-col px-6 pt-[30px]">
                 <span className="flex items-center gap-5"><FamilyIcon icon={f.icon} color={f.fill} /><h3 className="text-[22px] leading-tight font-medium whitespace-nowrap">{f.name}</h3></span>

@@ -2,7 +2,6 @@ import { Header, Hero } from './sections/Top.jsx'
 import { BestSelf } from './sections/BestSelf.jsx'
 import { BodyMap } from './sections/BodyMap.jsx'
 import { SmartChoice, Steps, Pillars, Biology, Faq, Footer } from './sections/More.jsx'
-import { ScrollProgress } from './components/ScrollProgress.jsx'
 import { Intro } from './components/Intro.jsx'
 
 // Page: header → hero (tiles flip away to reveal the treatment cards) → cards → body map → "Be Your Best Self"
@@ -26,7 +25,6 @@ export default function App() {
         <Faq />
       </main>
       <Footer />
-      <ScrollProgress />
     </>
   )
 }
