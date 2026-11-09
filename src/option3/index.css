@@ -258,9 +258,7 @@ body {
   pointer-events: none;
 }
 .bio-glass--no-rim::after, .bio-glass--no-rim::before { content: none; }
-.bio-glass--no-rim {
-  box-shadow: inset 0 0 40px rgba(0,0,0,calc(0.25 * var(--glass))), 0 30px 70px -30px rgba(0,0,0,0.7);
-}
+.bio-glass--no-rim { box-shadow: none; }
 /* Icon disc in the Biology cards: solid white when the card is closed, frosted glass when it is open (follows --glass). */
 .bio-icon {
   background: rgba(255,255,255,calc(0.88 - 0.74 * var(--glass, 0)));
