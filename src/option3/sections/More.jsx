@@ -475,51 +475,29 @@ export function Biology() {
   const tint = useRef(null)
   const [active, setActive] = useState(0)
 
-  useGSAP(() => {
-    appear(root.current)
-    const mm = gsap.matchMedia()
-    mm.add('(min-width: 1024px)', () => {
-      const cards = gsap.utils.toArray(row.current.children)
-      
-      
-      const mixFill = gsap.utils.interpolate(families.map((f) => f.fill))
-      const paint = (p) => {
-        tint.current.style.backgroundColor = mixFill(p / (families.length - 1)) // photo picks up the current card's colour
-        cards.forEach((el, i) => {
-          const w = Math.max(0, 1 - Math.abs(p - i)) // 1 = this card is current
-          const fill = families[i].fill
-          el.style.flexGrow = (1 + w).toFixed(3)
-          el.style.height = `${(104 + 138 * w).toFixed(1)}px`
-          el.style.borderColor = `rgba(255,255,255,${(0.12 * w).toFixed(3)})`
-          el.style.setProperty('--glass', w.toFixed(3)) // drives the Liquid Glass sheen + rim (index.css .bio-glass)
-          const [r, g, b] = [1, 3, 5].map((k) => parseInt(fill.slice(k, k + 2), 16))
-          const mix = (c, to) => Math.round(c * (1 - w) + to * w)
-          el.style.backgroundColor = `rgba(${mix(r, 6)},${mix(g, 12)},${mix(b, 14)},${(1 - 0.55 * w).toFixed(3)})` // filled pill → smoked black glass
-          el.querySelector('[data-more]').style.opacity = Math.max(0, (w - 0.45) / 0.55).toFixed(3)
-        })
-        const a = Math.round(p)
-        setActive((cur) => (cur === a ? cur : a))
-      }
-      paint(0)
-      const st = ScrollTrigger.create({
-        trigger: stage.current,
-        start: 'top top',
-        end: () => `+=${window.innerHeight * 1.1 * families.length}`,
-        pin: true,
-        anticipatePin: 1,
-        scrub: reducedMotion() ? false : 0.6,
-        onUpdate: (self) => paint(self.progress * (families.length - 1)),
-      })
-      return () => st.kill()
-    })
-    return () => mm.revert()
-  }, { scope: root })
+  useGSAP(() => appear(root.current), { scope: root })
 
-  const jump = (i) => {
-    const st = ScrollTrigger.getAll().find((t) => t.trigger === stage.current)
-    if (!st) return
-    window.scrollTo({ top: st.start + (i / (families.length - 1)) * (st.end - st.start), behavior: 'smooth' })
-  }
+  // Static layout: the active card's styling is painted once per click, with no scroll-driven animation or pin.
+  useEffect(() => {
+    if (!row.current) return
+    const cards = row.current.children
+    const mixFill = gsap.utils.interpolate(families.map((f) => f.fill))
+    tint.current.style.backgroundColor = mixFill(active / (families.length - 1))
+    Array.from(cards).forEach((el, i) => {
+      const w = i === active ? 1 : 0
+      const fill = families[i].fill
+      el.style.flexGrow = (1 + w).toFixed(3)
+      el.style.height = `${(104 + 138 * w).toFixed(1)}px`
+      el.style.borderColor = `rgba(255,255,255,${(0.12 * w).toFixed(3)})`
+      el.style.setProperty('--glass', w.toFixed(3)) // drives the Liquid Glass sheen + rim (index.css .bio-glass)
+      const [r, g, b] = [1, 3, 5].map((k) => parseInt(fill.slice(k, k + 2), 16))
+      const mix = (c, to) => Math.round(c * (1 - w) + to * w)
+      el.style.backgroundColor = `rgba(${mix(r, 6)},${mix(g, 12)},${mix(b, 14)},${(1 - 0.55 * w).toFixed(3)})` // filled pill → smoked black glass
+      el.querySelector('[data-more]').style.opacity = w.toFixed(3)
+    })
+  }, [active])
+
+  const jump = (i) => setActive(i)
 
   return (
     <section ref={root} className="relative z-10 bg-white">
