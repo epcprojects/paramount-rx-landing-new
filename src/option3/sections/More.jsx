@@ -453,7 +453,7 @@ function BiologyHeader({ center = false, light = false }) {
     <div className={`grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-16 ${center ? 'items-start' : ''}`}>
       <div className="flex flex-col gap-4 lg:gap-5">
         <p className={`t-tag ${light ? "text-white/90" : "text-ink"}`}>Your treatment should be too</p>
-        <h2 className={`text-[34px] leading-[1.08] font-medium tracking-[-0.03em] md:text-5xl xl:text-[56px] ${light ? "text-white" : "text-ink"}`}>
+        <h2 className={`text-[34px] leading-[1.08] font-medium tracking-[-0.03em] md:text-5xl xl:text-[64px] ${light ? "text-white" : "text-ink"}`}>
           Your biology<br className="hidden lg:block" /> is unique.
         </h2>
       </div>
