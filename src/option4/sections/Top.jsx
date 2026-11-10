@@ -208,9 +208,22 @@ export function Hero() {
       tl?.scrollTrigger?.kill()
       tl?.kill()
       lastWidth = window.innerWidth
-      tl = gsap.timeline({
-        scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=280%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1 },
-      })
+      // Touch phones/tablets: no long scrubbed scroll — one swipe down past the top plays the whole hero → cards
+      // transition by itself (~1.5s) while the stage is held briefly, and coming back to the top plays it in reverse.
+      // Mouse/trackpad desktops keep the scroll-scrubbed film.
+      const touch = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 1024
+      if (touch) {
+        tl = gsap.timeline({ paused: true, defaults: { overwrite: 'auto' } })
+        tl.scrollTrigger = ScrollTrigger.create({
+          id: 'hero-pin', trigger: stage, start: 'top+=8 top', end: '+=55%', pin: stage, anticipatePin: 1, refreshPriority: 1,
+          onEnter: () => tl.timeScale(1.25).play(),
+          onLeaveBack: () => tl.timeScale(1.6).reverse(),
+        })
+      } else {
+        tl = gsap.timeline({
+          scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=280%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1 },
+        })
+      }
       // 1 — the film: runner + orbiting pills, then he zooms out and the dark stage fades away (0.65 → 0.9)
       addFilm(tl, root.current)
 
