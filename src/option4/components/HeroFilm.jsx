@@ -349,7 +349,7 @@ export function HeroFilm() {
         <div data-film-a className="absolute inset-0">
           <h2 data-film-title className="absolute inset-x-5 top-[13%] text-center text-[clamp(52px,9.2vw,132px)] leading-[0.98] font-semibold tracking-[-0.03em] text-white lg:inset-x-auto lg:top-[18%] lg:left-[6%] lg:text-left">
             <span className="block opacity-0">Your biology</span>
-            <span className="intro-serif block font-normal text-white opacity-0">deserves.</span>
+            <span className="block text-white opacity-0">deserves.</span>
           </h2>
         </div>
 
@@ -358,8 +358,8 @@ export function HeroFilm() {
         <div ref={pillBack} className="pointer-events-none absolute inset-0" />
         <div ref={bodyWrap} className="absolute inset-0" />
         {/* the runner (Option 3) — sits between the two pill layers so the pills pass behind and in front of him */}
-        <div data-runner-wrap className="pointer-events-none absolute inset-x-0 top-[9%] bottom-[3%] flex items-center justify-center">
-          <img data-runner src="/img/opt4-runner-1024.webp" srcSet="/img/opt4-runner-600.webp 600w, /img/opt4-runner-1024.webp 977w" sizes="(max-width: 768px) 90vw, 45vw" alt="" className="h-[86%] w-auto max-w-[90vw] object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]" />
+        <div data-runner-wrap className="pointer-events-none absolute inset-x-0 top-[25%] bottom-[25%] flex items-center justify-center sm:top-[26%] sm:bottom-[23%] lg:top-[9%] lg:bottom-[3%]">{/* Option 4: on phones/tablets he sits between the heading and the copy instead of over them */}
+          <img data-runner src="/img/opt4-runner-1024.webp" srcSet="/img/opt4-runner-600.webp 600w, /img/opt4-runner-1024.webp 977w" sizes="(max-width: 768px) 90vw, 45vw" alt="" className="h-full w-auto max-w-[90vw] object-contain lg:h-[86%] drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]" />
         </div>
         <div ref={pillFront} className="pointer-events-none absolute inset-0" />
         {/* short description — copy from the live hero; in front of the body so it never hides behind the legs */}

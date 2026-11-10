@@ -162,7 +162,7 @@ function DesktopHeader() {
   return (
     <header id="desktop-header" ref={ref} className="site-header sticky top-0 z-40 -mb-[102px] hidden pt-5 text-white lg:block">
       <div className="mx-auto max-w-[1280px] px-[30px] min-[1340px]:px-0">
-        <div className="hdr-pill grid h-[82px] grid-cols-[1fr_auto_1fr] items-center rounded-full px-10">
+        <div className="hdr-pill grid h-[82px] grid-cols-[1fr_auto_1fr] items-center gap-4 rounded-full px-6 xl:px-10">{/* Option 4: tighter on small laptops / landscape tablets */}
           <a href="#top" aria-label="Paramount HealthRx — home" className="flex items-center justify-self-start">
             <Logo className="h-[46px]" />
           </a>
@@ -170,7 +170,7 @@ function DesktopHeader() {
             <ul className="flex items-center">
               {desktopNav.map((n, i) => (
                 <li key={n.label} className="flex items-center">
-                  {i > 0 && <span className="mx-5 h-4 w-px bg-[var(--nav-divider)] transition-colors duration-300" aria-hidden />}
+                  {i > 0 && <span className="mx-3 h-4 w-px bg-[var(--nav-divider)] transition-colors duration-300 xl:mx-5" aria-hidden />}
                   <a href={n.href} className="relative text-[16px] font-normal text-[var(--nav-fg)] transition-colors duration-300 hover:text-[var(--nav-fg-hover)] focus-visible:text-[var(--nav-fg-hover)] after:absolute after:-bottom-1 after:left-0 after:h-px after:w-full after:origin-right after:scale-x-0 after:bg-current after:transition-transform after:duration-500 hover:after:origin-left hover:after:scale-x-100">
                     {n.label}
                   </a>

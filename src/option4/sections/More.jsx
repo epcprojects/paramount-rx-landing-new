@@ -53,9 +53,9 @@ function LazyVideo({ src, poster, className, style, ...rest }) {
   )
 }
 
-const ArrowUpRight = () => (
+const ArrowUpRight = ({ color = 'white' }) => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
-    <path fill="white" d="M14.8222 4.90976C14.6192 4.7215 14.3514 4.61707 14.1233 4.55138C13.8801 4.4813 13.6018 4.43352 13.3153 4.40006C12.741 4.33301 12.0677 4.31625 11.4374 4.32169C10.8037 4.32717 10.1966 4.35533 9.74911 4.38197C9.525 4.39531 9.34003 4.40832 9.21068 4.41804C9.14599 4.4229 9.09516 4.42694 9.06024 4.42978L9.02004 4.43311L9.00936 4.43402L9.00521 4.43438C8.66538 4.46398 8.4139 4.76347 8.4435 5.1033C8.4731 5.44311 8.77304 5.69455 9.11285 5.66497L9.11492 5.66479L9.1239 5.66403L9.16055 5.661C9.19304 5.65835 9.24127 5.65452 9.30321 5.64986C9.42711 5.64056 9.60564 5.62799 9.82253 5.61508C10.2571 5.58921 10.842 5.56218 11.4481 5.55694C12.0578 5.55168 12.6724 5.56868 13.172 5.62702C13.2 5.6303 13.2275 5.63368 13.2544 5.63717L4.50439 14.3872C4.26318 14.6284 4.26318 15.0195 4.50439 15.2607C4.7456 15.5019 5.13667 15.5019 5.37788 15.2607L14.13 6.50862C14.1314 6.52044 14.1328 6.53238 14.1342 6.54444C14.1921 7.03842 14.2094 7.65642 14.2047 8.27406C14.2 8.88783 14.1737 9.4839 14.1485 9.92778C14.1359 10.1493 14.1236 10.3321 14.1145 10.459C14.1099 10.5225 14.1062 10.572 14.1036 10.6053L14.1006 10.643L14.0996 10.655C14.0714 10.9949 14.3241 11.2933 14.664 11.3216C15.0039 11.3499 15.3025 11.0968 15.3307 10.7568L15.331 10.7531L15.3319 10.7422L15.3352 10.7011C15.3379 10.6654 15.3419 10.6135 15.3466 10.5474C15.3561 10.4152 15.3688 10.2264 15.3818 9.99788C15.4077 9.54172 15.435 8.92415 15.4399 8.28355C15.4448 7.64681 15.4278 6.96969 15.3611 6.40067C15.3279 6.11715 15.2803 5.84169 15.2096 5.60361C15.1452 5.38664 15.036 5.10798 14.8222 4.90976Z" />
+    <path fill={color} d="M14.8222 4.90976C14.6192 4.7215 14.3514 4.61707 14.1233 4.55138C13.8801 4.4813 13.6018 4.43352 13.3153 4.40006C12.741 4.33301 12.0677 4.31625 11.4374 4.32169C10.8037 4.32717 10.1966 4.35533 9.74911 4.38197C9.525 4.39531 9.34003 4.40832 9.21068 4.41804C9.14599 4.4229 9.09516 4.42694 9.06024 4.42978L9.02004 4.43311L9.00936 4.43402L9.00521 4.43438C8.66538 4.46398 8.4139 4.76347 8.4435 5.1033C8.4731 5.44311 8.77304 5.69455 9.11285 5.66497L9.11492 5.66479L9.1239 5.66403L9.16055 5.661C9.19304 5.65835 9.24127 5.65452 9.30321 5.64986C9.42711 5.64056 9.60564 5.62799 9.82253 5.61508C10.2571 5.58921 10.842 5.56218 11.4481 5.55694C12.0578 5.55168 12.6724 5.56868 13.172 5.62702C13.2 5.6303 13.2275 5.63368 13.2544 5.63717L4.50439 14.3872C4.26318 14.6284 4.26318 15.0195 4.50439 15.2607C4.7456 15.5019 5.13667 15.5019 5.37788 15.2607L14.13 6.50862C14.1314 6.52044 14.1328 6.53238 14.1342 6.54444C14.1921 7.03842 14.2094 7.65642 14.2047 8.27406C14.2 8.88783 14.1737 9.4839 14.1485 9.92778C14.1359 10.1493 14.1236 10.3321 14.1145 10.459C14.1099 10.5225 14.1062 10.572 14.1036 10.6053L14.1006 10.643L14.0996 10.655C14.0714 10.9949 14.3241 11.2933 14.664 11.3216C15.0039 11.3499 15.3025 11.0968 15.3307 10.7568L15.331 10.7531L15.3319 10.7422L15.3352 10.7011C15.3379 10.6654 15.3419 10.6135 15.3466 10.5474C15.3561 10.4152 15.3688 10.2264 15.3818 9.99788C15.4077 9.54172 15.435 8.92415 15.4399 8.28355C15.4448 7.64681 15.4278 6.96969 15.3611 6.40067C15.3279 6.11715 15.2803 5.84169 15.2096 5.60361C15.1452 5.38664 15.036 5.10798 14.8222 4.90976Z" />
   </svg>
 )
 
@@ -254,11 +254,12 @@ export function Steps() {
           <StepsIntro />
           <LazyVideo className="h-[200px] w-full rounded-2xl object-cover md:h-[400px]" src="/videos/steps.mp4" />
         </div>
-        <div className="flex flex-col gap-5 md:gap-6">
+        {/* Option 4: 2 columns on tablets, and every photo cropped to the same 4:3 frame */}
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-6 md:gap-y-10">
           {steps.map((st, i) => (
             <article key={st.title} data-appear className="flex flex-col gap-3">
               <div className="w-fit rounded-full bg-sky px-4 py-1.5"><span className="text-sm font-medium text-white">Step 0{i + 1}</span></div>
-              <img src={`/img/steps-bg-${i + 1}-1800.webp`} alt={st.title} loading="lazy" className="w-full rounded-2xl object-contain" />
+              <img src={`/img/steps-bg-${i + 1}-1800.webp`} alt={st.title} loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />
               <div className="flex flex-col gap-1 px-1">
                 <h3 className="t-h4 text-black">{i + 1}. {st.title}</h3>
                 <p className="t-body text-neutral-600">{st.body}</p>
@@ -449,6 +450,13 @@ export function Pillars() {
                     </div>
                   </div>
                 </div>
+                {/* Option 4: arrow at the end of each row, same shape as the Explore Treatments button — fills navy and
+                    turns 45° on the hovered row, greys out with the others */}
+                <span aria-hidden className={`flex size-11 shrink-0 items-center justify-center rounded-full border transition-colors duration-300 lg:size-12 ${on ? 'border-navy bg-navy' : dim ? 'border-gray-200 bg-white lg:opacity-40' : 'border-gray-200 bg-white'}`}>
+                  <span className={`transition-transform duration-300 ${on ? 'rotate-45' : ''}`}>
+                    <ArrowUpRight color={on ? '#ffffff' : '#104584'} />
+                  </span>
+                </span>
               </a>
             )
           })}
@@ -512,26 +520,27 @@ export function Biology() {
   return (
     <section ref={root} className="relative z-10 bg-white">
       {/* phones / tablets: header + all three cards open */}
-      <div className="relative isolate mx-3 my-3 flex flex-col gap-10 overflow-hidden rounded-[24px] px-4 py-14 lg:hidden">
+      <div className="relative isolate mx-3 my-8 flex flex-col gap-10 overflow-hidden rounded-[24px] px-4 py-16 lg:hidden">
         <img src="/img/biology-bg-900.webp" alt="" aria-hidden loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <div aria-hidden className="absolute inset-0 -z-10 bg-black/45" />
         <div data-appear><BiologyHeader light /></div>
         <div className="flex flex-col gap-3">
+          {/* Option 4: same dark glass cards as the desktop layout (they used to be solid colour blocks here) */}
           {families.map((f) => (
-            <a key={f.name} href={links.products} data-appear className="relative flex flex-col gap-4 overflow-hidden rounded-[20px] px-7 py-5 text-white" style={{ backgroundColor: f.fill }}>
-              <img src={`/img/icons/${f.icon}.svg`} alt="" width="96" height="96" className="absolute -top-2 -right-2 opacity-60" />
+            <a key={f.name} href={links.products} data-appear className="relative flex flex-col gap-4 overflow-hidden rounded-[20px] bg-[rgba(6,12,14,0.55)] px-6 py-6 text-white backdrop-blur-md md:px-7">
               <span className="flex items-center gap-4"><FamilyIcon icon={f.icon} color={f.fill} /><h3 className="t-h3">{f.name}</h3></span>
-              <p className="t-body max-w-[85%] text-white/90">{f.body}</p>
-              <span className="t-small underline underline-offset-4">Learn more</span>
+              <p className="t-body text-white/70">{f.body}</p>
+              <span className="t-small underline underline-offset-4 opacity-85">Learn more about {f.name.toLowerCase()}</span>
             </a>
           ))}
         </div>
       </div>
 
       {/* desktop: pinned stage over the swimmer photo; a tint layer shifts toward the current card's colour */}
-      <div ref={stage} className="hidden h-svh px-5 py-4 lg:block">
-        {/* rounded panel inside a 20px / 16px frame, matching the "4 easy steps" panel */}
-        <div className="relative isolate flex h-full flex-col justify-between overflow-hidden rounded-[40px] pt-[clamp(108px,13vh,134px)] pb-[clamp(32px,6vh,56px)]">
+      {/* Option 4: more white space above/below the panel and more room inside it, top and bottom */}
+      <div ref={stage} className="hidden px-5 py-12 lg:block xl:py-16">
+        {/* rounded panel inside a 20px side frame, matching the "4 easy steps" panel */}
+        <div className="relative isolate flex h-svh min-h-[700px] flex-col justify-between overflow-hidden rounded-[40px] pt-[clamp(120px,15vh,160px)] pb-[clamp(56px,9vh,96px)]">
         <img src="/img/biology-bg-1800.webp" srcSet="/img/biology-bg-900.webp 900w, /img/biology-bg-1800.webp 1800w" sizes="100vw" alt="" aria-hidden loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <div aria-hidden className="absolute inset-0 -z-10 opacity-30 mix-blend-multiply" style={{ backgroundColor: families[0].fill }} />
         <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.25)_45%,rgba(0,0,0,0.45))]" />
