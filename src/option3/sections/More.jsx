@@ -402,7 +402,6 @@ export function Pillars() {
                 className="group flex cursor-pointer items-center justify-between gap-4 border-b border-gray-200 py-6 lg:py-8">
                 <div className="flex min-w-0 items-center gap-4 lg:gap-6">
                   <div className="flex min-w-0 flex-col gap-1 lg:gap-2">
-                    <span className={`text-xs font-medium transition-colors duration-300 lg:text-sm ${on ? 'text-navy' : 'text-gray-400'}`}>Step {i + 1}</span>
                     <h3 className={`text-xl font-semibold transition-colors duration-300 lg:text-3xl ${dim ? 'text-gray-950 lg:text-gray-300' : 'text-gray-950'}`}>{p.title}</h3>
                     <div className={`hidden transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:grid ${on ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                       <div className="overflow-hidden">
@@ -453,7 +452,7 @@ function BiologyHeader({ center = false, light = false }) {
     <div className={`grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:gap-16 ${center ? 'items-start' : ''}`}>
       <div className="flex flex-col gap-4 lg:gap-5">
         <p className={`t-tag ${light ? "text-white/90" : "text-ink"}`}>Your treatment should be too</p>
-        <h2 className={`text-[34px] leading-[1.08] font-medium tracking-[-0.03em] md:text-5xl xl:text-[56px] ${light ? "text-white" : "text-ink"}`}>
+        <h2 className={`text-[34px] leading-[1.08] font-medium tracking-[-0.03em] md:text-5xl xl:text-[64px] ${light ? "text-white" : "text-ink"}`}>
           Your biology<br className="hidden lg:block" /> is unique.
         </h2>
       </div>
@@ -471,55 +470,8 @@ function BiologyHeader({ center = false, light = false }) {
 export function Biology() {
   const root = useRef(null)
   const stage = useRef(null)
-  const row = useRef(null)
-  const tint = useRef(null)
-  const [active, setActive] = useState(0)
 
-  useGSAP(() => {
-    appear(root.current)
-    const mm = gsap.matchMedia()
-    mm.add('(min-width: 1024px)', () => {
-      const cards = gsap.utils.toArray(row.current.children)
-      
-      
-      const mixFill = gsap.utils.interpolate(families.map((f) => f.fill))
-      const paint = (p) => {
-        tint.current.style.backgroundColor = mixFill(p / (families.length - 1)) // photo picks up the current card's colour
-        cards.forEach((el, i) => {
-          const w = Math.max(0, 1 - Math.abs(p - i)) // 1 = this card is current
-          const fill = families[i].fill
-          el.style.flexGrow = (1 + w).toFixed(3)
-          el.style.height = `${(104 + 138 * w).toFixed(1)}px`
-          el.style.borderColor = `rgba(255,255,255,${(0.12 * w).toFixed(3)})`
-          el.style.setProperty('--glass', w.toFixed(3)) // drives the Liquid Glass sheen + rim (index.css .bio-glass)
-          const [r, g, b] = [1, 3, 5].map((k) => parseInt(fill.slice(k, k + 2), 16))
-          const mix = (c, to) => Math.round(c * (1 - w) + to * w)
-          el.style.backgroundColor = `rgba(${mix(r, 6)},${mix(g, 12)},${mix(b, 14)},${(1 - 0.55 * w).toFixed(3)})` // filled pill → smoked black glass
-          el.querySelector('[data-more]').style.opacity = Math.max(0, (w - 0.45) / 0.55).toFixed(3)
-        })
-        const a = Math.round(p)
-        setActive((cur) => (cur === a ? cur : a))
-      }
-      paint(0)
-      const st = ScrollTrigger.create({
-        trigger: stage.current,
-        start: 'top top',
-        end: () => `+=${window.innerHeight * 1.1 * families.length}`,
-        pin: true,
-        anticipatePin: 1,
-        scrub: reducedMotion() ? false : 0.6,
-        onUpdate: (self) => paint(self.progress * (families.length - 1)),
-      })
-      return () => st.kill()
-    })
-    return () => mm.revert()
-  }, { scope: root })
-
-  const jump = (i) => {
-    const st = ScrollTrigger.getAll().find((t) => t.trigger === stage.current)
-    if (!st) return
-    window.scrollTo({ top: st.start + (i / (families.length - 1)) * (st.end - st.start), behavior: 'smooth' })
-  }
+  useGSAP(() => appear(root.current), { scope: root })
 
   return (
     <section ref={root} className="relative z-10 bg-white">
@@ -545,21 +497,19 @@ export function Biology() {
         {/* rounded panel inside a 20px / 16px frame, matching the "4 easy steps" panel */}
         <div className="relative isolate flex h-full flex-col justify-between overflow-hidden rounded-[40px] pt-[clamp(108px,13vh,134px)] pb-[clamp(32px,6vh,56px)]">
         <img src="/img/biology-bg-1800.webp" srcSet="/img/biology-bg-900.webp 900w, /img/biology-bg-1800.webp 1800w" sizes="100vw" alt="" aria-hidden loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover" />
-        <div ref={tint} aria-hidden className="absolute inset-0 -z-10 opacity-30 mix-blend-multiply" style={{ backgroundColor: families[0].fill }} />
+        <div aria-hidden className="absolute inset-0 -z-10 opacity-30 mix-blend-multiply" style={{ backgroundColor: families[0].fill }} />
         <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.25)_45%,rgba(0,0,0,0.45))]" />
         <div className="mx-auto w-full max-w-[1336px] px-10" data-appear><BiologyHeader light /></div>
-        <div ref={row} className="mx-auto flex w-full max-w-[1336px] items-center gap-4 px-10" role="tablist" aria-label="Treatment families">
-          {families.map((f, i) => (
-            <div key={f.name} role="tab" tabIndex={0} aria-selected={i === active}
-              onClick={() => i !== active && jump(i)} onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && i !== active) { e.preventDefault(); jump(i) } }}
-              className={`relative min-w-0 basis-0 overflow-hidden rounded-[26px] border border-solid text-white bio-glass ${i === active ? '' : 'cursor-pointer'}`}
-              style={{ flexGrow: i === 0 ? 2 : 1, height: i === 0 ? 242 : 104, backgroundColor: i === 0 ? 'rgba(6,12,14,0.45)' : f.fill, borderColor: i === 0 ? 'rgba(255,255,255,0.35)' : 'transparent', '--glass': i === 0 ? 1 : 0 }}>
-              {/* title row (44px) sits 30px down in both states: centred in a 104px pill, top-aligned in the open card */}
+        <div className="mx-auto flex w-full max-w-[1336px] items-stretch gap-4 px-10">
+          {families.map((f) => (
+            <div key={f.name}
+              className="relative min-w-0 basis-0 flex-grow overflow-hidden rounded-[26px] bg-[rgba(6,12,14,0.45)] text-white bio-glass bio-glass--no-rim"
+              style={{ height: 242, '--glass': 1 }}>
               <div className="flex h-full flex-col px-6 pt-[30px]">
                 <span className="flex items-center gap-5"><FamilyIcon icon={f.icon} color={f.fill} /><h3 className="text-[22px] leading-tight font-medium whitespace-nowrap">{f.name}</h3></span>
-                <div data-more className="mt-1.5 flex max-w-[440px] flex-col items-start gap-5 pl-16" style={{ opacity: i === 0 ? 1 : 0 }} aria-hidden={i !== active}>
+                <div className="mt-1.5 flex max-w-[440px] flex-col items-start gap-5 pl-16">
                   <p className="text-[15px] leading-[1.6] opacity-70">{f.body}</p>
-                  <a href={links.products} tabIndex={i === active ? 0 : -1} className="text-[15px] underline underline-offset-4 opacity-85 transition-opacity hover:opacity-100">Learn more about {f.name.toLowerCase()}</a>
+                  <a href={links.products} className="text-[15px] underline underline-offset-4 opacity-85 transition-opacity hover:opacity-100">Learn more about {f.name.toLowerCase()}</a>
                 </div>
               </div>
             </div>

@@ -163,7 +163,7 @@ function DesktopHeader() {
     <header id="desktop-header" ref={ref} className="site-header sticky top-0 z-40 -mb-[102px] hidden pt-5 text-white lg:block">
       <div className="mx-auto max-w-[1280px] px-[30px] min-[1340px]:px-0">
         <div className="hdr-pill grid h-[82px] grid-cols-[1fr_auto_1fr] items-center rounded-full px-10">
-          <a href="#top" aria-label="Paramount HealthRx — home" className="justify-self-start">
+          <a href="#top" aria-label="Paramount HealthRx — home" className="flex items-center justify-self-start">
             <Logo className="h-[46px]" />
           </a>
           <nav aria-label="Primary">
@@ -270,7 +270,7 @@ export function Hero() {
   }, { scope: root })
 
   return (
-    <section id="top" ref={root} className="relative h-svh min-h-[620px] overflow-hidden rounded-b-[28px] bg-[#eaf6ff] sm:rounded-b-[40px]">
+    <section id="top" ref={root} className="relative h-svh min-h-[620px] overflow-hidden bg-[#eaf6ff]">
       <HeroFilm />
     </section>
   )

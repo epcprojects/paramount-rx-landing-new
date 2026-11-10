@@ -1,9 +1,10 @@
 // Motion tokens + helpers mirroring Medora's measured behaviour.
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import { useGSAP } from '@gsap/react'
 
-gsap.registerPlugin(ScrollTrigger, useGSAP)
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, useGSAP)
 
 export const ease = {
   spring: 'expo.out', // Medora: spring, bounce 0 (long settle)
