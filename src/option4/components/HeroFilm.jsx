@@ -65,6 +65,9 @@ export function addFilm(tl, scope) {
   tl.eventCallback('onUpdate', () => {
     const p = Math.min(1, Math.max(0, (tl.time() - 1.35) / 0.3))
     html.style.setProperty('--hdr-l', (1 - p).toFixed(3))
+    // Option 4: once the dark stage has faded and the light treatment cards are on screen, use the solid white
+    // header (navy logo, dark links) — the same one the page uses after the hero; scrolling back removes it
+    html.classList.toggle('hdr-light', tl.time() >= 1.5)
   })
 
   tl.to({}, { duration: 0.0001 }, FILM_LEN)
