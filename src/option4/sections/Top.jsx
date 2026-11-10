@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { gsap, useGSAP, ScrollTrigger, ease, reducedMotion } from '../motion.js'
+import { gsap, useGSAP, ScrollTrigger, Observer, ease, reducedMotion, lenis } from '../motion.js'
 import { introDone } from '../components/Intro.jsx'
 import { HeroFilm, addFilm, playFilmEntrance, FILM_LEN } from '../components/HeroFilm.jsx'
 import { menu, links } from '../content.js'
@@ -206,32 +206,74 @@ export function Hero() {
     let lastWidth = 0
     let lockTouch = () => {}
     let unlockTouch = () => {}
+    let cleanupTouch = () => {}
     const build = () => {
+      cleanupTouch(); cleanupTouch = () => {}
       unlockTouch()
       tl?.scrollTrigger?.kill()
       tl?.kill()
       lastWidth = window.innerWidth
-      // Touch phones/tablets: no long scrubbed scroll — one swipe down past the top plays the whole hero → cards
-      // transition by itself (~2.4s, eased) while the page is held on the cards, and coming back to the top plays it in reverse.
+      // Touch phones/tablets: one swipe plays the hero → cards transition (see below).
       // Mouse/trackpad desktops keep the scroll-scrubbed film.
       const touch = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 1024
       if (touch) {
-        tl = gsap.timeline({ paused: true, defaults: { overwrite: 'auto' } })
-        // the playhead itself is eased (slow start, gentle landing) so the whole transition glides instead of snapping
-        let drive
-        const playTo = (p, dur) => { drive?.kill(); drive = gsap.to(tl, { progress: p, duration: dur, ease: 'power2.inOut', onComplete: unlockTouch }) }
-        // One swipe = one section change: a phone flick carries momentum that would otherwise fling the page past the
-        // short hold while the cards are still unfolding (they slid off the bottom). So the page settles on the cards
-        // and is held still for the length of the transition, then normal scrolling resumes.
+        // Touch: the hero is driven by the SWIPE GESTURE, not the scroll position. On a real phone a flick keeps
+        // scrolling after the finger lifts (momentum), which flung the page past any short hold before the cards had
+        // arrived — a jerk, and the next section in view. So while on the hero the page is locked still; a swipe up
+        // plays the whole hero → cards transition (eased ~2.4s) with nothing moving underneath, and only then is
+        // scrolling released, from the cards. Scrolling back up to the cards' top locks again and plays it in reverse.
+        tl = gsap.timeline({ paused: true })
         const html = document.documentElement
-        const block = (e) => e.preventDefault()
-        lockTouch = () => { html.classList.add('touch-lock'); window.addEventListener('touchmove', block, { passive: false }); window.addEventListener('wheel', block, { passive: false }) }
-        unlockTouch = () => { html.classList.remove('touch-lock'); window.removeEventListener('touchmove', block); window.removeEventListener('wheel', block) }
-        tl.scrollTrigger = ScrollTrigger.create({
-          id: 'hero-pin', trigger: stage, start: 'top+=8 top', end: '+=55%', pin: stage, anticipatePin: 1, refreshPriority: 1,
-          onEnter: (self) => { lockTouch(); window.scrollTo(0, self.end - 2); playTo(1, 2.4) },
-          onLeaveBack: () => { lockTouch(); window.scrollTo(0, 0); playTo(0, 1.8) },
+        const block = (e) => { if (e.cancelable) e.preventDefault() }
+        const hold = () => { if (window.scrollY !== 0) window.scrollTo(0, 0) }
+        lockTouch = () => { lenis?.stop(); html.classList.add('touch-lock'); window.addEventListener('scroll', hold); window.addEventListener('touchmove', block, { passive: false }); window.addEventListener('wheel', block, { passive: false }) }
+        unlockTouch = () => { lenis?.start(); html.classList.remove('touch-lock'); window.removeEventListener('scroll', hold); window.removeEventListener('touchmove', block); window.removeEventListener('wheel', block) }
+
+        const jump = (y) => { if (lenis) lenis.scrollTo(y, { immediate: true, force: true }); else window.scrollTo(0, y) }
+        let state = 'hero' // 'hero' (locked, waiting for a swipe) | 'cards' (free scrolling)
+        let busy = false
+        let drive
+        const st = ScrollTrigger.create({
+          id: 'hero-pin', trigger: stage, start: 'top top', end: '+=55%', pin: stage, anticipatePin: 1, refreshPriority: 1,
+          // back from below: as soon as the cards are scrolled down past their resting spot, return to the hero
+          onUpdate: (self) => { if (state === 'cards' && !busy && self.direction === -1 && self.scroll() < self.end - 40) toHero() },
         })
+        tl.scrollTrigger = st
+        const swipe = Observer.create({
+          target: window, type: 'touch,wheel', wheelSpeed: -1, tolerance: 12, preventDefault: true,
+          onUp: () => toCards(), // finger moves up (= scrolling down) → go to the cards
+        })
+        swipe.disable()
+        const toCards = () => {
+          if (state !== 'hero' || busy) return
+          busy = true
+          swipe.disable()
+          lockTouch()
+          jump(0)
+          drive?.kill()
+          drive = gsap.to(tl, {
+            progress: 1, duration: 2.4, ease: 'power2.inOut',
+            onComplete: () => { state = 'cards'; jump(st.end - 2); unlockTouch(); busy = false },
+          })
+        }
+        const toHero = () => {
+          busy = true
+          state = 'hero'
+          lockTouch()
+          jump(0)
+          drive?.kill()
+          drive = gsap.to(tl, { progress: 0, duration: 1.8, ease: 'power2.inOut', onComplete: () => { busy = false; swipe.enable() } })
+        }
+        cleanupTouch = () => { swipe.kill(); drive?.kill() }
+
+        if (window.scrollY > 40) {
+          // reloaded part-way down the page: start from the finished state
+          tl.progress(1); state = 'cards'
+        } else {
+          lockTouch()
+          // the logo intro restarts the smooth scroller when it ends: re-apply the hero lock just after it
+          introDone.then(() => requestAnimationFrame(() => { if (state === 'hero' && !busy) { lockTouch(); swipe.enable() } }))
+        }
       } else {
         tl = gsap.timeline({
           scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=280%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1 },
@@ -275,6 +317,7 @@ export function Hero() {
       window.removeEventListener('resize', onResize)
       clearTimeout(t)
       cancelAnimationFrame(raf)
+      cleanupTouch()
       unlockTouch()
       tl?.scrollTrigger?.kill()
       tl?.kill()

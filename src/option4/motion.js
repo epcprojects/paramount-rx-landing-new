@@ -2,10 +2,11 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
+import { Observer } from 'gsap/Observer'
 import { useGSAP } from '@gsap/react'
 import Lenis from 'lenis'
 
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, useGSAP)
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, Observer, useGSAP)
 
 export const ease = {
   spring: 'expo.out', // Medora: spring, bounce 0 (long settle)
@@ -42,4 +43,4 @@ export function startSmoothScroll() {
   return lenis
 }
 
-export { gsap, ScrollTrigger, useGSAP }
+export { gsap, ScrollTrigger, Observer, useGSAP }
