@@ -19,12 +19,22 @@ function useMobileFanGridWidth(sectionRef, headingRef) {
   const [width, setWidth] = useState(null)
 
   useEffect(() => {
+    // Measured against the SMALL viewport (100svh = address bar showing) via a probe element: on a phone the
+    // browser bar hides as you scroll, which changes innerHeight/visualViewport and used to re-size the cards
+    // mid-scroll (they grew and the bottom row got cut). svh is constant, so the grid stays put; and we only
+    // re-measure when the width changes (rotation), never on the bar's height-only resizes.
+    const probe = document.createElement('div')
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none'
+    document.body.appendChild(probe)
+    let lastW = -1
     const compute = () => {
       const section = sectionRef.current
       const heading = headingRef.current
+      if (window.innerWidth === lastW) return
+      lastW = window.innerWidth
       if (!section || !heading || window.innerWidth >= 768) { setWidth(null); return }
 
-      const svh = window.visualViewport ? window.visualViewport.height : window.innerHeight
+      const svh = probe.offsetHeight || window.innerHeight
       const sectionCS = getComputedStyle(section)
       const reservedV = parseFloat(sectionCS.paddingTop) + parseFloat(sectionCS.paddingBottom)
       const headingCS = getComputedStyle(heading)
@@ -51,6 +61,7 @@ function useMobileFanGridWidth(sectionRef, headingRef) {
     return () => {
       window.removeEventListener('resize', compute)
       window.removeEventListener('orientationchange', compute)
+      probe.remove()
     }
   }, [sectionRef, headingRef])
 
@@ -74,7 +85,8 @@ export function About() {
   const mobileGridWidth = useMobileFanGridWidth(sectionRef, headingRef)
 
   return (
-    <section ref={sectionRef} id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-3 pt-[92px] pb-5 sm:px-[30px] sm:pt-[112px] sm:pb-8 lg:pt-[118px] lg:pb-8">{/* Option 4: top room for the floating header on every screen size, since it stays visible over this pinned section (phone pill ends ~76px, tablet ~90px, desktop ~102px) */}
+    <section id="about" className="relative z-10 h-lvh min-h-[560px] overflow-x-clip bg-gray-100">{/* full large-viewport height (browser bar hidden) so nothing below peeks in */}
+      <div ref={sectionRef} className="flex h-svh min-h-[560px] items-center px-3 pt-[92px] pb-5 sm:px-[30px] sm:pt-[112px] sm:pb-8 lg:pt-[118px] lg:pb-8">{/* the visible-with-bar area the cards are fitted into */}{/* Option 4: top room for the floating header on every screen size, since it stays visible over this pinned section (phone pill ends ~76px, tablet ~90px, desktop ~102px) */}
       <div className="relative z-10 w-full">
         {/* Heading — wording from the live site's "Choose a Health Journey" treatment picker */}
         <div ref={headingRef} data-fan-head className="mx-auto mb-8 flex max-w-[985px] flex-col items-center text-center sm:mb-14">
@@ -115,6 +127,7 @@ export function About() {
             </li>
           ))}
         </ul>
+      </div>
       </div>
     </section>
   )
