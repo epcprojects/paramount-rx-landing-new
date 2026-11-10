@@ -479,8 +479,13 @@ export function HeroFilm() {
         ))}
       </div>
 
-      {/* scroll hint (shown once the intro hands over) */}
-      <p data-film-hint aria-hidden className="absolute inset-x-0 bottom-8 text-center text-[13px] tracking-[0.25em] text-white uppercase opacity-0">Scroll to begin</p>
+      {/* scroll hint (shown once the intro hands over): breathing label + a scroll-mouse icon with a traveling dot */}
+      <div data-film-hint aria-hidden className="absolute inset-x-0 bottom-8 flex flex-col items-center gap-3 opacity-0">
+        <span className="scroll-hint-pulse text-[13px] tracking-[0.25em] text-white uppercase">Scroll to begin</span>
+        <span className="relative block h-8 w-5 rounded-full border border-white/50">
+          <span className="scroll-hint-dot absolute top-1.5 left-1/2 h-1.5 w-1.5 rounded-full bg-white" />
+        </span>
+      </div>
     </div>
   )
 }
