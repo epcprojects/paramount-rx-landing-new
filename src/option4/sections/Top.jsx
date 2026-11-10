@@ -47,7 +47,7 @@ export function Header() {
               aria-expanded={open}
               aria-controls="menu-panel"
               aria-label={open ? 'Close menu' : 'Open menu'}
-              className="grid h-9 w-9 place-items-center rounded-full bg-white text-ink transition-transform duration-300 hover:scale-105"
+              className="hdr-menu-btn grid h-9 w-9 place-items-center rounded-full bg-white text-ink hover:scale-105"
             >
               <span className="relative block h-3 w-3.5" aria-hidden>
                 <span className={`absolute left-0 h-[1.5px] w-full bg-current transition-all duration-300 ${open ? 'top-1/2 -translate-y-1/2 rotate-45' : 'top-0.5'}`} />

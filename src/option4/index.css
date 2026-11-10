@@ -157,20 +157,22 @@ body {
   backdrop-filter: blur(24px) saturate(140%);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
-@media (min-width: 768px) {
-  html.is-scrolled .hdr-pill, html.hdr-light .hdr-pill {
-    background: rgba(255, 255, 255, 0.82);
-    box-shadow: 0 10px 30px -15px rgba(10, 10, 10, 0.18);
-    --nav-fg: rgba(10, 10, 10, 0.65);
-    --nav-fg-hover: var(--color-ink);
-    --nav-divider: rgba(10, 10, 10, 0.18);
-    --login-fg: var(--color-ink);
-    --login-hover-bg: var(--color-ink);
-    --login-hover-fg: #ffffff;
-    --consult-bg: var(--color-navy);
-    --consult-fg: #ffffff;
-  }
+/* Option 4: the white pill applies on every screen size (phones and tablets too), not just from 768px up */
+html.is-scrolled .hdr-pill, html.hdr-light .hdr-pill {
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 30px -15px rgba(10, 10, 10, 0.18);
+  --nav-fg: rgba(10, 10, 10, 0.65);
+  --nav-fg-hover: var(--color-ink);
+  --nav-divider: rgba(10, 10, 10, 0.18);
+  --login-fg: var(--color-ink);
+  --login-hover-bg: var(--color-ink);
+  --login-hover-fg: #ffffff;
+  --consult-bg: var(--color-navy);
+  --consult-fg: #ffffff;
 }
+/* phone/tablet menu button: white on the dark pill, navy on the white one */
+.hdr-menu-btn { transition: background-color 0.3s ease, color 0.3s ease, transform 0.3s ease; }
+html.is-scrolled .hdr-menu-btn, html.hdr-light .hdr-menu-btn { background: var(--color-navy); color: #ffffff; }
 
 /* Hide-on-scroll: once past the hero, html.nav-hidden (toggled by the ScrollTrigger in Top.jsx, driven by
    its own scroll direction) slides the header pill up and out; scrolling back up brings it back. Desktop
@@ -190,10 +192,9 @@ body {
    Mobile (<768px) keeps the white mark at all times, matching the permanently dark nav pill. */
 .logo-dark { opacity: 0; transition: opacity 0.3s ease; }
 .logo-light { transition: opacity 0.3s ease; }
-@media (min-width: 768px) {
-  html.is-scrolled .logo-dark, html.hdr-light .logo-dark { opacity: 1; }
-  html.is-scrolled .logo-light, html.hdr-light .logo-light { opacity: 0; }
-}
+/* Option 4: on every screen size */
+html.is-scrolled .logo-dark, html.hdr-light .logo-dark { opacity: 1; }
+html.is-scrolled .logo-light, html.hdr-light .logo-light { opacity: 0; }
 
 /* Hero → white cube transition tiles (built in Top.jsx). will-change is applied/cleared in JS only
    while the flip is actually in view (~2,000 elements promoted to their own layer for the whole page's

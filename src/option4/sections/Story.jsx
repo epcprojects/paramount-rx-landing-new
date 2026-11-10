@@ -74,7 +74,7 @@ export function About() {
   const mobileGridWidth = useMobileFanGridWidth(sectionRef, headingRef)
 
   return (
-    <section ref={sectionRef} id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-3 py-10 sm:px-[30px] sm:py-14 lg:pt-[118px] lg:pb-8">{/* Option 4: lg top room for the header, which stays visible over this pinned section */}
+    <section ref={sectionRef} id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-3 pt-[92px] pb-5 sm:px-[30px] sm:pt-[112px] sm:pb-8 lg:pt-[118px] lg:pb-8">{/* Option 4: top room for the floating header on every screen size, since it stays visible over this pinned section (phone pill ends ~76px, tablet ~90px, desktop ~102px) */}
       <div className="relative z-10 w-full">
         {/* Heading — wording from the live site's "Choose a Health Journey" treatment picker */}
         <div ref={headingRef} data-fan-head className="mx-auto mb-8 flex max-w-[985px] flex-col items-center text-center sm:mb-14">
@@ -106,7 +106,7 @@ export function About() {
                   <span className="block w-full">
                     <span className="block text-[16px] leading-tight font-semibold tracking-[-0.01em] sm:text-[22px]">{c.name}</span>
                     <span className="mt-1 flex items-end justify-between gap-2">
-                      <span className="text-[11px] leading-[1.3] text-white/90 sm:text-[15px] sm:leading-snug">{c.tagline}</span>
+                      <span className="line-clamp-2 text-[11px] leading-[1.3] text-white/90 sm:line-clamp-none sm:text-[15px] sm:leading-snug">{c.tagline}</span>{/* Option 4: 2 lines max on phones so short screens (iPhone SE) don't cut it mid-word */}
                       <svg viewBox="0 0 16 16" className="mb-0.5 h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 3.5L10.5 8 6 12.5" /></svg>
                     </span>
                   </span>

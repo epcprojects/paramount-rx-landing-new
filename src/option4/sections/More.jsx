@@ -184,10 +184,11 @@ export function SmartChoice() {
 /* ---------- Get Started in 4 easy steps ---------- */
 
 const steps = [
-  { title: 'Online Assessment', body: 'Answer clinically relevant questions about your health goals and history.', img: 'step1' },
-  { title: 'Medical Review', body: 'A licensed provider evaluates your data and lab results.', img: 'step2' },
-  { title: 'Personalized Plan', body: 'Receive tailored peptides, hormones, and vitamins designed for you.', img: 'step3' },
-  { title: 'Delivery & Support', body: 'Receive tailored peptides, hormones, and vitamins designed for you', img: 'step4' },
+  // pos: horizontal crop on phones/tablets so each photo's subject (who sits right of centre) lands mid-screen
+  { title: 'Online Assessment', body: 'Answer clinically relevant questions about your health goals and history.', img: 'step1', pos: '90%' },
+  { title: 'Medical Review', body: 'A licensed provider evaluates your data and lab results.', img: 'step2', pos: '86%' },
+  { title: 'Personalized Plan', body: 'Receive tailored peptides, hormones, and vitamins designed for you.', img: 'step3', pos: '74%' },
+  { title: 'Delivery & Support', body: 'Receive tailored peptides, hormones, and vitamins designed for you', img: 'step4', pos: '78%' },
 ]
 
 function StepsIntro({ large = false }) {
@@ -213,31 +214,29 @@ export function Steps() {
 
   useGSAP(() => {
     appear(root.current)
-    const mm = gsap.matchMedia()
-    // Desktop: the dark panel pins; scrolling slides the step list up, fades items by distance from the current one,
-    // and cross-fades the background photo + description for the current step.
-    mm.add('(min-width: 1024px)', () => {
-      const items = gsap.utils.toArray(list.current.children)
-      const itemH = () => items[0]?.offsetHeight || 100
-      const paint = (p) => {
-        gsap.set(list.current, { y: -p * itemH() })
-        const a = Math.min(steps.length - 1, Math.round(p))
-        items.forEach((el, i) => { el.style.opacity = i === a ? '1' : String(INACTIVE_OPACITY) })
-        setActive((cur) => (cur === a ? cur : a))
-      }
-      paint(0)
-      const st = ScrollTrigger.create({
-        trigger: stage.current,
-        start: 'top top',
-        end: () => `+=${window.innerHeight * 0.9 * steps.length}`,
-        pin: true,
-        anticipatePin: 1,
-        scrub: reducedMotion() ? false : 0.6,
-        onUpdate: (self) => paint(self.progress * (steps.length - 1)),
-      })
-      return () => st.kill()
+    // The dark panel pins; scrolling slides the step list up, fades items by distance from the current one, and
+    // cross-fades the background photo + description for the current step. Option 4: on every screen size (it used
+    // to be desktop-only, with stacked step photos on phones/tablets). Item height is read live, so it follows the
+    // smaller phone titles.
+    const items = gsap.utils.toArray(list.current.children)
+    const itemH = () => items[0]?.offsetHeight || 100
+    const paint = (p) => {
+      gsap.set(list.current, { y: -p * itemH() })
+      const a = Math.min(steps.length - 1, Math.round(p))
+      items.forEach((el, i) => { el.style.opacity = i === a ? '1' : String(INACTIVE_OPACITY) })
+      setActive((cur) => (cur === a ? cur : a))
+    }
+    paint(0)
+    const st = ScrollTrigger.create({
+      trigger: stage.current,
+      start: 'top top',
+      end: () => `+=${window.innerHeight * 0.9 * steps.length}`,
+      pin: true,
+      anticipatePin: 1,
+      scrub: reducedMotion() ? false : 0.6,
+      onUpdate: (self) => paint(self.progress * (steps.length - 1)),
     })
-    return () => mm.revert()
+    return () => st.kill()
   }, { scope: root })
 
   const jump = (i) => {
@@ -248,25 +247,10 @@ export function Steps() {
 
   return (
     <section ref={root} className="relative z-10 bg-white">
-      {/* phones / tablets: stacked steps */}
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 md:gap-14 md:py-16 lg:hidden">
-        <div data-appear className="flex flex-col items-start gap-8">
-          <StepsIntro />
-          <LazyVideo className="h-[200px] w-full rounded-2xl object-cover md:h-[400px]" src="/videos/steps.mp4" />
-        </div>
-        {/* Option 4: 2 columns on tablets, and every photo cropped to the same 4:3 frame */}
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-x-6 md:gap-y-10">
-          {steps.map((st, i) => (
-            <article key={st.title} data-appear className="flex flex-col gap-3">
-              <div className="w-fit rounded-full bg-sky px-4 py-1.5"><span className="text-sm font-medium text-white">Step 0{i + 1}</span></div>
-              <img src={`/img/steps-bg-${i + 1}-1800.webp`} alt={st.title} loading="lazy" className="aspect-[4/3] w-full rounded-2xl object-cover" />
-              <div className="flex flex-col gap-1 px-1">
-                <h3 className="t-h4 text-black">{i + 1}. {st.title}</h3>
-                <p className="t-body text-neutral-600">{st.body}</p>
-              </div>
-            </article>
-          ))}
-        </div>
+      {/* phones / tablets: intro (heading, CTA, looping video); the pinned step panel below is shared with desktop */}
+      <div className="mx-auto flex max-w-7xl flex-col items-start gap-8 px-4 pt-8 pb-6 md:pt-16 md:pb-8 lg:hidden">
+        <div data-appear><StepsIntro /></div>
+        <LazyVideo className="h-[200px] w-full rounded-2xl object-cover md:h-[360px]" src="/videos/steps.mp4" />
       </div>
 
       {/* desktop: intro row (heading, CTA, looping video) above the pinned panel, as on the live site */}
@@ -275,36 +259,38 @@ export function Steps() {
         <LazyVideo className="h-[200px] w-[320px] rounded-[20px] object-cover" src="/videos/steps.mp4" />
       </div>
 
-      {/* desktop: pinned dark panel with a sliding step list (reference: roveia.com "Trusted by" section) */}
-      <div ref={stage} className="hidden h-svh px-5 py-4 lg:block">
-        <div className="relative isolate flex h-full flex-col items-center justify-center overflow-hidden rounded-[40px] bg-black/65 px-5">
+      {/* pinned dark panel with a sliding step list (reference: roveia.com "Trusted by" section) — all screen sizes;
+          phones/tablets stack the list above the description and leave room at the top for the floating header */}
+      <div ref={stage} className="h-svh px-3 py-3 lg:px-5 lg:py-4">
+        <div className="relative isolate flex h-full flex-col items-center justify-center overflow-hidden rounded-[24px] bg-black/65 px-5 lg:rounded-[40px]">
           {steps.map((st, i) => (
-            <img key={st.img} src={`/img/steps-bg-${i + 1}-1800.webp`} alt="" aria-hidden loading="lazy"
-              className={`absolute inset-0 -z-10 h-full w-full object-cover transition-opacity duration-700 ease-out ${i === active ? 'opacity-100' : 'opacity-0'}`} />
+            <img key={st.img} src={`/img/steps-bg-${i + 1}-1800.webp`} alt="" aria-hidden loading="lazy" style={{ '--pos': st.pos }}
+              className={`absolute inset-0 -z-10 h-full w-full object-cover object-[var(--pos)_center] transition-opacity duration-700 ease-out lg:object-center ${i === active ? 'opacity-100' : 'opacity-0'}`} />
           ))}
           {/* 65% dark overlay over the photo, as in the reference */}
           <div aria-hidden className="absolute inset-0 -z-[5] bg-black/65" />
-          <div className="mx-auto flex h-full w-full max-w-[1100px] justify-between gap-20">
-            {/* step list: the current step sits at ~42% of the panel height and the list slides up past it */}
-            <div className="relative h-full flex-1 overflow-hidden" role="tablist" aria-label="How it works">
-              <div ref={list} className="absolute inset-x-0 top-[calc(42%-56px)] will-change-transform">
+          <div className="mx-auto flex h-full w-full max-w-[1100px] flex-col gap-4 pt-[96px] pb-6 sm:pt-[112px] sm:pb-10 lg:flex-row lg:justify-between lg:gap-20 lg:p-0">
+            {/* step list: the current step sits at ~42% of its area and the list slides up past it */}
+            {/* soft fade at the top and bottom of the list area, so step names ease out as they slide past its edges */}
+            <div className="relative min-h-0 flex-1 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,#000_22%,#000_80%,transparent_100%)] lg:h-full" role="tablist" aria-label="How it works">
+              <div ref={list} className="absolute inset-x-0 top-[calc(45%-40px)] will-change-transform lg:top-[calc(42%-56px)]">
                 {steps.map((st, i) => (
                   <button key={st.title} type="button" role="tab" aria-selected={i === active} onClick={() => jump(i)}
                     className="flex w-full cursor-pointer flex-col items-start gap-1 py-2 text-left transition-opacity duration-300 hover:!opacity-100"
                     style={{ opacity: i === 0 ? 1 : INACTIVE_OPACITY }}>
                     <span aria-hidden className={`text-xs font-medium tracking-[0.1em] text-white uppercase transition-opacity duration-300 ${i === active ? 'opacity-100' : 'opacity-0'}`}>Step 0{i + 1}</span>
-                    <span className="text-[clamp(40px,4.2vw,64px)] leading-[1.2] tracking-[-0.03em] whitespace-nowrap text-[#f4f4f4]">{st.title}</span>
+                    <span className="text-[clamp(28px,7.5vw,48px)] leading-[1.2] tracking-[-0.03em] whitespace-nowrap text-[#f4f4f4] lg:text-[clamp(40px,4.2vw,64px)]">{st.title}</span>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* the current step's description */}
-            <div className="flex max-w-[440px] flex-1 flex-col justify-center self-center">
-              <div className="relative min-h-[220px]" role="tabpanel">
+            <div className="flex w-full flex-none flex-col justify-center lg:max-w-[440px] lg:flex-1 lg:self-center">
+              <div className="relative min-h-[150px] sm:min-h-[170px] lg:min-h-[220px]" role="tabpanel">
                 {steps.map((st, i) => (
                   <div key={st.title} aria-hidden={i !== active}
-                    className={`absolute inset-x-0 top-0 flex flex-col items-start gap-8 transition-opacity duration-500 ${i === active ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
+                    className={`absolute inset-x-0 top-0 flex flex-col items-start gap-5 transition-opacity duration-500 lg:gap-8 ${i === active ? 'opacity-100' : 'pointer-events-none opacity-0'}`}>
                     <p className="t-lead text-white/[0.64]">{st.body}</p>
                     <PillButton href={links.products} light>Explore Treatments</PillButton>
                   </div>
@@ -520,7 +506,7 @@ export function Biology() {
   return (
     <section ref={root} className="relative z-10 bg-white">
       {/* phones / tablets: header + all three cards open */}
-      <div className="relative isolate mx-3 my-8 flex flex-col gap-10 overflow-hidden rounded-[24px] px-4 py-16 lg:hidden">
+      <div className="relative isolate mx-3 my-8 flex flex-col gap-10 overflow-hidden rounded-[24px] px-4 py-10 md:py-12 lg:hidden">
         <img src="/img/biology-bg-900.webp" alt="" aria-hidden loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <div aria-hidden className="absolute inset-0 -z-10 bg-black/45" />
         <div data-appear><BiologyHeader light /></div>
