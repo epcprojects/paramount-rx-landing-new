@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap, useGSAP, ScrollTrigger, ease, reducedMotion } from '../motion.js'
 import { introDone } from '../components/Intro.jsx'
-import { HeroFilm, addFilm, playFilmEntrance } from '../components/HeroFilm.jsx'
+import { HeroFilm, addFilm, playFilmEntrance, FILM_LEN } from '../components/HeroFilm.jsx'
 import { menu, links } from '../content.js'
 import { Cta, Tag, Img } from '../components/ui.jsx'
 
@@ -185,58 +185,23 @@ function DesktopHeader() {
   )
 }
 
-const HERO_SRC = '/img/hero-1800.webp'
-const HERO_FOCUS = [0.5, 0.22] // matches object-position 50% 22%
-
-/** Builds the tile grid: one element per tile showing its exact slice of the hero photo
- *  (reproducing object-cover + focus maths). Its back is hidden, so a flipped tile reveals whatever is underneath. */
-function buildTiles(layer, img) {
-  layer.innerHTML = ''
-  const W = layer.clientWidth
-  const H = layer.clientHeight
-  // Halved from the original 26/42/62: ~2,400 tiles at desktop width was costing over a second of
-  // main-thread blocking just to build the grid (plus the paint/compositing cost of that many layers).
-  const cols = W < 768 ? 18 : W < 1200 ? 30 : 44
-  const rows = Math.max(4, Math.round((H / W) * cols))
-  // hero photo is 1800 × 1200 (both srcset sizes share this ratio) — only the ratio matters here
-  const iw = 1800
-  const ih = 1200
-  const s = Math.max(W / iw, H / ih)
-  const dw = iw * s
-  const dh = ih * s
-  const ox = (W - dw) * HERO_FOCUS[0]
-  const oy = (H - dh) * HERO_FOCUS[1]
-  const tw = W / cols
-  const th = H / rows
-  const frag = document.createDocumentFragment()
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const tile = document.createElement('div')
-      tile.className = 'hero-tile'
-      tile.dataset.card = ''
-      tile.style.cssText = `left:${c * tw}px;top:${r * th}px;width:${Math.ceil(tw) + 1}px;height:${Math.ceil(th) + 1}px;background-image:url(${HERO_SRC});background-size:${dw}px ${dh}px;background-position:${ox - c * tw}px ${oy - r * th}px`
-      frag.append(tile)
-    }
-  }
-  layer.append(frag)
-  return { rows, cols }
-}
-
-/** Option 3 hero: a full-screen pinned stage that plays the hero film (see HeroFilm.jsx) as you scroll —
- *  body + orbiting coins → meadow → two real hands with the treatment cards between them. No photo hero, no tile flip. */
+/** Option 4 hero: an overlay on top of the treatment cards ("Choose Your Health Journey", Story.jsx), both pinned
+ *  together. Scrolling plays the hero film (runner + orbiting pills, see HeroFilm.jsx); as the runner zooms out the
+ *  dark stage fades away, revealing the cards section underneath, whose cards unfold from edge-on before the pin releases. */
 export function Hero() {
   const root = useRef(null)
   useGSAP(() => {
     const q = gsap.utils.selector(root)
     if (reducedMotion()) {
-      // no film: jump straight to its final frame (meadow, hands, cards)
-      gsap.set(q('[data-film-gl], [data-film-b], [data-film-hint]'), { autoAlpha: 0 })
-      gsap.set(q('[data-film-sun], [data-hand], [data-film-head] > *, [data-film-card], [data-film-cta]'), { opacity: 1 })
-      gsap.set(q('[data-film-final]'), { pointerEvents: 'auto' })
+      // no film and no flip: the hero's opening frame sits in normal flow above the treatment cards
+      gsap.set(root.current, { position: 'relative' })
+      gsap.set(q('[data-film-title] > span, [data-film-desc]'), { opacity: 1 })
+      gsap.set(q('[data-film-hint]'), { autoAlpha: 0 })
       return
     }
     introDone.then(() => playFilmEntrance(root.current))
 
+    const stage = root.current.parentElement // #intro-stage: hero overlay + treatment cards
     let tl
     let lastWidth = 0
     const build = () => {
@@ -244,9 +209,29 @@ export function Hero() {
       tl?.kill()
       lastWidth = window.innerWidth
       tl = gsap.timeline({
-        scrollTrigger: { id: 'hero-pin', trigger: root.current, start: 'top top', end: '+=980%', pin: true, scrub: 1, anticipatePin: 1, refreshPriority: 1 },
+        scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=440%', pin: stage, scrub: 1, anticipatePin: 1, refreshPriority: 1 },
       })
+      // 1 — the film: runner + orbiting pills, then he zooms out and the dark stage fades away (1.4 → 1.65)
       addFilm(tl, root.current)
+
+      // 2 — the hero's own backing fades with the stage, so the treatment cards section underneath shows through
+      tl.fromTo(root.current, { backgroundColor: 'rgba(234,246,255,1)' }, { backgroundColor: 'rgba(234,246,255,0)', ease: 'none', duration: 0.25, immediateRender: false }, 1.4)
+        .set(q('[data-film-hint]'), { autoAlpha: 0 }, 1.4)
+        .set(root.current, { pointerEvents: 'none' }, FILM_LEN)
+
+      // 3 — the treatment cards unfold from edge-on while the stage is still pinned (same motion as the main page)
+      const T = 1.45
+      const head = stage.querySelector('[data-fan-head]')
+      if (head) tl.fromTo(head, { opacity: 0, y: 30 }, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.35, immediateRender: true }, T)
+      const origins = ['100% 50%', '50% 50%', '0% 50%']
+      const angles = [78, 82, -78]
+      stage.querySelectorAll('[data-fan]').forEach((card) => {
+        const col = Number(card.dataset.col)
+        const row = Number(card.dataset.row)
+        tl.fromTo(card, { rotationY: angles[col], transformOrigin: origins[col] },
+          { rotationY: 0, ease: 'power2.out', duration: 0.55, immediateRender: true }, T + 0.1 + row * 0.15)
+      })
+      tl.to({}, { duration: 0.2 }) // short hold on the finished grid before the pin releases
       ScrollTrigger.refresh()
     }
     const raf = requestAnimationFrame(build)
@@ -270,7 +255,7 @@ export function Hero() {
   }, { scope: root })
 
   return (
-    <section id="top" ref={root} className="relative h-svh min-h-[620px] overflow-hidden bg-[#eaf6ff]">
+    <section id="top" ref={root} className="absolute inset-x-0 top-0 z-20 h-svh min-h-[620px] overflow-hidden bg-[#eaf6ff]">
       <HeroFilm />
     </section>
   )

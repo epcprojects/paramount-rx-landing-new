@@ -74,7 +74,7 @@ export function About() {
   const mobileGridWidth = useMobileFanGridWidth(sectionRef, headingRef)
 
   return (
-    <section ref={sectionRef} id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-3 py-10 sm:px-[30px] sm:py-14">
+    <section ref={sectionRef} id="about" className="relative z-10 flex h-svh min-h-[560px] items-center overflow-x-clip bg-gray-100 px-3 py-10 sm:px-[30px] sm:py-14 lg:pt-[118px] lg:pb-8">{/* Option 4: lg top room for the header, which stays visible over this pinned section */}
       <div className="relative z-10 w-full">
         {/* Heading — wording from the live site's "Choose a Health Journey" treatment picker */}
         <div ref={headingRef} data-fan-head className="mx-auto mb-8 flex max-w-[985px] flex-col items-center text-center sm:mb-14">
@@ -88,7 +88,7 @@ export function About() {
         <ul
           data-fanwrap
           style={mobileGridWidth ? { maxWidth: `${mobileGridWidth}px` } : undefined}
-          className="mx-auto grid w-full max-w-[min(985px,calc((100svh-230px)*0.70))] grid-cols-2 gap-3 [perspective:1200px] sm:gap-5 md:max-w-[min(985px,calc((100svh-290px)*1.53+40px))] md:grid-cols-3"
+          className="mx-auto grid w-full max-w-[min(985px,calc((100svh-230px)*0.70))] grid-cols-2 gap-3 [perspective:1200px] sm:gap-5 md:max-w-[min(985px,calc((100svh-290px)*1.53+40px))] lg:max-w-[min(985px,calc((100svh-350px)*1.53+40px))] md:grid-cols-3"
           aria-labelledby="treatments-heading"
         >
           {cards.map((c, i) => (

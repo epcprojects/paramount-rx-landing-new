@@ -28,6 +28,12 @@ const jobs = [
   [`${SRC}/LicensedPharmacyImageNew.png`, 'pillar-pharmacy', [260], 82],
   [`${SRC}/pillar-monitoring-sensors.webp`, 'pillar-monitoring-photo', [600], 82], // Step 4 hover photo
   [`${SRC}/ContinousMonitoringImageNew.png`, 'pillar-monitoring', [260], 82],
+  // Option 4 hero runner (transparent, trimmed; source supplied by the client) is exported directly — see source-images/opt4-runner.webp
+  // Option 4 hover photos — site-style product/doctor shots generated on Higgsfield (1168 × 880)
+  [`${SRC}/opt4-pillar-protocols.png`, 'opt4-pillar-protocols', [600], 82],
+  [`${SRC}/opt4-pillar-labs.png`, 'opt4-pillar-labs', [600], 82],
+  [`${SRC}/opt4-pillar-pharmacy.png`, 'opt4-pillar-pharmacy', [600], 82],
+  [`${SRC}/opt4-pillar-monitoring.png`, 'opt4-pillar-monitoring', [600], 82],
   // treatment cards — the live site's own card art (blur baked into the lower half for text)
   [`${SRC}/TestosteroneNewImage.png`, 'card-testosterone', [500], 82],
   [`${SRC}/PeptideNewImage.png`, 'card-peptides', [500], 82],

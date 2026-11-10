@@ -109,7 +109,7 @@ function ProductArt({ form, className }) {
         <rect x="40" y="44" width="20" height="10" rx="2" fill="#e3e7eb" />
         <rect x="28" y="40" width="44" height="5" rx="2.5" fill={`url(#${cap})`} />
         <path d="M44 40 L46 12 Q50 6 54 12 L56 40 Z" fill={`url(#${w})`} stroke="#d0d6dc" />
-        <text x="50" y="88" textAnchor="middle" fontSize="14" fontStyle="italic" fill="#b9c1c9" fontFamily="serif">P</text>
+        <text x="50" y="88" textAnchor="middle" fontSize="14" fontStyle="italic" fill="#b9c1c9" fontFamily="'Playfair Display', Georgia, serif">P</text>
       </>)
       break
     case 'Troche':
@@ -119,7 +119,7 @@ function ProductArt({ form, className }) {
         <rect x="28" y="44" width="44" height="68" rx="8" fill={`url(#${w})`} stroke="#d0d6dc" />
         <rect x="31" y="30" width="38" height="16" rx="4" fill={form === 'Troche' ? '#d9dee3' : `url(#${cap})`} />
         <rect x="34" y="62" width="32" height="30" rx="3" fill="#f3f6f9" stroke="#e2e7ec" />
-        <text x="50" y="82" textAnchor="middle" fontSize="13" fontStyle="italic" fill="#9aa6b2" fontFamily="serif">P</text>
+        <text x="50" y="82" textAnchor="middle" fontSize="13" fontStyle="italic" fill="#9aa6b2" fontFamily="'Playfair Display', Georgia, serif">P</text>
       </>)
       break
     case 'Cream':
@@ -128,14 +128,14 @@ function ProductArt({ form, className }) {
         <path d="M36 28 H64 L70 104 Q50 110 30 104 Z" fill={`url(#${w})`} stroke="#d0d6dc" />
         <rect x="40" y="104" width="20" height="10" rx="2" fill={`url(#${cap})`} />
         <rect x="34" y="24" width="32" height="6" rx="2" fill="#e1e5ea" />
-        <text x="50" y="72" textAnchor="middle" fontSize="13" fontStyle="italic" fill="#9aa6b2" fontFamily="serif">P</text>
+        <text x="50" y="72" textAnchor="middle" fontSize="13" fontStyle="italic" fill="#9aa6b2" fontFamily="'Playfair Display', Georgia, serif">P</text>
       </>)
       break
     default: // Insert
       body = (<>
         <rect x="24" y="40" width="52" height="72" rx="4" fill={`url(#${w})`} stroke="#d0d6dc" />
         <rect x="24" y="40" width="52" height="14" rx="4" fill={`url(#${cap})`} />
-        <text x="50" y="88" textAnchor="middle" fontSize="13" fontStyle="italic" fill="#9aa6b2" fontFamily="serif">P</text>
+        <text x="50" y="88" textAnchor="middle" fontSize="13" fontStyle="italic" fill="#9aa6b2" fontFamily="'Playfair Display', Georgia, serif">P</text>
       </>)
   }
   return (

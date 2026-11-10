@@ -1,4 +1,5 @@
 import { Header, Hero } from './sections/Top.jsx'
+import { About } from './sections/Story.jsx'
 import { BestSelf } from './sections/BestSelf.jsx'
 import { BodyMap } from './sections/BodyMap.jsx'
 import { SmartChoice, Steps, Pillars, Biology, Faq, Footer } from './sections/More.jsx'
@@ -16,7 +17,12 @@ export default function App() {
       <Header />
       <main id="main">
         {/* Option 3: the hero is a pinned scroll film (HeroFilm) ending on two hands + the treatment cards */}
-        <div id="intro-stage"><Hero /></div>
+        {/* Option 4: the hero film plays on top of "Choose Your Health Journey"; at the end the meadow's tiles flip away
+            to reveal the cards underneath, which then unfold (both are pinned together — see Top.jsx) */}
+        <div id="intro-stage" className="relative">
+          <Hero />
+          <About />
+        </div>
         <BodyMap />
         <BestSelf />
         <SmartChoice />

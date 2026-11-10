@@ -48,16 +48,18 @@ export function Intro() {
         defaults: { ease: 'power2.inOut' },
         onComplete: () => { unlock(); gsap.set(el, { autoAlpha: 0 }) },
       })
-      tl.fromTo(bloom, { opacity: 0.5 }, { opacity: 1, duration: 1.4, ease: 'power2.out' }, 0)
-        .fromTo(words, { scale: 0.94, opacity: 0.001 }, { scale: 1, opacity: 1, duration: 1.6, ease: 'power2.out' }, 0)
-        // draw each letter's outline in turn, then let its colour fill in behind it
-        .to(letters, { strokeDashoffset: 0, duration: 1.3, stagger: 0.07 }, 0.2)
-        .to(letters, { fillOpacity: 1, duration: 0.6, stagger: 0.05, ease: 'power1.out' }, 1.0)
-        .to(letters, { strokeWidth: 0, duration: 0.5 }, 2.3)
+      // Option 4: softer curves and more overlap between the steps so it reads as one continuous motion
+      tl.fromTo(bloom, { opacity: 0.6 }, { opacity: 1, duration: 1.8, ease: 'sine.out' }, 0)
+        .fromTo(words, { scale: 0.96, opacity: 0.001 }, { scale: 1, opacity: 1, duration: 2.2, ease: 'expo.out' }, 0)
+        // draw each letter's outline in turn, then let its colour fill in behind it — fills overlap heavily so the
+        // word fills in as a smooth wave instead of letter by letter
+        .to(letters, { strokeDashoffset: 0, duration: 1.4, stagger: 0.05, ease: 'sine.inOut' }, 0.15)
+        .to(letters, { fillOpacity: 1, duration: 1.0, stagger: 0.035, ease: 'sine.inOut' }, 0.85)
+        .to(letters, { strokeWidth: 0, duration: 0.7, ease: 'sine.inOut' }, 2.2)
         // the zero: a circle opens from the centre and the hero shows through it
-        .add(() => resolveIntro(), 3.05)
-        .to(words, { scale: 1.12, opacity: 0, duration: 1.1, ease: 'power2.in' }, 2.9)
-        .to(el, { '--r': `${radius}px`, duration: 1.3, ease: 'power3.inOut' }, 2.95)
+        .add(() => resolveIntro(), 3.0)
+        .to(words, { scale: 1.08, opacity: 0, duration: 1.2, ease: 'power2.inOut' }, 2.85)
+        .to(el, { '--r': `${radius}px`, duration: 1.5, ease: 'power3.inOut' }, 2.9)
       // listen for "skip" input — on a replay, only after a beat, so the scroll that brought the visitor back to
       // the top (wheel momentum) doesn't instantly fast-forward it
       const addSkip = () => evs.forEach((e) => window.addEventListener(e, skip, { passive: true, once: true }))
@@ -94,9 +96,11 @@ export function Intro() {
     >
       {/* soft bloom + frost */}
       <div data-bloom className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_55%_at_50%_45%,#ffffff_0%,#f2f9ff_40%,#d6ecfb_70%,#a9d6f5_100%)]" />
-      <div className="pointer-events-none absolute -bottom-1/4 -left-1/4 size-[70vmax] rounded-full bg-[#3AB5FE]/25 blur-[120px]" />
-      <div className="pointer-events-none absolute -top-1/3 -right-1/4 size-[60vmax] rounded-full bg-white/70 blur-[100px]" />
-      <div className="intro-grain pointer-events-none absolute inset-0 opacity-[0.07] mix-blend-multiply" />
+      {/* Option 4: the two glows are soft radial gradients, not blur() filters, and the grain is a plain overlay (no
+          blend mode) — the circle reveal repaints this whole layer every frame, so it has to be cheap to draw */}
+      <div className="pointer-events-none absolute -bottom-1/2 -left-1/2 size-[110vmax] rounded-full bg-[radial-gradient(closest-side,rgba(58,181,254,0.25),rgba(58,181,254,0.12)_45%,rgba(58,181,254,0)_100%)]" />
+      <div className="pointer-events-none absolute -top-1/2 -right-1/2 size-[100vmax] rounded-full bg-[radial-gradient(closest-side,rgba(255,255,255,0.7),rgba(255,255,255,0.3)_45%,rgba(255,255,255,0)_100%)]" />
+      <div className="intro-grain pointer-events-none absolute inset-0 opacity-[0.035]" />
 
       {/* the Paramount HealthRx logo (inlined so each letter can be drawn on) */}
       <div data-words role="img" aria-label="Paramount HealthRx" className="relative w-[min(78vw,620px)] [&_svg]:h-auto [&_svg]:w-full [&_svg]:overflow-visible" dangerouslySetInnerHTML={{ __html: logoSvg }} />

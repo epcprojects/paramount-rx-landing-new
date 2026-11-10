@@ -80,17 +80,17 @@ function StatWidget({ label, to, prefix = '', suffix = '', chart, deltaLabel, cl
         {chart === 'ring' && (
           <svg width="52" height="52" viewBox="0 0 60 60" className="-rotate-90" aria-hidden>
             <circle cx="30" cy="30" r={RING_R} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="6" />
-            <circle ref={ringEl} cx="30" cy="30" r={RING_R} fill="none" stroke="#A8FF93" strokeWidth="6" strokeLinecap="round" />
+            <circle ref={ringEl} cx="30" cy="30" r={RING_R} fill="none" stroke="#3AB5FE" strokeWidth="6" strokeLinecap="round" />
           </svg>
         )}
       </div>
       {chart !== 'ring' && (
         <svg viewBox="0 0 120 40" className="h-8 w-full" preserveAspectRatio="none" aria-hidden>
-          <path ref={pathEl} d={SPARK_PATH[chart]} fill="none" stroke="#A8FF93" strokeWidth="2.5" strokeLinecap="round" />
+          <path ref={pathEl} d={SPARK_PATH[chart]} fill="none" stroke="#3AB5FE" strokeWidth="2.5" strokeLinecap="round" />
         </svg>
       )}
       <p className={marquee ? 'flex items-center gap-1 text-[12px] text-white/60' : 'flex items-center gap-1 text-[11px] text-white/60 xl:text-[12px]'}>
-        {chart !== 'ring' && <span className="text-[#A8FF93]">{chart === 'down' ? '↓' : '↑'}</span>}
+        {chart !== 'ring' && <span className="text-[#3AB5FE]">{chart === 'down' ? '↓' : '↑'}</span>}
         {deltaLabel}
       </p>
     </div>
@@ -108,17 +108,17 @@ function StaticStatCard({ label, to, prefix = '', suffix = '', chart, deltaLabel
         {chart === 'ring' && (
           <svg width="52" height="52" viewBox="0 0 60 60" className="-rotate-90" aria-hidden>
             <circle cx="30" cy="30" r={RING_R} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="6" />
-            <circle cx="30" cy="30" r={RING_R} fill="none" stroke="#A8FF93" strokeWidth="6" strokeLinecap="round" strokeDasharray={RING_C} strokeDashoffset={RING_C * (1 - to / 100)} />
+            <circle cx="30" cy="30" r={RING_R} fill="none" stroke="#3AB5FE" strokeWidth="6" strokeLinecap="round" strokeDasharray={RING_C} strokeDashoffset={RING_C * (1 - to / 100)} />
           </svg>
         )}
       </div>
       {chart !== 'ring' && (
         <svg viewBox="0 0 120 40" className="h-8 w-full" preserveAspectRatio="none" aria-hidden>
-          <path d={SPARK_PATH[chart]} fill="none" stroke="#A8FF93" strokeWidth="2.5" strokeLinecap="round" />
+          <path d={SPARK_PATH[chart]} fill="none" stroke="#3AB5FE" strokeWidth="2.5" strokeLinecap="round" />
         </svg>
       )}
       <p className="flex items-center gap-1 text-[12px] text-white/60">
-        {chart !== 'ring' && <span className="text-[#A8FF93]">{chart === 'down' ? '↓' : '↑'}</span>}
+        {chart !== 'ring' && <span className="text-[#3AB5FE]">{chart === 'down' ? '↓' : '↑'}</span>}
         {deltaLabel}
       </p>
     </div>

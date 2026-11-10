@@ -157,7 +157,7 @@ export function SmartChoice() {
       <div className="mx-auto flex max-w-7xl flex-col items-center gap-6 border-b border-b-neutral-300 px-4 md:gap-12 xl:px-8">
         <div data-appear className="flex flex-col gap-3">
           <h2 className="t-h2 text-center text-navy">
-            Why Paramount is the<br /> <span className="text-[#171717]">Smart Choice</span>
+            Why Paramount is the<br /> <span className="t-hero-accent font-normal text-[#171717]">Smart Choice</span>
           </h2>
           <p className="t-lead text-center text-neutral-700">Real treatments. Real results. <br />Fast, discreet, and designed for the way you live today.</p>
         </div>
@@ -324,24 +324,57 @@ export function Steps() {
 // Layout + interaction modelled on endpointclients.com "Our Services": a numbered list; hovering a row expands it
 // (description + chips), greys out the other rows, turns the arrow 45°, and a photo preview follows the pointer.
 
+// Option 4: hover previews are on-brand product/doctor shots in the live site's style (generated on Higgsfield,
+// sources in source-images/opt4-pillar-*.png); a line icon sits to the left of each pillar title (24 × 24, drawn with the current text colour)
+const pillarIcons = {
+  // client-supplied icon (filled shapes, so each path draws with fill and no stroke)
+  protocols: <g fill="currentColor" stroke="none">
+    <path d="M11.4079 22.7539C9.1979 22.7539 6.8799 22.6979 5.2499 22.6029C3.8879 22.5229 2.7809 21.8199 2.0499 20.5679C1.4689 19.5719 1.26088 18.4579 1.26088 17.7459C1.24511 16.4932 1.24974 13.9961 1.25466 11.3375L1.25488 11.2209C1.25788 9.79893 1.26088 8.32793 1.26088 6.96693C1.26088 2.30493 4.19088 1.55994 5.48388 1.45894C5.74488 1.42194 7.61987 1.17293 10.0259 1.27393C10.4399 1.29093 10.7609 1.64094 10.7439 2.05494C10.7269 2.46894 10.3779 2.78993 9.96288 2.77293C7.57188 2.67293 5.6939 2.94493 5.6749 2.94793C5.6569 2.95093 5.63789 2.95294 5.61889 2.95394C4.31489 3.04794 2.75991 3.82093 2.75991 6.96793C2.75991 8.32993 2.7569 9.80194 2.7539 11.2249L2.75302 11.6952C2.74828 14.2138 2.7439 16.5411 2.75991 17.7369C2.75991 18.4239 3.19688 20.9809 5.33588 21.1059C8.40288 21.2839 13.9279 21.3239 16.4549 21.1069C16.4582 21.1069 16.4615 21.1067 16.4649 21.1064L16.4759 21.1049C16.4989 21.1039 18.7669 20.9489 19.0269 18.7109C19.2879 16.4659 19.2699 14.8279 19.2629 14.2109C19.2629 14.1652 19.2622 14.1248 19.2617 14.0897C19.2613 14.0627 19.2609 14.0388 19.2609 14.0179C19.2609 13.6039 19.5969 13.2679 20.0109 13.2679C20.4249 13.2679 20.7609 13.6039 20.7609 14.0179C20.7609 14.0619 20.7609 14.1209 20.7629 14.1939L20.763 14.203C20.7701 14.8528 20.7886 16.5558 20.5169 18.8839C20.1949 21.6569 17.8029 22.5269 16.5729 22.6009C15.3389 22.7059 13.4169 22.7519 11.4069 22.7519L11.4079 22.7539Z" />
+    <path d="M15.9802 9.26892H15.9412C15.6712 9.25492 15.4292 9.09694 15.3092 8.85494C14.8762 7.98794 14.4542 7.55393 14.4492 7.54993C14.1562 7.25693 14.1562 6.78194 14.4492 6.48895C14.7422 6.19594 15.2172 6.19594 15.5102 6.48895C15.5462 6.52494 15.7572 6.74192 16.0372 7.14292C16.6882 6.29992 17.7072 5.17494 18.7302 4.81194C19.1202 4.67394 19.5492 4.87792 19.6872 5.26792C19.8252 5.65792 19.6212 6.08693 19.2312 6.22493C18.3812 6.52593 17.1742 8.03793 16.6132 8.91993C16.4752 9.13693 16.2362 9.26792 15.9802 9.26792V9.26892Z" />
+    <path fillRule="evenodd" clipRule="evenodd" d="M11.2402 7.01904C11.2402 10.19 13.8223 12.769 16.9953 12.769C20.1683 12.769 22.7502 10.19 22.7502 7.01904C22.7502 3.84804 20.1683 1.26904 16.9953 1.26904C13.8223 1.26904 11.2402 3.84804 11.2402 7.01904ZM12.7402 7.01904C12.7402 4.67604 14.6493 2.76904 16.9953 2.76904C19.3413 2.76904 21.2502 4.67604 21.2502 7.01904C21.2502 9.36204 19.3413 11.269 16.9953 11.269C14.6493 11.269 12.7402 9.36204 12.7402 7.01904Z" />
+    <path d="M10.98 13.769H6.97998C6.56598 13.769 6.22998 13.433 6.22998 13.019C6.22998 12.605 6.56598 12.269 6.97998 12.269H10.98C11.394 12.269 11.73 12.605 11.73 13.019C11.73 13.433 11.394 13.769 10.98 13.769Z" />
+    <path d="M6.97998 17.769H14.98C15.394 17.769 15.73 17.433 15.73 17.019C15.73 16.605 15.394 16.269 14.98 16.269H6.97998C6.56598 16.269 6.22998 16.605 6.22998 17.019C6.22998 17.433 6.56598 17.769 6.97998 17.769Z" />
+  </g>,
+  // client-supplied icon (filled)
+  labs: <g fill="currentColor" stroke="none">
+    <path d="M8.03421 16.2608C7.89127 15.7274 8.20785 15.179 8.74132 15.0361L8.74999 15.0338C9.28346 14.8908 9.8318 15.2074 9.97474 15.7409C10.1177 16.2744 9.8011 16.8227 9.26763 16.9656L9.25895 16.968C8.72549 17.1109 8.17715 16.7943 8.03421 16.2608Z" />
+    <path d="M14.7413 17.0361C14.2079 17.179 13.8913 17.7274 14.0342 18.2608C14.1772 18.7943 14.7255 19.1109 15.259 18.968L15.2676 18.9656C15.8011 18.8227 16.1177 18.2744 15.9747 17.7409C15.8318 17.2074 15.2835 16.8908 14.75 17.0338L14.7413 17.0361Z" />
+    <path fillRule="evenodd" clipRule="evenodd" d="M7.25 2C7.25 1.58579 7.58579 1.25 8 1.25H16C16.4142 1.25 16.75 1.58579 16.75 2C16.75 2.41421 16.4142 2.75 16 2.75H15.2906V4.48622C15.2906 6.27061 15.2959 7.03487 15.4813 7.76179C15.6668 8.48908 16.0292 9.16585 16.8855 10.7387L18.0547 12.8864C19.0959 14.7989 19.919 16.3109 20.363 17.527C20.8148 18.7646 20.9502 19.8964 20.3352 20.917L20.3336 20.9198L20.32 20.942L20.3183 20.9449C19.6971 21.9559 18.6277 22.3696 17.3116 22.5612C16.0148 22.75 14.2735 22.75 12.0664 22.75H11.9337C9.72671 22.75 7.98537 22.75 6.68858 22.5612C5.37244 22.3696 4.30309 21.9559 3.68186 20.9449L3.68015 20.9421L3.66659 20.9198L3.66491 20.917C3.05 19.8964 3.18533 18.7646 3.63716 17.527C4.08115 16.3109 4.9043 14.7989 5.94549 12.8864L6.77548 11.3618C6.80394 11.2554 6.85637 11.1537 6.93335 11.0649C6.93667 11.0611 6.94 11.0572 6.94333 11.0534L7.11466 10.7387C7.97093 9.16585 8.33333 8.48908 8.51883 7.76179C8.70423 7.03487 8.70955 6.27061 8.70955 4.48622V2.75H8C7.58579 2.75 7.25 2.41421 7.25 2ZM8.16411 11.9482L7.29545 13.5438C6.21455 15.5293 5.44713 16.9432 5.0462 18.0414C4.64886 19.1298 4.68778 19.7071 4.949 20.1417L4.94974 20.1429L4.95989 20.1596L4.96063 20.1608C5.22915 20.5969 5.73633 20.9067 6.90473 21.0769C8.08058 21.2481 9.71215 21.25 12.0001 21.25C14.288 21.25 15.9196 21.2481 17.0954 21.0769C18.2638 20.9067 18.771 20.5969 19.0395 20.1609L19.0403 20.1596L19.0504 20.1429L19.0512 20.1416C19.3124 19.7071 19.3513 19.1297 18.954 18.0414C18.553 16.9432 17.7856 15.5293 16.7047 13.5438L16.389 12.9639C16.0714 13.239 15.6802 13.4685 15.2152 13.6078C14.2211 13.9055 13.0083 13.7565 11.6285 12.9696C10.6589 12.4167 9.87171 11.9934 9.22273 11.8239C8.90986 11.7421 8.68109 11.7347 8.512 11.7702C8.39272 11.7953 8.27847 11.8464 8.16411 11.9482ZM15.639 11.5862C15.4442 11.8357 15.159 12.0588 14.7849 12.1709C14.279 12.3223 13.4917 12.3054 12.3715 11.6666C11.4405 11.1357 10.4777 10.6014 9.60185 10.3726C9.42854 10.3273 9.25109 10.2918 9.07145 10.2709C9.514 9.43022 9.8013 8.80293 9.9723 8.1325C10.2097 7.20158 10.2097 6.23943 10.2096 4.59414L10.2096 2.75H13.7906L13.7906 4.59415C13.7905 6.23942 13.7904 7.20159 14.0279 8.1325C14.2652 9.06308 14.7266 9.91056 15.5163 11.3608L15.639 11.5862Z" />
+  </g>,
+  // client-supplied icon (filled)
+  pharmacy: <g fill="currentColor" stroke="none">
+    <path d="M21.128 3.63568C19.8448 1.36103 16.9872 0.567845 14.7461 1.89212L4.57618 7.90139C2.34557 9.21943 1.59407 12.1233 2.87172 14.3881C3.64288 15.7551 4.9828 16.5881 6.41788 16.7459C6.82961 16.7912 7.20009 16.4941 7.24537 16.0824C7.29065 15.6707 6.99358 15.3002 6.58184 15.2549C5.61604 15.1487 4.70682 14.5882 4.17817 13.6511C3.29396 12.0837 3.82541 10.0873 5.33925 9.19279L9.77944 6.56914L10.8547 8.3829C11.066 8.7392 11.526 8.8568 11.8823 8.64557C12.2386 8.43434 12.3562 7.97426 12.145 7.61795L11.0708 5.80607L15.5092 3.18352C17.0124 2.29524 18.9429 2.81508 19.8216 4.37268C20.5299 5.62833 20.3308 7.16724 19.4359 8.18825C19.1628 8.49974 19.194 8.97359 19.5055 9.24662C19.817 9.51966 20.2908 9.48848 20.5639 9.17699C21.869 7.68801 22.1565 5.45881 21.128 3.63568Z" />
+    <path fillRule="evenodd" clipRule="evenodd" d="M20.8429 12.6245C18.9789 9.396 14.8507 8.28985 11.6222 10.1538C8.39375 12.0178 7.28759 16.146 9.15155 19.3745C11.0155 22.603 15.1437 23.7091 18.3722 21.8451C21.6007 19.9812 22.7069 15.853 20.8429 12.6245ZM12.3722 11.4528C14.6627 10.1304 17.5355 10.7301 19.1228 12.7515L10.1216 17.9484C9.16469 15.5631 10.0817 12.7753 12.3722 11.4528ZM10.8716 19.2474L19.8728 14.0506C20.8298 16.4359 19.9127 19.2237 17.6222 20.5461C15.3317 21.8685 12.4589 21.2688 10.8716 19.2474Z" />
+  </g>,
+  // client-supplied icon (filled)
+  monitoring: <path fill="currentColor" stroke="none" fillRule="evenodd" clipRule="evenodd" d="M12.5836 3.46861C14.1991 2.25537 16.8734 1.52662 19.8543 3.35515C21.9156 4.61952 23.0754 7.2606 22.6684 10.2951C22.2595 13.3443 20.2859 16.7929 16.1063 19.8865L16.0022 19.9635C14.5509 21.0384 13.5897 21.7503 11.9996 21.7503C10.4096 21.7503 9.44837 21.0384 7.997 19.9635L7.89295 19.8865C3.71334 16.7929 1.73976 13.3443 1.33081 10.2951C0.923824 7.2606 2.08366 4.61952 4.1449 3.35515C7.12587 1.52662 9.8001 2.25537 11.4156 3.46861C11.6814 3.6682 11.8638 3.8048 11.9996 3.89704C12.1354 3.8048 12.3178 3.6682 12.5836 3.46861ZM12.1584 3.99456C12.1583 3.99455 12.1577 3.99428 12.1564 3.99369L12.155 3.99305C12.1574 3.99401 12.1585 3.99457 12.1584 3.99456ZM11.8443 3.99305C11.8402 3.99467 11.8397 3.99514 11.8429 3.99369L11.8443 3.99305ZM19.07 4.63377C16.6877 3.17245 14.6809 3.76948 13.4843 4.66804L13.4635 4.68372C13.1931 4.88678 12.9608 5.06125 12.775 5.18287C12.6784 5.24609 12.5715 5.31047 12.4605 5.36061C12.3552 5.4082 12.1934 5.46774 11.9996 5.46774C11.8058 5.46774 11.644 5.4082 11.5387 5.36061C11.4277 5.31047 11.3208 5.24609 11.2242 5.18287C11.0384 5.06125 10.8062 4.88684 10.5358 4.68379L10.5149 4.66804C9.31836 3.76948 7.31152 3.17245 4.9292 4.63377C3.47107 5.52819 2.47304 7.52746 2.8175 10.0957C2.82514 10.1527 2.83345 10.21 2.84244 10.2675C2.89316 10.2567 2.94577 10.251 2.99971 10.251L5.0989 10.2509C5.56733 10.2502 5.98012 10.2496 6.35457 10.3859C6.88124 10.5775 7.24927 11.0249 7.46807 11.2909C7.48607 11.3128 7.50327 11.3337 7.51925 11.3529C7.53078 11.3667 7.54181 11.381 7.55231 11.3956L8.44355 12.6368L10.8566 8.61511C10.995 8.3844 11.2464 8.24552 11.5154 8.25114C11.7844 8.25676 12.0297 8.40604 12.1584 8.64232L13.8385 11.728C14.0619 12.0848 14.0898 12.1094 14.1134 12.1275C14.1854 12.1828 14.2718 12.2175 14.41 12.236C14.5397 12.2533 14.6664 12.2526 14.8472 12.2515C14.894 12.2513 14.9446 12.251 14.9997 12.251H15.9997C16.4139 12.251 16.7497 12.5868 16.7497 13.001C16.7497 13.4152 16.4139 13.751 15.9997 13.751H14.9997C14.9647 13.751 14.9255 13.7516 14.8827 13.7524C14.4892 13.7591 13.7906 13.771 13.1997 13.3172C12.933 13.1123 12.7602 12.8344 12.5935 12.5664L12.5547 12.504C12.5467 12.4913 12.5392 12.4784 12.532 12.4652L11.4681 10.5113L9.14283 14.3868C9.01293 14.6033 8.78283 14.74 8.53056 14.7503C8.2783 14.7607 8.03774 14.6435 7.89049 14.4384L6.34975 12.2926C6.06044 11.9463 5.94753 11.834 5.84176 11.7955C5.74928 11.7618 5.62592 11.751 4.99971 11.751H3.21239C3.95694 13.9338 5.66419 16.3707 8.78534 18.6808C10.3675 19.8519 10.945 20.2503 11.9996 20.2503C13.0542 20.2503 13.6317 19.8519 15.2139 18.6808C19.1521 15.7659 20.8392 12.6493 21.1817 10.0957C21.5262 7.52746 20.5282 5.52819 19.07 4.63377Z" />,
+}
+function PillarIcon({ name }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      {pillarIcons[name]}
+    </svg>
+  )
+}
+
 const pillars = [
   {
-    title: 'Individualized protocols', thumb: 'pillar-protocols', preview: '/img/pillar-protocols-photo-600.webp',
+    icon: 'protocols', title: 'Individualized protocols', thumb: 'pillar-protocols', preview: '/img/opt4-pillar-protocols-600.webp',
     body: 'Care begins with your health history, your goals and a licensed provider’s clinical evaluation—no one-size-fits-all plans.',
     chips: ['Health history', 'Your goals', 'Clinical evaluation'],
   },
   {
-    title: 'Real labs, real doctors', thumb: 'pillar-labs', preview: '/img/pillar-labs-photo-600.webp',
+    icon: 'labs', title: 'Real labs, real doctors', thumb: 'pillar-labs', preview: '/img/opt4-pillar-labs-600.webp',
     body: 'Hormones and many peptides require lab work to ensure safety and efficacy—reviewed by licensed providers.',
     chips: ['Lab work', 'Licensed providers', 'Safety first'],
   },
   {
-    title: 'Compounded by licensed pharmacies', thumb: 'pillar-pharmacy', preview: '/img/pillar-pharmacy-photo-600.webp',
+    icon: 'pharmacy', title: 'Compounded by licensed pharmacies', thumb: 'pillar-pharmacy', preview: '/img/opt4-pillar-pharmacy-600.webp',
     body: 'Every treatment is prescribed by licensed providers, compounded by licensed pharmacies and fulfilled in the U.S.',
     chips: ['U.S. pharmacies', 'Prescribed by providers', 'Discreet delivery'],
   },
   {
-    title: 'Continuous monitoring & refinement', thumb: 'pillar-monitoring', preview: '/img/pillar-monitoring-photo-600.webp',
+    icon: 'monitoring', title: 'Continuous monitoring & refinement', thumb: 'pillar-monitoring', preview: '/img/opt4-pillar-monitoring-600.webp',
     body: 'Adjust protocols, stay consistent and level up intentionally as your goals evolve.',
     chips: ['Ongoing support', 'Protocol adjustments', 'Progress check-ins'],
   },
@@ -368,11 +401,11 @@ export function Pillars() {
               This isn&apos;t wellness.<br />
               This is{' '}
               <span className="t-hero-accent relative inline-block font-normal text-navy transition-colors duration-300 ease-out after:absolute after:-bottom-1 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-navy after:transition-transform after:duration-300 after:ease-out hover:after:scale-x-100">
-                medicine—done right.
+                medicine-done right.
               </span>
             </h2>
             <p className="t-lead max-w-[900px] text-gray-500">
-              Paramount HealthRx was built to deliver integrated, physician-guided optimization<br className="hidden lg:block" />—not isolated products. Because average isn&apos;t the goal.
+              Paramount HealthRx was built to deliver integrated, physician-guided<br className="hidden lg:block" /> optimization—not isolated products. Because average isn&apos;t the goal.
             </p>
           </div>
           <a href={links.products} className="group/btn flex items-center gap-2 rounded-full border border-transparent bg-navy py-2 pr-2 pl-4 transition-colors duration-300 hover:bg-[#0c3a6f] md:gap-3 md:pl-[26px]">
@@ -400,8 +433,11 @@ export function Pillars() {
             return (
               <a key={p.title} href={links.products} onMouseEnter={() => setHover(i)} onFocus={() => setHover(i)} onBlur={() => setHover(-1)}
                 className="group flex cursor-pointer items-center justify-between gap-4 border-b border-gray-200 py-6 lg:py-8">
-                <div className="flex min-w-0 items-center gap-4 lg:gap-6">
-                  <div className="flex min-w-0 flex-col gap-1 lg:gap-2">
+                <div className="flex min-w-0 items-start gap-4 lg:gap-6">
+                  <span className={`flex size-11 shrink-0 items-center justify-center rounded-full transition-colors duration-300 lg:size-12 ${dim ? 'bg-[#eef5fd] text-navy lg:bg-gray-100 lg:text-gray-300' : on ? 'bg-navy text-white' : 'bg-[#eef5fd] text-navy'}`}>
+                    <PillarIcon name={p.icon} />
+                  </span>
+                  <div className="flex min-w-0 flex-col gap-1 self-center lg:gap-2">
                     <h3 className={`t-h3 transition-colors duration-300 ${dim ? 'text-gray-950 lg:text-gray-300' : 'text-gray-950'}`}>{p.title}</h3>
                     <div className={`hidden transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:grid ${on ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
                       <div className="overflow-hidden">
@@ -571,7 +607,23 @@ export function Faq() {
 /* ---------- Footer ---------- */
 
 // The live site masks its footer video with the words "Paramount / HealthRx".
-const wordmarkMask = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 300"><text x="0" y="125" font-size="175" font-weight="800" font-family="Poppins, Arial, sans-serif" letter-spacing="-7" fill="white">Paramount</text><text x="0" y="290" font-size="175" font-weight="800" font-family="Poppins, Arial, sans-serif" letter-spacing="-7" fill="white">HealthRx</text></svg>')}")`
+// Option 4: an inline SVG clip path (not a data-URI mask image) so the words use the page's own Manrope ExtraBold —
+// an SVG loaded as an image can't reach web fonts and was falling back to Arial. Drawn in a 1100 × 300 box and
+// scaled to the video's bounding box, like the old 100% × 100% mask.
+function WordmarkClip() {
+  const word = { fontFamily: 'Manrope, sans-serif', fontWeight: 800, fontSize: 175, letterSpacing: -7 }
+  return (
+    <svg aria-hidden width="0" height="0" className="absolute">
+      <defs>
+        <clipPath id="footer-wordmark" clipPathUnits="objectBoundingBox">
+          {/* (a clipPath can't contain <g>, so each line carries the 1100 × 300 → bounding-box scale itself) */}
+          <text x="0" y="125" transform="scale(0.000909091 0.003333333)" style={word}>Paramount</text>
+          <text x="0" y="290" transform="scale(0.000909091 0.003333333)" style={word}>HealthRx</text>
+        </clipPath>
+      </defs>
+    </svg>
+  )
+}
 
 const footerLinks = [
   { label: 'How it Works', href: links.howItWorks },
@@ -591,9 +643,10 @@ export function Footer() {
             <div className="w-full lg:col-start-3 lg:col-end-11">
               <p className="sr-only">Paramount HealthRx</p>
               <div role="img" aria-label="Paramount HealthRx" className="relative mx-auto aspect-[921/251] w-full max-w-[921px]">
+                <WordmarkClip />
                 <LazyVideo src="/videos/footer.mp4" poster="/img/footer-poster-1448.webp" disablePictureInPicture
                   className="absolute inset-0 h-full w-full object-cover object-center"
-                  style={{ maskImage: wordmarkMask, WebkitMaskImage: wordmarkMask, maskSize: '100% 100%', WebkitMaskSize: '100% 100%', maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat', maskPosition: 'center', WebkitMaskPosition: 'center' }} />
+                  style={{ clipPath: 'url(#footer-wordmark)', WebkitClipPath: 'url(#footer-wordmark)' }} />
               </div>
             </div>
           </div>
