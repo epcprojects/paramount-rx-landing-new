@@ -310,6 +310,20 @@ body {
 /* Back-to-top button: the dashed halo spins up to a quick orbit while hovered. */
 .back-to-top:hover .scroll-ring-outer { animation-duration: 2.4s; }
 
+/* Hero "scroll to begin" hint: the label breathes gently and a dot travels down inside the mouse
+   icon's outline and fades, like a scroll wheel — both loop only while the hint itself is visible
+   (its own opacity/position are driven by the film's scroll-scrubbed GSAP timeline, not this CSS). */
+@keyframes scroll-hint-breathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+.scroll-hint-pulse { animation: scroll-hint-breathe 2.4s ease-in-out infinite; }
+
+@keyframes scroll-hint-dot {
+  0% { transform: translate(-50%, 0); opacity: 0; }
+  25% { opacity: 1; }
+  70% { opacity: 0; }
+  100% { transform: translate(-50%, 14px); opacity: 0; }
+}
+.scroll-hint-dot { animation: scroll-hint-dot 1.8s cubic-bezier(.4,0,.2,1) infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   .js [data-appear] { opacity: 1; }
   *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
