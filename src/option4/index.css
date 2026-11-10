@@ -1,0 +1,341 @@
+@import "tailwindcss";
+
+/* Medora's system (measured): Inter Display + Gentium Plus italic accent, 30px gutters,
+   40px section padding, warm card fill, 12–16px radii. Accent swapped to Paramount sky. */
+@theme {
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-manrope: "Manrope", ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #0a0a0a;
+  --color-night: #07152a;      /* header / menu bar — Paramount-tinted black */
+  --color-navy: #104584;
+  --color-sky: #3ab5fe;         /* replaces Medora's lime #C0F85F */
+  --color-card: #f1f3f6;        /* replaces Medora's warm #F3F1EB with a cool brand tint */
+  --color-body: #4d4d4d;
+  --color-soft: #a8a8a8;
+  --color-line: #e6e6e6;
+}
+
+html { scroll-behavior: auto; }
+body {
+  background: #fff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--color-sky); color: var(--color-ink); }
+
+/* Type scale measured on Medora */
+.t-hero { font-size: clamp(2.75rem, 6.1vw, 5.5rem); /* up to 88px on large screens */ line-height: 0.98; letter-spacing: -0.04em; font-weight: 400; }
+.t-hero-accent { font-family: var(--font-serif); font-style: italic; font-size: 1.115em; letter-spacing: -0.04em; }
+/* Option 4 type scale: every section uses these, so sizes stay consistent across the page.
+   Section heading 32 to 48px, card/list title 20 to 24px, small card title 18px, lead 16 to 18px, body 16px, small 14px, buttons 16px. */
+.t-h2 { font-size: clamp(2rem, 1.4rem + 2.2vw, 3rem); line-height: 1.12; letter-spacing: -0.02em; font-weight: 600; }
+.t-h3 { font-size: clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem); line-height: 1.3; letter-spacing: -0.02em; font-weight: 600; }
+.t-h4 { font-size: 1.125rem; line-height: 1.4; letter-spacing: -0.01em; font-weight: 600; }
+.t-lead { font-size: clamp(1rem, 0.95rem + 0.3vw, 1.125rem); line-height: 1.6; letter-spacing: -0.01em; }
+.t-body { font-size: 1rem; line-height: 1.6; letter-spacing: -0.01em; }
+.t-small { font-size: 0.875rem; line-height: 1.5; }
+.t-btn { font-size: 1rem; font-weight: 500; line-height: 1; }
+.t-tag { font-size: 0.875rem; line-height: 1.3; letter-spacing: -0.02em; text-transform: uppercase; }
+
+/* Apple-style "Liquid Glass" control: frosted + saturated backdrop, bright rim, top specular sheen. */
+.glass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden; /* clip content: the fill, blur, sheen and rim all stay inside the rounded shape */
+  clip-path: inset(0 round 9999px);
+  color: #fff;
+  background: linear-gradient(180deg, rgba(255,255,255,0.22) 0%, rgba(255,255,255,0.08) 100%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.55),
+    inset 0 -1px 0 rgba(255,255,255,0.12),
+    inset 0 0 12px rgba(255,255,255,0.08),
+    0 8px 24px -10px rgba(0,0,0,0.35);
+  transition: background 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(.16,1,.3,1);
+}
+.glass::before { /* specular sheen on the upper half */
+  content: "";
+  position: absolute;
+  inset: 1px 1px 50% 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.28), rgba(255,255,255,0));
+  pointer-events: none;
+  z-index: -1;
+}
+/* Brand gradient rim (#3AB5FE) — drawn as a masked ring so the glass fill stays untouched. */
+/* No outer border/drop shadow here: the frosted fill and blur stop exactly at the rim instead of spilling past it. */
+.glass-brand {
+  border: 0;
+  background-clip: padding-box;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.35),
+    inset 0 0 12px rgba(255,255,255,0.06);
+}
+.glass-brand::after {
+  content: "";
+  position: absolute;
+  inset: 1px; /* ring sits just inside the edge, so the clip never cuts it */
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(120deg, #3ab5fe 0%, rgba(58,181,254,0.25) 45%, rgba(255,255,255,0.55) 60%, #3ab5fe 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+.glass-brand:hover::after { background: linear-gradient(120deg, #3ab5fe 0%, rgba(58,181,254,0.6) 45%, rgba(255,255,255,0.75) 60%, #3ab5fe 100%); }
+.glass:hover { background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.12) 100%); transform: translateY(-1px); }
+.glass:active { transform: scale(0.97); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: rgba(20, 30, 45, 0.6); }
+}
+
+/* Brand glass CTA: #3AB5FE-tinted Liquid Glass with a gradient light orbiting the rim. */
+@property --cta-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.cta-glass {
+  position: relative;
+  isolation: isolate;
+  color: #fff;
+  background: linear-gradient(90deg, rgba(58,181,254,0.55) 0%, rgba(110,200,255,0.45) 55%, rgba(58,181,254,0.55) 100%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  transition: background 0.35s ease, transform 0.35s cubic-bezier(.16,1,.3,1);
+}
+.cta-glass::after { /* animated gradient rim — sits on the edge so the fill meets it with no gap */
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: conic-gradient(from var(--cta-angle), rgba(58,181,254,0.25) 0deg, #3ab5fe 70deg, #ffffff 110deg, #3ab5fe 150deg, rgba(58,181,254,0.25) 220deg, rgba(58,181,254,0.25) 360deg);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation: cta-orbit 3.2s linear infinite;
+  pointer-events: none;
+}
+@keyframes cta-orbit { to { --cta-angle: 360deg; } }
+/* Large hero version: richer fill + thicker orbiting rim for focus. */
+.cta-glass.cta-lg { background: linear-gradient(90deg, rgba(16,69,132,0.88) 0%, rgba(30,120,198,0.78) 55%, rgba(58,181,254,0.72) 100%); }
+.cta-glass.cta-lg::after { /* white light orbiting the rim */
+  padding: 2px;
+  background: conic-gradient(from var(--cta-angle), rgba(255,255,255,0.18) 0deg, rgba(255,255,255,0.95) 70deg, #ffffff 110deg, rgba(255,255,255,0.95) 150deg, rgba(255,255,255,0.18) 220deg, rgba(255,255,255,0.18) 360deg);
+}
+.cta-glass.cta-lg:hover { background: linear-gradient(90deg, rgba(16,69,132,0.95) 0%, rgba(36,135,215,0.88) 55%, rgba(58,181,254,0.85) 100%); }
+.cta-glass:hover {
+  background: linear-gradient(90deg, rgba(58,181,254,0.7) 0%, rgba(130,210,255,0.6) 55%, rgba(58,181,254,0.7) 100%);
+  transform: translateY(-1px);
+}
+.cta-glass:active { transform: scale(0.97); }
+@media (prefers-reduced-motion: reduce) { .cta-glass::after { animation: none; } }
+
+/* Nav pill (Function Health pattern): frosted dark glass over the hero, white frosted glass once the hero
+   section has been scrolled completely past. html.is-scrolled is toggled by a single ScrollTrigger in
+   Top.jsx (trigger: #intro-stage, start: "bottom top" — fires only once the pinned hero stage fully clears
+   the viewport), shared by the desktop and mobile pill. Nav links, dividers and the account buttons all read
+   their colors from these custom properties so the light↔dark swap stays in one place. Mobile (<768px) keeps
+   the dark pill at all times — the light swap only kicks in from tablet width up. */
+.hdr-pill {
+  --nav-fg: rgba(255, 255, 255, 0.7);
+  --nav-fg-hover: #ffffff;
+  --nav-divider: rgba(255, 255, 255, 0.25);
+  --login-fg: #ffffff;
+  --login-hover-bg: #ffffff;
+  --login-hover-fg: var(--color-ink);
+  --consult-bg: #ffffff;
+  --consult-fg: var(--color-ink);
+  /* Option 3: frosted white glass over the dark stage */
+  /* white glass over the dark stage; the hero film tweens --hdr-l from 1 (white) to 0 (the dark tint) for the bright meadow scene */
+  background: rgba(calc(255 * var(--hdr-l, 1)), calc(255 * var(--hdr-l, 1)), calc(255 * var(--hdr-l, 1)), calc(0.2 - 0.08 * var(--hdr-l, 1)));
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+@media (min-width: 768px) {
+  html.is-scrolled .hdr-pill {
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 10px 30px -15px rgba(10, 10, 10, 0.18);
+    --nav-fg: rgba(10, 10, 10, 0.65);
+    --nav-fg-hover: var(--color-ink);
+    --nav-divider: rgba(10, 10, 10, 0.18);
+    --login-fg: var(--color-ink);
+    --login-hover-bg: var(--color-ink);
+    --login-hover-fg: #ffffff;
+    --consult-bg: var(--color-navy);
+    --consult-fg: #ffffff;
+  }
+}
+
+/* Hide-on-scroll: once past the hero, html.nav-hidden (toggled by the ScrollTrigger in Top.jsx, driven by
+   its own scroll direction) slides the header pill up and out; scrolling back up brings it back. Desktop
+   (lg+) only — on mobile/tablet the menu pill stays visible at all times. */
+.site-header {
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+}
+@media (min-width: 1024px) {
+  html.nav-hidden .site-header {
+    transform: translateY(-130%);
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+/* Logo crossfade: the white mark shows over the hero, the brand-colored mark once .is-scrolled lands.
+   Mobile (<768px) keeps the white mark at all times, matching the permanently dark nav pill. */
+.logo-dark { opacity: 0; transition: opacity 0.3s ease; }
+.logo-light { transition: opacity 0.3s ease; }
+@media (min-width: 768px) {
+  html.is-scrolled .logo-dark { opacity: 1; }
+  html.is-scrolled .logo-light { opacity: 0; }
+}
+
+/* Hero → white cube transition tiles (built in Top.jsx). will-change is applied/cleared in JS only
+   while the flip is actually in view (~2,000 elements promoted to their own layer for the whole page's
+   lifetime was a real memory/jank cost for a section most visitors never scroll back into). */
+.hero-tile {
+  position: absolute;
+  background-repeat: no-repeat;
+  -webkit-backface-visibility: hidden; backface-visibility: hidden; /* flipped tiles vanish → section beneath shows */
+}
+
+.js [data-appear] { opacity: 0; }
+
+/* Smart Choice avatars bob gently, staggered (same timing as the live site). */
+@keyframes avatar-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+.floating-avatars img { will-change: translate; animation: avatar-float 2.6s ease-in-out infinite; }
+.floating-avatars img:nth-child(2) { animation-delay: -0.25s; }
+.floating-avatars img:nth-child(3) { animation-delay: -0.5s; }
+.floating-avatars img:nth-child(4) { animation-delay: -0.75s; }
+.floating-avatars img:nth-child(5) { animation-delay: -1s; }
+.floating-avatars img:nth-child(6) { animation-delay: -1.25s; }
+.floating-avatars img:nth-child(7) { animation-delay: -1.5s; }
+/* Body map: pulsing category pins, fading category note, hidden scrollbars (same as the products prototype) */
+.pin-dot { position: relative; width: 9px; height: 9px; border-radius: 9999px; background: #104584; box-shadow: 0 0 0 2px #fff, 0 1px 4px #10458466; transition: transform .3s; }
+.pin-ring { position: absolute; inset: 4px; border-radius: 9999px; background: #2f8fe024; border: 1.5px solid #10458480; animation: pin-pulse 2.4s ease-out infinite; }
+.pin:hover .pin-dot { transform: scale(1.25); }
+.pin-active .pin-ring { inset: -2px; background: #2f8fe038; border-color: #104584cc; }
+.pin-active .pin-dot { transform: scale(1.3); }
+@keyframes pin-pulse { 0% { opacity: 1; transform: scale(.7); } 80%, 100% { opacity: 0; transform: scale(1.5); } }
+.anim-fade-up { animation: fade-up .6s cubic-bezier(.22,1,.36,1) both; }
+@keyframes fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* Biology cards — Apple "Liquid Glass", smoked/black variant for the dark pool photo: a deep tinted blur, crisp inner
+   highlights, a faint specular sheen across the top and a cool light-catching rim.
+   --glass (0→1, set from scroll) fades the glass details in as a card becomes the open one. */
+.bio-glass {
+  --glass: 0;
+  isolation: isolate;
+  -webkit-backdrop-filter: blur(28px) saturate(150%) brightness(0.85);
+  backdrop-filter: blur(28px) saturate(150%) brightness(0.85);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,calc(0.32 * var(--glass))),
+    inset 0 -1px 0 rgba(255,255,255,calc(0.08 * var(--glass))),
+    inset 0 0 40px rgba(0,0,0,calc(0.25 * var(--glass))),
+    0 30px 70px -30px rgba(0,0,0,0.7);
+}
+.bio-glass::before { /* faint specular sheen over the upper part */
+  content: "";
+  position: absolute;
+  inset: 1px 1px 50% 1px;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0));
+  opacity: var(--glass);
+  pointer-events: none;
+  z-index: -1;
+}
+.bio-glass::after { /* light-catching rim: bright at the top-left and bottom-right, clear in between */
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  /* white gradient stroke: bright at the top-left, fading through the middle, catching light again at the bottom-right */
+  background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.45) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.4) 78%, rgba(255,255,255,0.85));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: var(--glass);
+  pointer-events: none;
+}
+/* Icon disc in the Biology cards: solid white when the card is closed, frosted glass when it is open (follows --glass). */
+.bio-icon {
+  background: rgba(255,255,255,calc(0.88 - 0.74 * var(--glass, 0)));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,calc(0.6 * var(--glass, 0))),
+    inset 0 0 0 1px rgba(255,255,255,calc(0.28 * var(--glass, 0))),
+    0 2px 10px -4px rgba(10,10,10,0.3);
+  -webkit-backdrop-filter: blur(12px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(160%);
+}
+.bio-icon-glyph { -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .bio-glass { background-color: rgba(20, 40, 50, 0.6) !important; }
+}
+
+/* Eyebrow letters roll up on hover, staggered per letter (Pillars section). */
+.roll-cell { display: inline-block; height: 1.5em; line-height: 1.5em; overflow: hidden; }
+.roll-stack { display: block; transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1); transition-delay: calc(var(--i) * 35ms); will-change: transform; }
+.roll-stack > span { display: block; height: 1.5em; line-height: 1.5em; }
+.roll-text:hover .roll-stack, .group\/card:hover .roll-stack { transform: translateY(-50%); }
+@media (prefers-reduced-motion: reduce) { .roll-stack { transition: none; transform: none !important; } }
+
+.font-system { font-family: var(--font-sans); }
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+/* Step caption swaps in when the active step changes */
+@keyframes step-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+:focus-visible { outline: 2px solid var(--color-sky); outline-offset: 3px; border-radius: 6px; }
+
+/* BestSelf mobile stat-card marquee: the track is rendered twice (real cards + a decorative clone set),
+   so translating by exactly -50% loops seamlessly back to the start. */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee-x 26s linear infinite; }
+
+/* Scroll-progress ring: slow decorative spin on the outer dashed halo, a breathing glow behind the
+   arc, and a springy pop when the ring first appears. */
+@keyframes scroll-ring-spin { to { transform: rotate(360deg); } }
+.scroll-ring-outer { animation: scroll-ring-spin 10s linear infinite; transform-box: fill-box; transform-origin: center; }
+
+@keyframes scroll-ring-glow { 0%, 100% { opacity: 0.35; transform: scale(0.92); } 50% { opacity: 0.75; transform: scale(1.08); } }
+.scroll-ring-glow { animation: scroll-ring-glow 2.4s ease-in-out infinite; }
+
+@keyframes scroll-ring-pop { 0% { opacity: 0; transform: scale(0.4) rotate(-50deg); } 65% { opacity: 1; transform: scale(1.15) rotate(6deg); } 100% { opacity: 1; transform: scale(1) rotate(0deg); } }
+.scroll-ring-pop { animation: scroll-ring-pop 0.65s cubic-bezier(.34,1.56,.64,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .js [data-appear] { opacity: 1; }
+  *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+
+/* Option 3 intro: the circle "zero" opens from the centre (the mask hole grows with --r). */
+.intro-zero {
+  -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 1.5px));
+  mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 1.5px));
+}
+.intro-script { font-family: "Playfair Display", Georgia, serif; font-style: italic; letter-spacing: -0.02em; }
+.intro-serif { font-family: "Playfair Display", Georgia, serif; font-style: normal; letter-spacing: -0.02em; }
+.intro-grain { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+/* Hero film: orbiting treatment pills — Apple-style frosted "liquid glass" on the navy stage */
+.film-pill {
+  position: absolute; left: 0; top: 0; display: grid; place-items: center; border-radius: 9999px; opacity: 0;
+  --pill: 58, 181, 254; /* tint per pill (set inline) */
+  background: radial-gradient(circle at 35% 25%, rgba(var(--pill), 0.75), rgba(var(--pill), 0.38) 55%, rgba(var(--pill), 0.22) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.65), inset 0 -6px 14px rgba(4, 18, 42, 0.35), 0 10px 26px -10px rgba(0, 0, 0, 0.6);
+  -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%);
+  will-change: transform; overflow: hidden;
+}
+.film-pill-gloss {
+  position: absolute; inset: 4% 14% 52%; border-radius: 9999px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
+}
+.film-pill svg { position: relative; width: 46%; height: 46%; filter: drop-shadow(0 1px 3px rgba(4, 18, 42, 0.5)); }

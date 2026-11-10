@@ -16,6 +16,7 @@ export default defineConfig({
         main: fileURLToPath(new URL('./index.html', import.meta.url)),
         option2: fileURLToPath(new URL('./option-2/index.html', import.meta.url)),
         option3: fileURLToPath(new URL('./option-3/index.html', import.meta.url)),
+        option4: fileURLToPath(new URL('./option-4/index.html', import.meta.url)),
       },
     },
   },
