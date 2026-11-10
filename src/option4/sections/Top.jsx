@@ -195,7 +195,7 @@ export function Hero() {
     if (reducedMotion()) {
       // no film and no flip: the hero's opening frame sits in normal flow above the treatment cards
       gsap.set(root.current, { position: 'relative' })
-      gsap.set(q('[data-film-title] > span, [data-film-desc]'), { opacity: 1 })
+      gsap.set(q('[data-film-title] > span, [data-film-desc], [data-film-desc] > *'), { opacity: 1 })
       gsap.set(q('[data-film-hint]'), { autoAlpha: 0 })
       return
     }
@@ -204,20 +204,33 @@ export function Hero() {
     const stage = root.current.parentElement // #intro-stage: hero overlay + treatment cards
     let tl
     let lastWidth = 0
+    let lockTouch = () => {}
+    let unlockTouch = () => {}
     const build = () => {
+      unlockTouch()
       tl?.scrollTrigger?.kill()
       tl?.kill()
       lastWidth = window.innerWidth
       // Touch phones/tablets: no long scrubbed scroll — one swipe down past the top plays the whole hero → cards
-      // transition by itself (~1.5s) while the stage is held briefly, and coming back to the top plays it in reverse.
+      // transition by itself (~2.4s, eased) while the page is held on the cards, and coming back to the top plays it in reverse.
       // Mouse/trackpad desktops keep the scroll-scrubbed film.
       const touch = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 1024
       if (touch) {
         tl = gsap.timeline({ paused: true, defaults: { overwrite: 'auto' } })
+        // the playhead itself is eased (slow start, gentle landing) so the whole transition glides instead of snapping
+        let drive
+        const playTo = (p, dur) => { drive?.kill(); drive = gsap.to(tl, { progress: p, duration: dur, ease: 'power2.inOut', onComplete: unlockTouch }) }
+        // One swipe = one section change: a phone flick carries momentum that would otherwise fling the page past the
+        // short hold while the cards are still unfolding (they slid off the bottom). So the page settles on the cards
+        // and is held still for the length of the transition, then normal scrolling resumes.
+        const html = document.documentElement
+        const block = (e) => e.preventDefault()
+        lockTouch = () => { html.classList.add('touch-lock'); window.addEventListener('touchmove', block, { passive: false }); window.addEventListener('wheel', block, { passive: false }) }
+        unlockTouch = () => { html.classList.remove('touch-lock'); window.removeEventListener('touchmove', block); window.removeEventListener('wheel', block) }
         tl.scrollTrigger = ScrollTrigger.create({
           id: 'hero-pin', trigger: stage, start: 'top+=8 top', end: '+=55%', pin: stage, anticipatePin: 1, refreshPriority: 1,
-          onEnter: () => tl.timeScale(1.25).play(),
-          onLeaveBack: () => tl.timeScale(1.6).reverse(),
+          onEnter: (self) => { lockTouch(); window.scrollTo(0, self.end - 2); playTo(1, 2.4) },
+          onLeaveBack: () => { lockTouch(); window.scrollTo(0, 0); playTo(0, 1.8) },
         })
       } else {
         tl = gsap.timeline({
@@ -262,6 +275,7 @@ export function Hero() {
       window.removeEventListener('resize', onResize)
       clearTimeout(t)
       cancelAnimationFrame(raf)
+      unlockTouch()
       tl?.scrollTrigger?.kill()
       tl?.kill()
     }

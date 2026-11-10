@@ -47,8 +47,8 @@ export function addFilm(tl, scope) {
   tl.to(filmState, { scatter: 1, ease: 'power2.in', duration: 0.45 }, 0.3)
     .to(filmState, { push: 1, ease: 'power2.in', duration: 0.55 }, 0.3)
     .fromTo(q('[data-runner]'), { scale: 1 }, { scale: 4.5, opacity: 0, transformOrigin: '55% 30%', ease: 'power2.in', duration: 0.55, immediateRender: false }, 0.3)
-    .to(q('[data-film-a]'), { opacity: 0, scale: 1.06, ease: 'power1.in', duration: 0.3 }, 0.35)
-    .to(q('[data-film-desc]'), { opacity: 0, y: -20, ease: 'power1.in', duration: 0.25 }, 0.35)
+    .fromTo(q('[data-film-a]'), { opacity: 1, scale: 1 }, { opacity: 0, scale: 1.06, ease: 'power1.in', duration: 0.3, immediateRender: false }, 0.35)
+    .fromTo(q('[data-film-desc]'), { opacity: 1, y: 0 }, { opacity: 0, y: -20, ease: 'power1.in', duration: 0.25, immediateRender: false }, 0.35)
     // Option 4: no meadow — the dark stage (and its fallback colour) fades straight out, uncovering the treatment
     // cards section that sits underneath the hero (Top.jsx unfolds the cards from here)
     .to(q('[data-film-gl], [data-film-bg]'), { opacity: 0, ease: 'none', duration: 0.25 }, 0.65)
@@ -363,10 +363,10 @@ export function HeroFilm() {
         </div>
         <div ref={pillFront} className="pointer-events-none absolute inset-0" />
         {/* short description — copy from the live hero; in front of the body so it never hides behind the legs */}
-        <div data-film-desc className="absolute inset-x-5 bottom-[7%] mx-auto flex max-w-[420px] flex-col items-center text-center opacity-0 lg:inset-x-auto lg:right-[5%] lg:bottom-[12%] lg:mx-0 lg:max-w-[320px] 2xl:right-[6%] 2xl:bottom-[14%] 2xl:max-w-[430px] lg:items-start lg:text-left">
+        <div data-film-desc className="absolute inset-x-5 bottom-[7%] mx-auto flex max-w-[420px] flex-col items-center text-center lg:inset-x-auto lg:right-[5%] lg:bottom-[12%] lg:mx-0 lg:max-w-[320px] 2xl:right-[6%] 2xl:bottom-[14%] 2xl:max-w-[430px] lg:items-start lg:text-left">
           {/* Option 4: wider on desktop so it sits in 3 lines, with a CTA underneath */}
-          <p className="text-[15px] leading-relaxed text-white/65 sm:text-[17px]">Evidence-based treatment, provider-guided care, and a healthier, more confident you—all from the comfort of home.</p>
-          <Cta href={links.products} variant="white" size="lg" className="mt-5 lg:mt-6">Explore Treatments</Cta>
+          <p className="text-[15px] leading-relaxed text-white/65 opacity-0 sm:text-[17px]">Evidence-based treatment, provider-guided care, and a healthier, more confident you—all from the comfort of home.</p>
+          <div className="mt-5 opacity-0 lg:mt-6"><Cta href={links.products} variant="white" size="lg">Explore Treatments</Cta></div>
         </div>
       </div>
 
@@ -387,7 +387,7 @@ export function playFilmEntrance(scope) {
   gsap.to(filmState, { enter: 1, rise: 1, duration: 2, ease: 'power3.out' })
   gsap.to(filmState, { coins: 1, duration: 1.2, delay: 0.6, ease: 'power2.out' })
   gsap.fromTo(scope.querySelectorAll('[data-film-title] > span'), { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1, stagger: 0.12, delay: 0.5, ease: 'power3.out' })
-  gsap.fromTo(scope.querySelectorAll('[data-film-desc]'), { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.9, delay: 1.0, ease: 'power2.out' })
+  gsap.fromTo(scope.querySelectorAll('[data-film-desc] > *'), { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.9, stagger: 0.12, delay: 1.0, ease: 'power2.out' })
   const runner = scope.querySelector('[data-runner-wrap]')
   if (runner) gsap.fromTo(runner, { yPercent: 35, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.8, ease: 'power3.out' })
   if (hint && window.scrollY < 40) gsap.fromTo(hint, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.8, delay: 1.2, ease: 'power2.out', onStart() { if (window.scrollY > 40) this.kill() } })
