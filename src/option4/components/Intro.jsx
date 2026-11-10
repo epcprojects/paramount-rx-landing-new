@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { gsap, reducedMotion } from '../motion.js'
+import { gsap, reducedMotion, lenis } from '../motion.js'
 import logoSvg from '../../../public/images/logo.svg?raw'
 
 // Opening for Option 3, inspired by why.zero.university's post-"draw a zero" moment: a soft, frosted screen where
 // the Paramount HealthRx logo draws itself on letter by letter, then a circle (the "zero") opens from the centre to
-// reveal the hero. It replays whenever the visitor scrolls all the way back to the top. Built with our own logo and
+// reveal the hero. It plays once, on load. Built with our own logo and
 // colours — no third-party assets.
 
 let resolveIntro
@@ -34,13 +34,13 @@ export function Intro() {
     let prevOverflow = ''
     const skip = () => tl?.timeScale(3.5) // impatient visitors (any input) speed it up
     const evs = ['wheel', 'touchstart', 'keydown', 'pointerdown']
-    const unlock = () => { if (html.style.overflow === 'hidden') html.style.overflow = prevOverflow }
+    const unlock = () => { if (html.style.overflow === 'hidden') html.style.overflow = prevOverflow; lenis?.start() }
 
     /** Plays the intro from the start. `first` holds the page at the top while it plays (the first visit only —
      *  a replay never blocks scrolling, the visitor can scroll straight on through it). */
     const play = (first) => {
       tl?.kill()
-      if (first) { prevOverflow = html.style.overflow; html.style.overflow = 'hidden'; window.scrollTo(0, 0) }
+      if (first) { prevOverflow = html.style.overflow; html.style.overflow = 'hidden'; lenis?.stop(); lenis ? lenis.scrollTo(0, { immediate: true, force: true }) : window.scrollTo(0, 0) }
       const radius = Math.hypot(window.innerWidth, window.innerHeight) * 0.6 + 40
       gsap.set(el, { autoAlpha: 1, '--r': '0px' })
       gsap.set(letters, { strokeDashoffset: (i, p) => p.dataset.len, strokeWidth: 0.3, fillOpacity: 0 })
@@ -68,19 +68,11 @@ export function Intro() {
     }
     play(true)
 
-    // replay when the visitor comes all the way back to the top after having scrolled away
-    let armed = false
-    const onScroll = () => {
-      const y = window.scrollY
-      if (y > window.innerHeight * 0.5) armed = true
-      else if (armed && y <= 2) { armed = false; play(false) }
-    }
-    window.addEventListener('scroll', onScroll, { passive: true })
+    // (main page: the intro plays once on load only — scrolling back to the top stays on the hero)
 
     return () => {
       tl?.kill()
       clearTimeout(skipTimer)
-      window.removeEventListener('scroll', onScroll)
       evs.forEach((e) => window.removeEventListener(e, skip))
       unlock()
     }
@@ -103,7 +95,7 @@ export function Intro() {
       <div className="intro-grain pointer-events-none absolute inset-0 opacity-[0.035]" />
 
       {/* the Paramount HealthRx logo (inlined so each letter can be drawn on) */}
-      <div data-words role="img" aria-label="Paramount HealthRx" className="relative w-[min(78vw,620px)] [&_svg]:h-auto [&_svg]:w-full [&_svg]:overflow-visible" dangerouslySetInnerHTML={{ __html: logoSvg }} />
+      <div data-words role="img" aria-label="Paramount HealthRx" className="relative w-[min(60vw,400px)] [&_svg]:h-auto [&_svg]:w-full [&_svg]:overflow-visible" dangerouslySetInnerHTML={{ __html: logoSvg }} />
     </div>
   )
 }

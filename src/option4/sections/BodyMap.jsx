@@ -75,7 +75,7 @@ function Tabs({ active, onChange, size = 'md', className = '' }) {
             role="tab"
             aria-selected={on}
             onClick={() => onChange(c.id)}
-            className={`flex shrink-0 cursor-pointer items-center rounded-full border transition-colors ${sm ? 'gap-1.5 px-3.5 py-1.5 md:px-4 md:py-2' : 'gap-2 px-[22px] py-3'} ${on ? 'border-navy bg-navy' : 'border-neutral-200 bg-white hover:border-navy'}`}
+            className={`flex shrink-0 cursor-pointer items-center rounded-full border transition-colors ${sm ? 'gap-1.5 px-4 py-2.5 md:px-4' : 'gap-2 px-[22px] py-3'} ${on ? 'border-navy bg-navy' : 'border-neutral-200 bg-white hover:border-navy'}`}
           >
             {c.icon && <img src={c.icon} alt="" aria-hidden width={big ? 28 : 24} height={big ? 28 : 24} className={`${big ? (sm ? 'size-5' : 'size-7') : sm ? 'size-4' : 'size-6'} shrink-0 object-contain`} />}
             <span className={`whitespace-nowrap ${sm ? 'text-[13px] md:text-sm' : 'text-base'} ${on ? 'font-semibold text-white' : 'font-medium text-neutral-700'}`}>{c.label}</span>
@@ -159,6 +159,8 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
   const userScrolled = useRef(false)
   const raf = useRef(0)
   const anim = useRef(0)
+  const glide = useRef(0) // smooth wheel glide (desktop list)
+  const glideTo = useRef(null)
   const focusRef = useRef(focus)
   focusRef.current = focus
   const [current, setCurrent] = useState(groups[0].id)
@@ -229,9 +231,34 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
   useEffect(() => { setCurrent(groupAtLine()); return () => { cancelAnimationFrame(raf.current); cancelAnimationFrame(anim.current) } }, [groupAtLine])
 
   useImperativeHandle(ref, () => ({
+    /** Scrolls the desktop list by a wheel delta (used when the wheel is over the body). Returns true if the list
+     *  could move that way — false at its top/bottom, so the page can scroll on instead. */
+    wheelBy(dy) {
+      const el = box.current
+      if (inline || !el || !dy) return false
+      const max = el.scrollHeight - el.clientHeight
+      const from = glideTo.current ?? el.scrollTop
+      if ((dy < 0 && from <= 0) || (dy > 0 && from >= max - 1)) return false
+      onUserInput()
+      // glide toward the new target instead of jumping, matching the page's smooth scroll
+      glideTo.current = Math.max(0, Math.min(max, from + dy))
+      if (!glide.current) {
+        const step = () => {
+          const t = glideTo.current
+          if (t == null) { glide.current = 0; return }
+          const d = t - el.scrollTop
+          if (Math.abs(d) < 0.5) { el.scrollTop = t; glideTo.current = null; glide.current = 0; return }
+          el.scrollTop += d * 0.12
+          glide.current = requestAnimationFrame(step)
+        }
+        glide.current = requestAnimationFrame(step)
+      }
+      return true
+    },
     scrollToCategory(id) {
       const el = box.current
       if (!el) return
+      cancelAnimationFrame(glide.current); glide.current = 0; glideTo.current = null
       let y
       if (inline) {
         const node = id === 'all' ? el : el.querySelector(`[data-group="${id}"] h3`)
@@ -243,7 +270,7 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
       userScrolled.current = false
       smoothTo(y)
     },
-  }), [smoothTo, inline, topOffset])
+  }), [smoothTo, inline, topOffset, onUserInput])
 
   return (
     <div
@@ -273,7 +300,7 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
                       <p className="text-[13px] font-semibold text-[#242424]">Not available in your state yet</p>
                       <p className="mt-0.5 text-xs leading-snug text-neutral-500">A provider can still discuss {gr.label.toLowerCase()} options with you.</p>
                     </div>
-                    <a href={links.products} className="inline-flex items-center justify-center gap-1.5 self-end rounded-full bg-navy px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-[#0c3a6f]">
+                    <a href={links.products} className="inline-flex items-center justify-center gap-1.5 self-end rounded-full bg-navy px-3.5 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-[#0c3a6f] lg:px-3 lg:py-1.5">
                       Start a consultation
                       <svg viewBox="0 0 16 16" className="size-3" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden><path d="M6 3l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </a>
@@ -330,6 +357,25 @@ export function BodyMap() {
   }, [])
   const choose = useCallback((id) => { setCat(id); list.current?.scrollToCategory(id) }, [])
 
+  // desktop: the mouse wheel anywhere in this section — heading, category tabs, the body — scrolls the treatment
+  // list on the right (the page only scrolls on once the list has reached its top or bottom). The list itself glides the same way,
+  // in step with the page's smooth scroll. Non-passive so the page stays put while the list moves.
+  useEffect(() => {
+    const el = root.current
+    if (!desktop || !el) return
+    const onWheel = (e) => {
+      // only once the section has settled into view (top near the top of the screen), so scrolling down the
+      // page doesn't get caught by the list while the section is still sliding in
+      const r = el.getBoundingClientRect()
+      if (r.top > 100 || r.bottom < window.innerHeight * 0.75) return
+      const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY
+      // consumed by the list → keep it from the page's smooth scroller (Lenis listens further up the tree)
+      if (list.current?.wheelBy(dy)) { e.preventDefault(); e.stopPropagation() }
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+  }, [desktop])
+
   // desktop: as the section scrolls away the camera eases back a little and the side columns fade
   useGSAP(() => {
     const mm = gsap.matchMedia()
@@ -346,10 +392,10 @@ export function BodyMap() {
   return (
     // Same system font and proportions as the prototype (its 108px header space is kept as top/bottom padding here).
     <section ref={root} id="treatments" aria-label="Treatments mapped to the body" className="font-system relative z-10 bg-white lg:py-[54px]">
-      <div className="mx-auto flex max-w-[96rem] flex-col px-5 pt-6 md:px-10 md:pt-8 lg:grid lg:h-[calc(100svh-108px)] lg:min-h-[40rem] lg:grid-cols-[minmax(18rem,26rem)_minmax(0,1fr)_minmax(22rem,27rem)] lg:gap-8 lg:pt-0">
+      <div className="mx-auto flex max-w-[96rem] flex-col px-5 pt-6 md:px-10 md:pt-8 lg:grid lg:h-[calc(100svh-108px)] lg:min-h-[40rem] lg:grid-cols-[minmax(15rem,18rem)_minmax(0,1fr)_minmax(17rem,20rem)] lg:gap-6 xl:grid-cols-[minmax(18rem,26rem)_minmax(0,1fr)_minmax(22rem,27rem)] xl:gap-8 lg:pt-0">
         <div className="hero-side relative z-[3] flex flex-col gap-5 pb-4 md:gap-6 lg:justify-center lg:gap-10 lg:pb-8">
           <div className="flex flex-col gap-3">
-            <h2 className="t-h2 text-[#242424]">
+            <h2 className="t-h2 text-[#242424] lg:max-xl:!text-[30px]">
               <span className="block whitespace-nowrap md:inline lg:block">Every treatment,</span>{' '}
               <span className="block whitespace-nowrap md:inline lg:block">mapped to the body.</span>
             </h2>
@@ -374,7 +420,9 @@ export function BodyMap() {
                 <BodyScene category={cat} onSelect={choose} scroll={scroll} reducedMotion={reduced} />
               </Suspense>
             )}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-white/0 to-white lg:hidden" />
+            {/* soft fades at the top and bottom edges so the body never ends in a hard cut when the camera zooms in (all sizes) */}
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-t from-white/0 to-white lg:h-32" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-16 bg-gradient-to-b from-white/0 to-white lg:h-40" />
             <div className="pointer-events-none absolute inset-x-0 bottom-2 flex justify-center md:bottom-4 lg:bottom-16">
               <svg width="320" height="63" viewBox="0 0 235 46" fill="none" className="h-auto w-[200px] max-w-[80%] md:w-[260px] lg:w-[320px]" role="img" aria-label="Drag to rotate">
                 <defs>

@@ -37,7 +37,7 @@ export function Header() {
     <DesktopHeader />
     <header className="site-header sticky top-0 z-50 -mb-[76px] pt-3 text-white sm:-mb-[90px] lg:hidden">
       <div className="px-4 sm:px-[30px]">
-        <div className="hdr-pill flex h-[64px] items-center justify-between rounded-2xl px-4 sm:h-[78px] sm:px-6">
+        <div className="hdr-pill flex h-[64px] items-center justify-between rounded-full px-5 sm:h-[78px] sm:px-7">
           <a href="#top" aria-label="Paramount HealthRx — home"><Logo className="h-8 sm:h-9" /></a>
           <div className="flex items-center gap-3">
             <AccountButtons />
@@ -209,18 +209,18 @@ export function Hero() {
       tl?.kill()
       lastWidth = window.innerWidth
       tl = gsap.timeline({
-        scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=440%', pin: stage, scrub: 1, anticipatePin: 1, refreshPriority: 1 },
+        scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=280%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1 },
       })
-      // 1 — the film: runner + orbiting pills, then he zooms out and the dark stage fades away (1.4 → 1.65)
+      // 1 — the film: runner + orbiting pills, then he zooms out and the dark stage fades away (0.65 → 0.9)
       addFilm(tl, root.current)
 
       // 2 — the hero's own backing fades with the stage, so the treatment cards section underneath shows through
-      tl.fromTo(root.current, { backgroundColor: 'rgba(234,246,255,1)' }, { backgroundColor: 'rgba(234,246,255,0)', ease: 'none', duration: 0.25, immediateRender: false }, 1.4)
-        .set(q('[data-film-hint]'), { autoAlpha: 0 }, 1.4)
+      tl.fromTo(root.current, { backgroundColor: 'rgba(234,246,255,1)' }, { backgroundColor: 'rgba(234,246,255,0)', ease: 'none', duration: 0.25, immediateRender: false }, 0.65)
+        .set(q('[data-film-hint]'), { autoAlpha: 0 }, 0.65)
         .set(root.current, { pointerEvents: 'none' }, FILM_LEN)
 
       // 3 — the treatment cards unfold from edge-on while the stage is still pinned (same motion as the main page)
-      const T = 1.45
+      const T = 0.7
       const head = stage.querySelector('[data-fan-head]')
       if (head) tl.fromTo(head, { opacity: 0, y: 30 }, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.35, immediateRender: true }, T)
       const origins = ['100% 50%', '50% 50%', '0% 50%']

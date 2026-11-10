@@ -191,14 +191,14 @@ const steps = [
   { title: 'Delivery & Support', body: 'Receive tailored peptides, hormones, and vitamins designed for you', img: 'step4', pos: '78%' },
 ]
 
-function StepsIntro({ large = false }) {
+function StepsIntro({ large = false, cta = true }) {
   return (
     <div className="flex flex-col gap-5 md:gap-6">
       <div className="flex flex-col gap-3">
         <h2 className="t-h2 text-[#17171766]">Get Started in<br /><span className="text-[#171717]">4 easy steps</span></h2>
         <p className="t-lead text-neutral-700">Simple. Secure. Physician-Guided.</p>
       </div>
-      <PillButton href={links.products}>Explore Treatments</PillButton>
+      {cta && <PillButton href={links.products}>Explore Treatments</PillButton>}
     </div>
   )
 }
@@ -227,6 +227,8 @@ export function Steps() {
       setActive((cur) => (cur === a ? cur : a))
     }
     paint(0)
+    // desktop only: phones/tablets get four static step cards instead (see below)
+    if (!window.matchMedia('(min-width: 1024px)').matches) return
     const st = ScrollTrigger.create({
       trigger: stage.current,
       start: 'top top',
@@ -247,10 +249,24 @@ export function Steps() {
 
   return (
     <section ref={root} className="relative z-10 bg-white">
-      {/* phones / tablets: intro (heading, CTA, looping video); the pinned step panel below is shared with desktop */}
-      <div className="mx-auto flex max-w-7xl flex-col items-start gap-8 px-4 pt-8 pb-6 md:pt-16 md:pb-8 lg:hidden">
-        <div data-appear><StepsIntro /></div>
+      {/* phones / tablets: intro (heading, looping video), then the four steps as separate static cards, and one CTA
+          under them (the pinned step panel is desktop only) */}
+      <div className="mx-auto flex max-w-7xl flex-col items-start gap-8 px-4 pt-8 pb-10 md:pt-16 md:pb-14 lg:hidden">
+        <div data-appear><StepsIntro cta={false} /></div>
         <LazyVideo className="h-[200px] w-full rounded-2xl object-cover md:h-[360px]" src="/videos/steps.mp4" />
+        <ol className="grid w-full gap-3 md:grid-cols-2 md:gap-4" aria-label="How it works">
+          {steps.map((st, i) => (
+            <li key={st.title} data-appear className="relative isolate flex min-h-[240px] flex-col justify-end overflow-hidden rounded-[20px] p-5 text-white md:min-h-[300px] md:p-6">
+              <img src={`/img/steps-bg-${i + 1}-800.webp`} alt="" aria-hidden loading="lazy" style={{ '--pos': st.pos }}
+                className="absolute inset-0 -z-10 h-full w-full object-cover object-[var(--pos)_center]" />
+              <div aria-hidden className="absolute inset-0 -z-[5] bg-[linear-gradient(180deg,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0.55)_45%,rgba(0,0,0,0.85)_100%)]" />
+              <span className="text-xs font-medium tracking-[0.1em] text-white/80 uppercase">Step 0{i + 1}</span>
+              <h3 className="mt-1 text-[28px] leading-[1.15] tracking-[-0.03em] text-[#f4f4f4] md:text-[32px]">{st.title}</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-white/[0.7]">{st.body}</p>
+            </li>
+          ))}
+        </ol>
+        <div data-appear><PillButton href={links.products}>Explore Treatments</PillButton></div>
       </div>
 
       {/* desktop: intro row (heading, CTA, looping video) above the pinned panel, as on the live site */}
@@ -261,7 +277,7 @@ export function Steps() {
 
       {/* pinned dark panel with a sliding step list (reference: roveia.com "Trusted by" section) — all screen sizes;
           phones/tablets stack the list above the description and leave room at the top for the floating header */}
-      <div ref={stage} className="h-svh px-3 py-3 lg:px-5 lg:py-4">
+      <div ref={stage} className="hidden h-svh px-3 py-3 lg:block lg:px-5 lg:py-4">
         <div className="relative isolate flex h-full flex-col items-center justify-center overflow-hidden rounded-[24px] bg-black/65 px-5 lg:rounded-[40px]">
           {steps.map((st, i) => (
             <img key={st.img} src={`/img/steps-bg-${i + 1}-1800.webp`} alt="" aria-hidden loading="lazy" style={{ '--pos': st.pos }}
@@ -407,7 +423,7 @@ export function Pillars() {
 
         <div ref={list} data-appear className="relative flex flex-col border-t border-gray-200" onMouseMove={onMove} onMouseLeave={() => setHover(-1)}>
           {/* photo preview that follows the pointer (desktop) */}
-          <div aria-hidden className="pointer-events-none absolute right-28 z-10 hidden h-[200px] w-[260px] overflow-hidden rounded-[16px] shadow-[0_24px_60px_-24px_rgba(10,26,47,0.45)] transition-opacity duration-300 lg:block"
+          <div aria-hidden className="pointer-events-none absolute right-28 z-10 hidden h-[200px] w-[260px] overflow-hidden rounded-[16px] shadow-[0_24px_60px_-24px_rgba(10,26,47,0.45)] transition-opacity duration-300 lg:block [@media(hover:none)]:!hidden"
             style={{ top: previewY, transform: 'translateY(-50%)', opacity: hover >= 0 ? 1 : 0 }}>
             {pillars.map((p, i) => (
               <img key={p.title} src={p.preview} alt="" loading="lazy" className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${i === hover ? 'opacity-100' : 'opacity-0'}`} />
@@ -426,7 +442,7 @@ export function Pillars() {
                   </span>
                   <div className="flex min-w-0 flex-col gap-1 self-center lg:gap-2">
                     <h3 className={`t-h3 transition-colors duration-300 ${dim ? 'text-gray-950 lg:text-gray-300' : 'text-gray-950'}`}>{p.title}</h3>
-                    <div className={`hidden transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:grid ${on ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}>
+                    <div className={`hidden transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:grid ${on ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'} [@media(hover:none)]:!grid [@media(hover:none)]:!grid-rows-[1fr]`}>
                       <div className="overflow-hidden">
                         <p className="t-lead max-w-xl pt-1 text-gray-500">{p.body}</p>
                         <div className="flex flex-wrap gap-2 pt-3">
@@ -654,13 +670,13 @@ export function Footer() {
                   <p className="max-w-md text-sm text-white sm:text-base">Precision health optimization backed by science and delivered with care.</p>
                 </div>
                 <div className="flex flex-col gap-4 sm:gap-6">
-                  <a className="flex min-w-0 items-center gap-3 sm:gap-4" href={links.email}>
+                  <a className="flex min-h-11 min-w-0 items-center gap-3 sm:gap-4" href={links.email}>
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-white/25">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden><rect x="1.75" y="3.25" width="12.5" height="9.5" rx="2" stroke="white" strokeWidth="1.3" /><path d="M2.5 4.5 8 8.5l5.5-4" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </span>
                     <span className="min-w-0 text-sm font-medium break-all text-white sm:text-base sm:break-normal">support@paramounthealthrx.com</span>
                   </a>
-                  <a className="flex items-center gap-3 sm:gap-4" href={links.phone}>
+                  <a className="flex min-h-11 items-center gap-3 sm:gap-4" href={links.phone}>
                     <span className="flex size-8 shrink-0 items-center justify-center rounded-full border border-white/25">
                       <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden><path d="M5.6 2.2 4 2C2.9 2.2 2 3.2 2.1 4.4c.4 4.9 4.6 9.1 9.5 9.5 1.2.1 2.2-.8 2.4-1.9l-.2-1.6a1 1 0 0 0-.7-.8l-1.8-.6a1 1 0 0 0-1 .3l-.8.9a7.6 7.6 0 0 1-3.3-3.3l.9-.8a1 1 0 0 0 .3-1l-.6-1.8a1 1 0 0 0-.8-.7Z" stroke="white" strokeWidth="1.3" strokeLinejoin="round" /></svg>
                     </span>
@@ -671,9 +687,9 @@ export function Footer() {
 
               <div className="flex w-full min-w-0 flex-col gap-6 md:flex-none lg:flex-1 lg:gap-[30px]">
                 <p className="text-base font-bold text-neutral-400">Paramount HealthRx</p>
-                <ul className="flex flex-col gap-1.5 lg:gap-5">
+                <ul className="flex flex-col gap-0 lg:gap-5">
                   {footerLinks.map((l) => (
-                    <li key={l.label} className="text-sm font-medium text-white underline-offset-2 hover:text-sky hover:underline md:text-base"><a href={l.href}>{l.label}</a></li>
+                    <li key={l.label} className="text-sm font-medium text-white underline-offset-2 hover:text-sky hover:underline md:text-base"><a href={l.href} className="inline-block py-2.5 lg:py-0">{l.label}</a></li>
                   ))}
                 </ul>
               </div>

@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin'
 import { useGSAP } from '@gsap/react'
+import Lenis from 'lenis'
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin, useGSAP)
 
@@ -26,6 +27,19 @@ export function appear(scope) {
       scrollTrigger: { trigger: el, start: 'top 92%', once: true },
     })
   })
+}
+
+/** Page-wide smooth (eased, inertia-style) wheel scrolling via Lenis, driven by GSAP's ticker so ScrollTrigger pins
+ *  and scrubs stay in lock-step. Touch scrolling stays native; skipped entirely for reduced-motion visitors.
+ *  Anything with [data-lenis-prevent] keeps its own native scrolling. */
+export let lenis = null
+export function startSmoothScroll() {
+  if (lenis || typeof window === 'undefined' || reducedMotion()) return lenis
+  lenis = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 1, anchors: true })
+  lenis.on('scroll', ScrollTrigger.update)
+  gsap.ticker.add((time) => lenis.raf(time * 1000))
+  gsap.ticker.lagSmoothing(0)
+  return lenis
 }
 
 export { gsap, ScrollTrigger, useGSAP }

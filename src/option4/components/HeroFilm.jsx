@@ -33,41 +33,37 @@ const icons = [IconTestosterone, IconPeptides, IconSexualHealth, IconWeightLoss,
 
 /** Length of the film in timeline units (Option 4: the runner zooms out and the stage fades away by here; Top.jsx
  *  overlaps the end of it on the same pinned timeline with the treatment cards unfolding underneath). */
-export const FILM_LEN = 1.65
+export const FILM_LEN = 0.9
 export function addFilm(tl, scope) {
   const q = gsap.utils.selector(scope)
   if (!q('[data-film]')[0]) return
 
-  // 1 — body rises in the centre, slowly turning; coins spin up into orbit; the words write on behind it
-  tl.fromTo(filmState, { rise: 0, spin: 0, coins: 0, scatter: 0, push: 0 }, { rise: 1, ease: 'power2.out', duration: 0.8, immediateRender: false }, 0)
-    .fromTo(q('[data-runner]'), { y: 60 }, { y: 0, ease: 'power2.out', duration: 0.8, immediateRender: false }, 0)
-    .to(filmState, { spin: 1, ease: 'none', duration: 1.6 }, 0)
-    .to(filmState, { coins: 1, ease: 'power2.out', duration: 0.5 }, 0.2)
+  // 1 — the full hero (runner, pills in orbit, heading, copy + CTA) is the resting state: playFilmEntrance brings it in
+  //     once after the intro, so scrolling back to the top always lands on it. Scroll here only turns the orbit a little.
+  tl.fromTo(filmState, { spin: 0, scatter: 0, push: 0 }, { spin: 1, ease: 'none', duration: 0.9, immediateRender: false }, 0)
     .fromTo(q('[data-film-hint]'), { opacity: 1, y: 0 }, { opacity: 0, y: 20, duration: 0.15, immediateRender: false }, 0)
-    .fromTo(q('[data-film-title] > span'), { opacity: 0, y: 40 }, { opacity: 1, y: 0, ease: 'power3.out', duration: 0.4, stagger: 0.12, immediateRender: false }, 0.1)
-    .fromTo(q('[data-film-desc]'), { opacity: 0, y: 24 }, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.35, immediateRender: false }, 0.55)
 
   // 2 — coins fly outward, the camera pushes into the body, the water gives way to the meadow
-  tl.to(filmState, { scatter: 1, ease: 'power2.in', duration: 0.45 }, 1.05)
-    .to(filmState, { push: 1, ease: 'power2.in', duration: 0.55 }, 1.05)
-    .fromTo(q('[data-runner]'), { scale: 1 }, { scale: 4.5, opacity: 0, transformOrigin: '55% 30%', ease: 'power2.in', duration: 0.55, immediateRender: false }, 1.05)
-    .to(q('[data-film-a]'), { opacity: 0, scale: 1.06, ease: 'power1.in', duration: 0.3 }, 1.1)
-    .to(q('[data-film-desc]'), { opacity: 0, y: -20, ease: 'power1.in', duration: 0.25 }, 1.1)
+  tl.to(filmState, { scatter: 1, ease: 'power2.in', duration: 0.45 }, 0.3)
+    .to(filmState, { push: 1, ease: 'power2.in', duration: 0.55 }, 0.3)
+    .fromTo(q('[data-runner]'), { scale: 1 }, { scale: 4.5, opacity: 0, transformOrigin: '55% 30%', ease: 'power2.in', duration: 0.55, immediateRender: false }, 0.3)
+    .to(q('[data-film-a]'), { opacity: 0, scale: 1.06, ease: 'power1.in', duration: 0.3 }, 0.35)
+    .to(q('[data-film-desc]'), { opacity: 0, y: -20, ease: 'power1.in', duration: 0.25 }, 0.35)
     // Option 4: no meadow — the dark stage (and its fallback colour) fades straight out, uncovering the treatment
     // cards section that sits underneath the hero (Top.jsx unfolds the cards from here)
-    .to(q('[data-film-gl], [data-film-bg]'), { opacity: 0, ease: 'none', duration: 0.25 }, 1.4)
-    .set(filmState, { alive: false }, 1.7)
+    .to(q('[data-film-gl], [data-film-bg]'), { opacity: 0, ease: 'none', duration: 0.25 }, 0.65)
+    .set(filmState, { alive: false }, 0.95)
 
-  // header: white glass on the dark stage → the earlier dark tint once the light cards section takes over (1.35 → 1.65).
+  // header: white glass on the dark stage → the earlier dark tint once the light cards section takes over (0.6 → 0.9).
   // Driven from the timeline's own playhead so it is always right, scrubbing forward or back.
   const html = document.documentElement
   html.style.setProperty('--hdr-l', '1')
   tl.eventCallback('onUpdate', () => {
-    const p = Math.min(1, Math.max(0, (tl.time() - 1.35) / 0.3))
+    const p = Math.min(1, Math.max(0, (tl.time() - 0.6) / 0.3))
     html.style.setProperty('--hdr-l', (1 - p).toFixed(3))
     // Option 4: once the dark stage has faded and the light treatment cards are on screen, use the solid white
     // header (navy logo, dark links) — the same one the page uses after the hero; scrolling back removes it
-    html.classList.toggle('hdr-light', tl.time() >= 1.5)
+    html.classList.toggle('hdr-light', tl.time() >= 0.75)
   })
 
   tl.to({}, { duration: 0.0001 }, FILM_LEN)
@@ -348,11 +344,12 @@ export function HeroFilm() {
         <img src="/img/film-studio-1024.webp" srcSet="/img/film-studio-800.webp 800w, /img/film-studio-1024.webp 1024w" sizes="100vw" alt="" className="absolute inset-0 h-full w-full object-cover object-bottom" />
         <div ref={waterWrap} className="hidden" />
 
-        {/* "Your biology / deserves" heading (top-left on desktop, top-centre on phone/tablet) + a short line bottom-right, framing the body */}
+        {/* "Personalized Care / for a Stronger You." heading (top-left on desktop, top-centre on phone/tablet) + a short line bottom-right, framing the body */}
         <div data-film-a className="absolute inset-0">
-          <h2 data-film-title className="absolute inset-x-5 top-[13%] text-center text-[clamp(52px,9.2vw,132px)] leading-[0.98] font-semibold tracking-[-0.03em] text-white lg:inset-x-auto lg:top-[18%] lg:left-[6%] lg:text-left">
-            <span className="block opacity-0">Your biology</span>
-            <span className="block text-white opacity-0">deserves.</span>
+          <h2 data-film-title className="absolute inset-x-5 top-[13%] text-center text-[clamp(36px,5.4vw,84px)] leading-[1.02] lg:text-[4.4vw] 2xl:text-[clamp(36px,5.4vw,84px)] font-semibold tracking-[-0.03em] text-white lg:inset-x-auto lg:top-[18%] lg:left-[6%] lg:text-left">
+            <span className="block opacity-0">Personalized</span>
+            <span className="block opacity-0">Care for a</span>
+            <span className="block text-white opacity-0">Stronger You.</span>
           </h2>
         </div>
 
@@ -361,14 +358,14 @@ export function HeroFilm() {
         <div ref={pillBack} className="pointer-events-none absolute inset-0" />
         <div ref={bodyWrap} className="absolute inset-0" />
         {/* the runner (Option 3) — sits between the two pill layers so the pills pass behind and in front of him */}
-        <div data-runner-wrap className="pointer-events-none absolute inset-x-0 top-[25%] bottom-[25%] flex items-center justify-center sm:top-[26%] sm:bottom-[23%] lg:top-[9%] lg:bottom-[3%]">{/* Option 4: on phones/tablets he sits between the heading and the copy instead of over them */}
-          <img data-runner src="/img/opt4-runner-1024.webp" srcSet="/img/opt4-runner-600.webp 600w, /img/opt4-runner-1024.webp 977w" sizes="(max-width: 768px) 90vw, 45vw" alt="" className="h-full w-auto max-w-[90vw] object-contain lg:h-[86%] drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]" />
+        <div data-runner-wrap className="pointer-events-none absolute inset-x-0 top-[31%] bottom-[27%] flex items-center justify-center sm:top-[30%] sm:bottom-[23%] lg:top-[9%] lg:bottom-[3%]">{/* Option 4: on phones/tablets he sits between the heading and the copy instead of over them */}
+          <img data-runner src="/img/opt4-runner-1024.webp" srcSet="/img/opt4-runner-600.webp 600w, /img/opt4-runner-1024.webp 977w" sizes="(max-width: 768px) 90vw, 45vw" alt="" className="h-full w-auto max-w-[90vw] object-contain lg:h-[74%] 2xl:h-[86%] drop-shadow-[0_30px_60px_rgba(0,0,0,0.55)]" />
         </div>
         <div ref={pillFront} className="pointer-events-none absolute inset-0" />
         {/* short description — copy from the live hero; in front of the body so it never hides behind the legs */}
-        <div data-film-desc className="absolute inset-x-5 bottom-[7%] mx-auto flex max-w-[420px] flex-col items-center text-center opacity-0 lg:inset-x-auto lg:right-[6%] lg:bottom-[14%] lg:mx-0 lg:max-w-[430px] lg:items-start lg:text-left">
+        <div data-film-desc className="absolute inset-x-5 bottom-[7%] mx-auto flex max-w-[420px] flex-col items-center text-center opacity-0 lg:inset-x-auto lg:right-[5%] lg:bottom-[12%] lg:mx-0 lg:max-w-[320px] 2xl:right-[6%] 2xl:bottom-[14%] 2xl:max-w-[430px] lg:items-start lg:text-left">
           {/* Option 4: wider on desktop so it sits in 3 lines, with a CTA underneath */}
-          <p className="text-[15px] leading-relaxed text-white/65 sm:text-[17px]">Evidence-based treatment, provider-guided care, and a healthier, more confident you — all from the comfort of home.</p>
+          <p className="text-[15px] leading-relaxed text-white/65 sm:text-[17px]">Evidence-based treatment, provider-guided care, and a healthier, more confident you—all from the comfort of home.</p>
           <Cta href={links.products} variant="white" size="lg" className="mt-5 lg:mt-6">Explore Treatments</Cta>
         </div>
       </div>
@@ -387,7 +384,10 @@ export function HeroFilm() {
 /** Time-based entrance once the intro's circle opens: the body eases up into frame and the scroll hint appears. */
 export function playFilmEntrance(scope) {
   const hint = scope.querySelector('[data-film-hint]')
-  gsap.to(filmState, { enter: 1, duration: 2, ease: 'power3.out' })
+  gsap.to(filmState, { enter: 1, rise: 1, duration: 2, ease: 'power3.out' })
+  gsap.to(filmState, { coins: 1, duration: 1.2, delay: 0.6, ease: 'power2.out' })
+  gsap.fromTo(scope.querySelectorAll('[data-film-title] > span'), { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 1, stagger: 0.12, delay: 0.5, ease: 'power3.out' })
+  gsap.fromTo(scope.querySelectorAll('[data-film-desc]'), { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.9, delay: 1.0, ease: 'power2.out' })
   const runner = scope.querySelector('[data-runner-wrap]')
   if (runner) gsap.fromTo(runner, { yPercent: 35, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.8, ease: 'power3.out' })
   if (hint && window.scrollY < 40) gsap.fromTo(hint, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.8, delay: 1.2, ease: 'power2.out', onStart() { if (window.scrollY > 40) this.kill() } })

@@ -359,3 +359,7 @@ html.is-scrolled .logo-light, html.hdr-light .logo-light { opacity: 0; }
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0));
 }
 .film-pill svg { position: relative; width: 46%; height: 46%; filter: drop-shadow(0 1px 3px rgba(4, 18, 42, 0.5)); }
+
+/* Pinned sections size themselves to the full window width (scrollbar included), which left a 15px sideways scroll
+   on desktop. Clip horizontal overflow at the page level — `clip`, not `hidden`, so sticky positioning keeps working. */
+html, body { overflow-x: clip; }
