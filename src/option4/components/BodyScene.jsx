@@ -38,12 +38,19 @@ const PINS = [
 ]
 const camState = (s) => ({ px: s.position[0], py: s.position[1], pz: s.position[2], tx: s.target[0], ty: s.target[1], tz: s.target[2], fov: s.fov })
 
+// Option 4: the body model (generated on Higgsfield from the client's pale-blue body image) and its glassy blue finish
+const MODEL_URL = '/models/opt4-body.glb'
+
 function bodyMaterial(glow) {
+  // soft, evenly lit pale blue (mostly self-lit, so the studio lights only add gentle shape), slightly see-through,
+  // with white glowing edges — matching the client's reference render
   const m = new THREE.MeshPhysicalMaterial({
-    color: '#f5f5f5', roughness: 0.52, metalness: 0, clearcoat: 0.25, clearcoatRoughness: 0.6,
-    sheen: 0.4, sheenRoughness: 0.8, sheenColor: new THREE.Color('#ffffff'),
+    color: '#a8cbf2', roughness: 0.7, metalness: 0, clearcoat: 0.15, clearcoatRoughness: 0.5,
+    sheen: 1, sheenRoughness: 0.35, sheenColor: new THREE.Color('#ffffff'),
+    emissive: new THREE.Color('#8fb8ea'), emissiveIntensity: 0.75,
+    transparent: true, opacity: 0.8,
   })
-  m.customProgramCacheKey = () => 'body-region-glow-v5'
+  m.customProgramCacheKey = () => 'body-region-glow-v7-faded'
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, glow)
     sh.vertexShader = sh.vertexShader
@@ -71,6 +78,8 @@ float glowBlob(vec3 p, vec3 c, vec3 r) { return 1.0 - smoothstep(0.45, 1.0, leng
   float a = 0.0;
   for (int i = 0; i < ${REGIONS.length - 1}; i++) a = max(a, uRegion[i] * m[i]);
   float facing = clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0);
+  // glassy rim: bright pale-blue edges where the surface turns away from the camera (like the reference image)
+  totalEmissiveRadiance += vec3(0.93, 0.97, 1.0) * pow(1.0 - facing, 1.9) * 1.5;
   a = max(a, uRegion[${REGIONS.length - 1}] * smoothstep(0.55, 0.05, facing) * 0.8);
   a = clamp(a * (1.0 + uPulse * 0.3 * sin(uTime * 1.6)), 0.0, 1.0);
   vec3 glowCol = mix(uColorB, uColorA, a);
@@ -108,6 +117,10 @@ export default function BodyScene({ category, onSelect, scroll, reducedMotion })
     gl.toneMapping = THREE.ACESFilmicToneMapping
     gl.toneMappingExposure = 0.98
     gl.domElement.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;display:block;z-index:1'
+    // soft fade on the left/right edges, so when a close-up shot makes the body wider than the frame it dissolves
+    // into the background instead of being cut off hard at the canvas edge
+    const sideFade = 'linear-gradient(to right, transparent 0%, #000 14%, #000 86%, transparent 100%)'
+    Object.assign(gl.domElement.style, { maskImage: sideFade, webkitMaskImage: sideFade })
     el.prepend(gl.domElement)
 
     const scene = new THREE.Scene()
@@ -157,13 +170,12 @@ export default function BodyScene({ category, onSelect, scroll, reducedMotion })
     const loader = new GLTFLoader()
     loader.setMeshoptDecoder(MeshoptDecoder)
     let disposed = false
-    loader.load(coarse ? '/models/human-body-lite.glb' : '/models/human-body.glb', (gltf) => {
+    loader.load(MODEL_URL, (gltf) => {
       if (disposed) return
       const model = gltf.scene
       const meshes = []
       model.traverse((o) => { if (o.isMesh) meshes.push(o) })
       model.updateMatrixWorld(true)
-      if (meshes[0]) glow.uRestMatrix.value.copy(meshes[0].matrixWorld)
       meshes.forEach((m) => { m.material = material; m.frustumCulled = false; if (!m.geometry.getAttribute('normal')) m.geometry.computeVertexNormals() })
       // normalise to 1.79 m tall, feet on the floor, centred
       const box = new THREE.Box3().setFromObject(model)
@@ -173,6 +185,9 @@ export default function BodyScene({ category, onSelect, scroll, reducedMotion })
       model.position.set(-c.x * s, -box.min.y * s, -c.z * s)
       holder.add(model)
       model.updateMatrixWorld(true)
+      // glow regions are defined in the normalised body space (1.79 m tall, feet at 0), so they line up with any model:
+      // mesh space → holder space, measured with the holder's own rotation taken out
+      if (meshes[0]) glow.uRestMatrix.value.copy(holder.matrixWorld).invert().multiply(meshes[0].matrixWorld)
       meshes.forEach((m) => m.geometry.computeBoundingSphere())
       const ray = new THREE.Raycaster()
       anchorList = PINS.map((p) => {
