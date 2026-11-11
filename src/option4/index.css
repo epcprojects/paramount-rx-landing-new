@@ -340,6 +340,8 @@ html.is-scrolled .logo-light, html.hdr-light .logo-light { opacity: 0; }
   -webkit-mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 1.5px));
   mask-image: radial-gradient(circle at 50% 50%, transparent var(--r), #000 calc(var(--r) + 1.5px));
 }
+/* intro logo letters start unfilled; the animation sets fill-opacity inline as it draws them in */
+.intro-zero [data-words] path { fill-opacity: 0; }
 .intro-script { font-family: "Playfair Display", Georgia, serif; font-style: italic; letter-spacing: -0.02em; }
 .intro-serif { font-family: "Playfair Display", Georgia, serif; font-style: normal; letter-spacing: -0.02em; }
 .intro-grain { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
