@@ -158,7 +158,7 @@ export function BestSelf() {
     <section ref={root} id="best-self" className="relative z-10 bg-white px-4 py-0 md:px-5 md:py-8">
       <div className="relative mx-auto flex min-h-[100svh] max-w-[96rem] flex-col justify-between overflow-hidden rounded-[22px] py-10 md:block md:min-h-[74vh] md:rounded-[30px] md:px-10 md:pt-24 md:pb-32 xl:px-14">
         {/* runner photo, covers full width of the panel at every breakpoint */}
-        <div aria-hidden className="absolute inset-0 bg-[url('/img/runners-duo-1920.webp')] bg-cover bg-center bg-no-repeat" />
+        <div aria-hidden className="absolute inset-0 bg-[url('/img/opt4-runners-duo-1920.webp')] bg-cover bg-center bg-no-repeat" />
         {/* mobile-only scrim so the white-on-photo text stays legible without a solid card behind it */}
         <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-black/40 md:hidden" />
 

@@ -34,6 +34,20 @@ const jobs = [
   [`${SRC}/opt4-pillar-labs.png`, 'opt4-pillar-labs', [600], 82],
   [`${SRC}/opt4-pillar-pharmacy.png`, 'opt4-pillar-pharmacy', [600], 82],
   [`${SRC}/opt4-pillar-monitoring.png`, 'opt4-pillar-monitoring', [600], 82],
+  // Option 4 hover photos, current set — real-life scenes generated on Higgsfield (1168 × 880)
+  [`${SRC}/opt4-pillar-protocols-life.png`, 'opt4-pillar-protocols-life', [600], 82],
+  [`${SRC}/opt4-pillar-labs-life.png`, 'opt4-pillar-labs-life', [600], 82],
+  [`${SRC}/opt4-pillar-pharmacy-life.png`, 'opt4-pillar-pharmacy-life', [600], 82],
+  [`${SRC}/opt4-pillar-monitoring-life.png`, 'opt4-pillar-monitoring-life', [600], 82],
+  // Option 4 branded set (current) — the same scenes with the Paramount HealthRx logo worked in, edited on Higgsfield
+  [`${SRC}/opt4-pillar-protocols-logo.png`, 'opt4-pillar-protocols-logo', [600], 82],
+  [`${SRC}/opt4-pillar-labs-logo2.png`, 'opt4-pillar-labs-logo2', [600], 82], // re-done: logo embroidered into the coat
+  [`${SRC}/opt4-pillar-pharmacy-logo.png`, 'opt4-pillar-pharmacy-logo', [600], 82],
+  [`${SRC}/opt4-pillar-monitoring-logo.png`, 'opt4-pillar-monitoring-logo', [600], 82],
+  [`${SRC}/step-logo-1.png`, 'opt4-steps-bg-1', [800, 1800], 90],
+  [`${SRC}/step-logo-3.png`, 'opt4-steps-bg-3', [800, 1800], 90],
+  [`${SRC}/runners-duo-logo.png`, 'opt4-runners-duo', [1920], 88],
+  [`${SRC}/faq-hand-logo.png`, 'opt4-faq-hand', [299], 88],
   // treatment cards — the live site's own card art (blur baked into the lower half for text)
   [`${SRC}/TestosteroneNewImage.png`, 'card-testosterone', [500], 82],
   [`${SRC}/PeptideNewImage.png`, 'card-peptides', [500], 82],

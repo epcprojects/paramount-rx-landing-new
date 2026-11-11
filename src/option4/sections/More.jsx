@@ -185,10 +185,11 @@ export function SmartChoice() {
 
 const steps = [
   // pos: horizontal crop on phones/tablets so each photo's subject (who sits right of centre) lands mid-screen
-  { title: 'Online Assessment', body: 'Answer clinically relevant questions about your health goals and history.', img: 'step1', pos: '90%' },
-  { title: 'Medical Review', body: 'A licensed provider evaluates your data and lab results.', img: 'step2', pos: '86%' },
-  { title: 'Personalized Plan', body: 'Receive tailored peptides, hormones, and vitamins designed for you.', img: 'step3', pos: '74%' },
-  { title: 'Delivery & Support', body: 'Receive tailored peptides, hormones, and vitamins designed for you', img: 'step4', pos: '78%' },
+  // bg: image base name (-800 / -1800 sizes); steps 1 and 3 use branded versions with the Paramount logo on the clothing
+  { title: 'Online Assessment', body: 'Answer clinically relevant questions about your health goals and history.', img: 'step1', bg: 'opt4-steps-bg-1', pos: '90%' },
+  { title: 'Medical Review', body: 'A licensed provider evaluates your data and lab results.', img: 'step2', bg: 'steps-bg-2', pos: '86%' },
+  { title: 'Personalized Plan', body: 'Receive tailored peptides, hormones, and vitamins designed for you.', img: 'step3', bg: 'opt4-steps-bg-3', pos: '74%' },
+  { title: 'Delivery & Support', body: 'Receive tailored peptides, hormones, and vitamins designed for you', img: 'step4', bg: 'steps-bg-4', pos: '78%' },
 ]
 
 function StepsIntro({ large = false, cta = true }) {
@@ -257,7 +258,7 @@ export function Steps() {
         <ol className="grid w-full gap-3 md:grid-cols-2 md:gap-4" aria-label="How it works">
           {steps.map((st, i) => (
             <li key={st.title} data-appear className="relative isolate flex min-h-[240px] flex-col justify-end overflow-hidden rounded-[20px] p-5 text-white md:min-h-[300px] md:p-6">
-              <img src={`/img/steps-bg-${i + 1}-800.webp`} alt="" aria-hidden loading="lazy" style={{ '--pos': st.pos }}
+              <img src={`/img/${st.bg}-800.webp`} alt="" aria-hidden loading="lazy" style={{ '--pos': st.pos }}
                 className="absolute inset-0 -z-10 h-full w-full object-cover object-[var(--pos)_center]" />
               <div aria-hidden className="absolute inset-0 -z-[5] bg-[linear-gradient(180deg,rgba(0,0,0,0.15)_0%,rgba(0,0,0,0.55)_45%,rgba(0,0,0,0.85)_100%)]" />
               <span className="text-xs font-medium tracking-[0.1em] text-white/80 uppercase">Step 0{i + 1}</span>
@@ -280,7 +281,7 @@ export function Steps() {
       <div ref={stage} className="hidden h-svh px-3 py-3 lg:block lg:px-5 lg:py-4">
         <div className="relative isolate flex h-full flex-col items-center justify-center overflow-hidden rounded-[24px] bg-black/65 px-5 lg:rounded-[40px]">
           {steps.map((st, i) => (
-            <img key={st.img} src={`/img/steps-bg-${i + 1}-1800.webp`} alt="" aria-hidden loading="lazy" style={{ '--pos': st.pos }}
+            <img key={st.img} src={`/img/${st.bg}-1800.webp`} alt="" aria-hidden loading="lazy" style={{ '--pos': st.pos }}
               className={`absolute inset-0 -z-10 h-full w-full object-cover object-[var(--pos)_center] transition-opacity duration-700 ease-out lg:object-center ${i === active ? 'opacity-100' : 'opacity-0'}`} />
           ))}
           {/* 65% dark overlay over the photo, as in the reference */}
@@ -327,8 +328,8 @@ export function Steps() {
 // Layout + interaction modelled on endpointclients.com "Our Services": a numbered list; hovering a row expands it
 // (description + chips), greys out the other rows, turns the arrow 45°, and a photo preview follows the pointer.
 
-// Option 4: hover previews are on-brand product/doctor shots in the live site's style (generated on Higgsfield,
-// sources in source-images/opt4-pillar-*.png); a line icon sits to the left of each pillar title (24 × 24, drawn with the current text colour)
+// Option 4: hover previews are real-life scenes for each pillar (generated on Higgsfield,
+// sources in source-images/opt4-pillar-*-logo.png, each with the Paramount HealthRx logo worked into the scene); a line icon sits to the left of each pillar title (24 × 24, drawn with the current text colour)
 const pillarIcons = {
   // client-supplied icon (filled shapes, so each path draws with fill and no stroke)
   protocols: <g fill="currentColor" stroke="none">
@@ -362,22 +363,22 @@ function PillarIcon({ name }) {
 
 const pillars = [
   {
-    icon: 'protocols', title: 'Individualized protocols', thumb: 'pillar-protocols', preview: '/img/opt4-pillar-protocols-600.webp',
+    icon: 'protocols', title: 'Individualized protocols', thumb: 'pillar-protocols', preview: '/img/opt4-pillar-protocols-logo-600.webp',
     body: 'Care begins with your health history, your goals and a licensed provider’s clinical evaluation—no one-size-fits-all plans.',
     chips: ['Health history', 'Your goals', 'Clinical evaluation'],
   },
   {
-    icon: 'labs', title: 'Real labs, real doctors', thumb: 'pillar-labs', preview: '/img/opt4-pillar-labs-600.webp',
+    icon: 'labs', title: 'Real labs, real doctors', thumb: 'pillar-labs', preview: '/img/opt4-pillar-labs-logo2-600.webp',
     body: 'Hormones and many peptides require lab work to ensure safety and efficacy—reviewed by licensed providers.',
     chips: ['Lab work', 'Licensed providers', 'Safety first'],
   },
   {
-    icon: 'pharmacy', title: 'Compounded by licensed pharmacies', thumb: 'pillar-pharmacy', preview: '/img/opt4-pillar-pharmacy-600.webp',
+    icon: 'pharmacy', title: 'Compounded by licensed pharmacies', thumb: 'pillar-pharmacy', preview: '/img/opt4-pillar-pharmacy-logo-600.webp',
     body: 'Every treatment is prescribed by licensed providers, compounded by licensed pharmacies and fulfilled in the U.S.',
     chips: ['U.S. pharmacies', 'Prescribed by providers', 'Discreet delivery'],
   },
   {
-    icon: 'monitoring', title: 'Continuous monitoring & refinement', thumb: 'pillar-monitoring', preview: '/img/opt4-pillar-monitoring-600.webp',
+    icon: 'monitoring', title: 'Continuous monitoring & refinement', thumb: 'pillar-monitoring', preview: '/img/opt4-pillar-monitoring-logo-600.webp',
     body: 'Adjust protocols, stay consistent and level up intentionally as your goals evolve.',
     chips: ['Ongoing support', 'Protocol adjustments', 'Progress check-ins'],
   },
@@ -603,7 +604,7 @@ export function Faq() {
           </div>
           <div data-appear className="flex flex-col gap-2 md:flex-row xl:items-center xl:gap-5">
             <div className="relative h-[300px] w-full overflow-hidden rounded-[10px] bg-[#EBF6FA] xl:w-[300px] xl:rounded-[30px]">
-              <img src="/img/faq-hand-299.webp" alt="" loading="lazy" className="absolute bottom-0" />
+              <img src="/img/opt4-faq-hand-299.webp" alt="" loading="lazy" className="absolute bottom-0" />{/* Option 4: pills carry the Paramount "P" */}
             </div>
             <div className="relative h-[300px] w-full overflow-hidden rounded-[10px] bg-[#FEF5EA] xl:w-[300px] xl:rounded-[30px]">
               <img src="/img/faq-finger-299.webp" alt="" loading="lazy" className="absolute right-0 bottom-0" />
