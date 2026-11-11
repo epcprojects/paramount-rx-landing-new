@@ -29,7 +29,8 @@ export default function App() {
         <Steps />
         <Pillars />
         <Biology />
-        <Faq />
+        {/* centred FAQ with the falling, draggable Paramount pills (id "faq" so the header's FAQ link lands here) */}
+        <Faq centered pills />
       </main>
       <Footer />
       <BackToTop />

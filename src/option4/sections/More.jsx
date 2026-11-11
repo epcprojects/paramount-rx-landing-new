@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { gsap, useGSAP, ScrollTrigger, appear, reducedMotion } from '../motion.js'
 import { links, faqs } from '../content.js'
+import { PillDrop } from '../components/PillDrop.jsx'
 
 // Sections rebuilt from the live paramounthealthrx.com homepage (same copy, imagery, icons and layout),
 // placed after "Physician-Guided Care": Smart Choice → 4 easy steps → This isn't wellness → Your biology is unique → FAQ → footer.
@@ -571,21 +572,26 @@ export function Biology() {
 
 /* ---------- Frequently Asked Questions ---------- */
 
-export function Faq() {
+/** `id` lets the section be used more than once on a page (the copy gets its own section and answer ids).
+ *  `centered`: no images, heading and questions centred in one column.
+ *  `pills`: falling, draggable Paramount pills that pile on the footer edge (see PillDrop). */
+export function Faq({ id = 'faq', centered = false, pills = false }) {
   const root = useRef(null)
   const [open, setOpen] = useState(0)
   useGSAP(() => appear(root.current), { scope: root })
   return (
-    <section ref={root} id="faq" className="relative z-10 bg-white pt-12 pb-10 xl:pt-24 xl:pb-24">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 xl:gap-[54px] xl:px-8">
-        <h2 data-appear className="t-h2 text-neutral-900">Frequently Asked Questions</h2>
-        <div className="grid grid-cols-1 items-center gap-6 xl:grid-cols-2 xl:gap-16">
+    <section ref={root} id={id} className={`relative bg-white pt-12 xl:pt-24 ${pills ? 'z-20 pb-36 select-none xl:pb-44' : 'z-10 pb-10 xl:pb-24'}`}>
+      {/* falling, draggable Paramount pills; extra bottom padding leaves room for the pile */}
+      {pills && <PillDrop />}
+      <div className={`mx-auto flex flex-col gap-6 px-4 xl:gap-[54px] xl:px-8 ${centered ? 'max-w-3xl' : 'max-w-7xl'}`}>
+        <h2 data-appear className={`t-h2 text-neutral-900 ${centered ? 'text-center' : ''}`}>Frequently Asked Questions</h2>
+        <div className={centered ? 'w-full' : 'grid grid-cols-1 items-center gap-6 xl:grid-cols-2 xl:gap-16'}>
           <div data-appear className="space-y-3">
             {faqs.map((f, i) => {
               const isOpen = open === i
               return (
                 <div key={f.q} className="border-b border-b-gray-200 last:border-b-0">
-                  <button type="button" aria-expanded={isOpen} aria-controls={`faq-${i}`} onClick={() => setOpen(isOpen ? -1 : i)} className="group w-full cursor-pointer py-3 text-left md:py-5">
+                  <button type="button" aria-expanded={isOpen} aria-controls={`${id}-${i}`} onClick={() => setOpen(isOpen ? -1 : i)} className="group w-full cursor-pointer py-3 text-left md:py-5">
                     <span className="flex items-center justify-between gap-4">
                       <h3 className="t-h3 text-black">{f.q}</h3>
                       <span className={`flex size-5 shrink-0 items-center justify-center transition-[color,transform] duration-300 group-hover:text-sky ${isOpen ? 'rotate-90 text-sky' : 'text-[#1F252E]'}`}>
@@ -593,7 +599,7 @@ export function Faq() {
                       </span>
                     </span>
                   </button>
-                  <div id={`faq-${i}`} role="region" className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                  <div id={`${id}-${i}`} role="region" className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
                     <div className="overflow-hidden">
                       <p className="t-lead pb-3 text-neutral-700 md:pb-5">{f.a}</p>
                     </div>
@@ -602,14 +608,14 @@ export function Faq() {
               )
             })}
           </div>
-          <div data-appear className="flex flex-col gap-2 md:flex-row xl:items-center xl:gap-5">
+          {!centered && <div data-appear className="flex flex-col gap-2 md:flex-row xl:items-center xl:gap-5">
             <div className="relative h-[300px] w-full overflow-hidden rounded-[10px] bg-[#EBF6FA] xl:w-[300px] xl:rounded-[30px]">
               <img src="/img/opt4-faq-hand-299.webp" alt="" loading="lazy" className="absolute bottom-0" />{/* Option 4: pills carry the Paramount "P" */}
             </div>
             <div className="relative h-[300px] w-full overflow-hidden rounded-[10px] bg-[#FEF5EA] xl:w-[300px] xl:rounded-[30px]">
               <img src="/img/faq-finger-299.webp" alt="" loading="lazy" className="absolute right-0 bottom-0" />
             </div>
-          </div>
+          </div>}
         </div>
       </div>
     </section>
