@@ -31,7 +31,10 @@ function Hero() {
         </div>
       </div>
       <div className="w-full flex-1 overflow-hidden rounded-[20px] md:max-w-[520px]">
-        <Img base="/img/medical-review" widths={[900, 1800]} sizes="(min-width: 768px) 520px, 92vw" alt="A provider reviewing a patient's plan" className="aspect-[16/10] h-full w-full object-cover" />
+        {/* the live /products page's hero video (served from paramounthealthrx.com) */}
+        <video autoPlay muted loop playsInline preload="metadata" poster="/img/medical-review-900.webp" aria-label="Paramount HealthRx members training and a provider explaining care" className="aspect-[16/10] h-full w-full object-cover">
+          <source src="https://www.paramounthealthrx.com/videos/Paramount_Hero_Video.mp4" type="video/mp4" />
+        </video>
       </div>
     </section>
   )
