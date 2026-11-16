@@ -40,22 +40,23 @@ function Hero() {
   )
 }
 
-/** One category card: photo behind, name + count in front. Hover: lift, grow, zoom the photo, slide in the blurb. */
+/** One category card: photo behind, name + count in front. Hover: lift, grow, zoom the photo, slide in the blurb.
+ *  The selected card stays opened up that way (plus a navy ring) so it reads as the chosen one. */
 function CategoryCard({ c, active, onPick }) {
   const n = countFor(c.id)
   return (
     <button type="button" onClick={() => onPick(c.id)} aria-pressed={active}
       className={`group relative h-[102px] w-[146px] shrink-0 snap-start overflow-hidden rounded-[14px] text-left text-white transition-[transform,box-shadow,width,height] duration-500 ease-[cubic-bezier(.22,1,.36,1)] outline-none sm:h-[114px] sm:w-[164px]
         hover:z-10 hover:-translate-y-2 hover:scale-[1.03] hover:shadow-[0_26px_44px_-20px_rgba(10,26,47,0.55)] focus-visible:-translate-y-2 focus-visible:scale-[1.03] md:hover:h-[156px] md:hover:w-[244px] md:focus-visible:h-[156px] md:focus-visible:w-[244px]
-        ${active ? 'shadow-[0_18px_34px_-18px_rgba(16,69,132,0.7)] ring-[3px] ring-navy ring-offset-2 ring-offset-white' : 'shadow-[0_10px_24px_-18px_rgba(10,26,47,0.5)]'}`}>
+        ${active ? 'z-[5] -translate-y-2 scale-[1.03] shadow-[0_18px_34px_-18px_rgba(16,69,132,0.7)] ring-[3px] ring-navy ring-offset-2 ring-offset-white md:h-[156px] md:w-[244px]' : 'shadow-[0_10px_24px_-18px_rgba(10,26,47,0.5)]'}`}>
       <Img base={c.photo} widths={c.widths} sizes="240px" alt="" loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-110" />
+        className={`absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-110 ${active ? 'scale-105' : ''}`} />
       <span aria-hidden className={`absolute inset-0 transition-colors duration-500 ${active ? 'bg-gradient-to-t from-navy/90 via-navy/40 to-navy/10' : 'bg-gradient-to-t from-black/80 via-black/30 to-black/5 group-hover:from-navy/85 group-hover:via-navy/35'}`} />
       <span className="absolute top-2 right-2 flex h-6 min-w-6 items-center justify-center rounded-full border border-white/20 bg-black/45 px-1.5 text-[12px] font-bold tabular-nums text-white backdrop-blur-md">{n}</span>
       {c.hot && <img src="/img/flame-48.png" alt="" aria-hidden className="absolute top-2 left-2 size-6" />}
       <span className="absolute inset-x-3 bottom-2.5 flex flex-col">
         <span className="text-[13px] leading-tight font-semibold sm:text-[14px]">{c.name}</span>
-        <span className="grid grid-rows-[0fr] opacity-0 transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] group-hover:grid-rows-[1fr] group-hover:opacity-100 group-focus-visible:grid-rows-[1fr] group-focus-visible:opacity-100">
+        <span className={`grid transition-all duration-500 ease-[cubic-bezier(.22,1,.36,1)] ${active ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-hover:opacity-100 group-focus-visible:grid-rows-[1fr] group-focus-visible:opacity-100'}`}>
           <span className="overflow-hidden">
             <span className="mt-1 block truncate text-[12px] leading-snug text-white/90">{c.blurb}</span>
           </span>
