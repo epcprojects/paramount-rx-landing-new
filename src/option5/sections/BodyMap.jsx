@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom'
 import { gsap, useGSAP, lenis, reducedMotion as prefersReduced } from '../motion.js'
 import { categories, category as getCategory, inCategory, treatments } from '../data/treatments.js'
 import { links } from '../content.js'
-import { Img } from '../components/ui.jsx'
 
 // "Every treatment, mapped to the body" — rebuilt from the Paramount products prototype (paramountmodel.vercel.app):
 // category tabs + description on the left, a rotatable 3D body with category pins in the middle,
@@ -53,25 +52,10 @@ function useNearViewport(margin = '600px') {
 
 /* ---------- category tabs ---------- */
 
-// Category cards (same look as the Products page option): a photo behind each category with its name and a product
-// count, as a swipeable row on phones / tablets. Desktop keeps the original pills. Photos are stand-ins.
-const tabPhoto = {
-  all: ['/img/steps-bg-1', [800, 1800]],
-  'in-demand': ['/img/runners-duo', [1425, 1920]],
-  'hair-loss': ['/img/opt5-card-hair-loss', [600, 1000]],
-  hormones: ['/img/step-plan', [900, 1400]],
-  peptides: ['/img/opt5-card-peptides', [600, 1000]],
-  'performance-enhancer': ['/img/opt5-card-performance', [600, 1000]],
-  'sexual-wellness': ['/img/opt5-card-sexual-health', [600, 1000]],
-  testosterone: ['/img/opt5-card-testosterone', [600, 1000]],
-  'weight-loss': ['/img/opt5-card-weight-loss', [600, 1000]],
-}
-const tabCount = (id) => (id === 'all' ? treatments.length : id === 'in-demand' ? treatments.filter((t) => t.inDemand).length : treatments.filter((t) => t.category === id).length)
-
 function Tabs({ active, onChange, size = 'md', className = '' }) {
   const ref = useRef(null)
   const sm = size === 'sm'
-  // keep the active card in view when the row scrolls sideways (phones)
+  // keep the active tab in view when the row scrolls sideways (phones)
   useEffect(() => {
     const el = ref.current
     if (!el || el.scrollWidth <= el.clientWidth) return
@@ -81,20 +65,10 @@ function Tabs({ active, onChange, size = 'md', className = '' }) {
     el.scrollTo({ left: Math.max(0, left), behavior: 'smooth' })
   }, [active])
   return (
-    <div ref={ref} role="tablist" aria-label="Treatment categories" className={`flex ${sm ? 'gap-2.5' : `gap-2 ${className.includes('flex-nowrap') ? '' : 'flex-wrap'}`} ${className}`}>
+    <div ref={ref} role="tablist" aria-label="Treatment categories" className={`flex gap-2 ${className.includes('flex-nowrap') ? '' : 'flex-wrap'} ${className}`}>
       {categories.map((c) => {
         const on = c.id === active
-        const [photo, widths] = tabPhoto[c.id] || tabPhoto.all
-        if (!sm) {
-          const big = c.id === 'in-demand'
-          return (
-            <button key={c.id} type="button" role="tab" aria-selected={on} onClick={() => onChange(c.id)}
-              className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-[22px] py-3 transition-colors ${on ? 'border-navy bg-navy' : 'border-neutral-200 bg-white hover:border-navy'}`}>
-              {c.icon && <img src={c.icon} alt="" aria-hidden width={big ? 28 : 24} height={big ? 28 : 24} className={`${big ? 'size-7' : 'size-6'} shrink-0 object-contain`} />}
-              <span className={`whitespace-nowrap text-base ${on ? 'font-semibold text-white' : 'font-medium text-neutral-700'}`}>{c.label}</span>
-            </button>
-          )
-        }
+        const big = c.id === 'in-demand'
         return (
           <button
             key={c.id}
@@ -102,13 +76,10 @@ function Tabs({ active, onChange, size = 'md', className = '' }) {
             role="tab"
             aria-selected={on}
             onClick={() => onChange(c.id)}
-            className={`group relative shrink-0 cursor-pointer overflow-hidden rounded-[12px] text-left text-white transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_18px_30px_-16px_rgba(10,26,47,0.55)] my-2 h-[84px] w-[128px] ${on ? 'shadow-[0_12px_24px_-14px_rgba(16,69,132,0.7)] ring-[2.5px] ring-navy ring-offset-2 ring-offset-white' : 'shadow-[0_8px_18px_-14px_rgba(10,26,47,0.5)]'}`}
+            className={`flex shrink-0 cursor-pointer items-center rounded-full border transition-colors ${sm ? 'gap-1.5 px-4 py-2.5 md:px-4' : 'gap-2 px-[22px] py-3'} ${on ? 'border-navy bg-navy' : 'border-neutral-200 bg-white hover:border-navy'}`}
           >
-            <Img base={photo} widths={widths} sizes="160px" alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-110" />
-            <span aria-hidden className={`absolute inset-0 transition-colors duration-500 ${on ? 'bg-gradient-to-t from-navy/90 via-navy/45 to-navy/10' : 'bg-gradient-to-t from-black/80 via-black/30 to-black/5 group-hover:from-navy/85 group-hover:via-navy/35'}`} />
-            <span className="absolute top-1.5 right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border border-white/20 bg-black/45 px-1 text-[10px] font-bold tabular-nums backdrop-blur-md">{tabCount(c.id)}</span>
-            {c.id === 'in-demand' && c.icon && <img src={c.icon} alt="" aria-hidden width={20} height={20} className="absolute top-1.5 left-1.5 size-5 object-contain" />}
-            <span className={`absolute inset-x-2.5 bottom-2 leading-tight font-semibold text-[13px]`}>{c.label}</span>
+            {c.icon && <img src={c.icon} alt="" aria-hidden width={big ? 28 : 24} height={big ? 28 : 24} className={`${big ? (sm ? 'size-5' : 'size-7') : sm ? 'size-4' : 'size-6'} shrink-0 object-contain`} />}
+            <span className={`whitespace-nowrap ${sm ? 'text-[13px] md:text-sm' : 'text-base'} ${on ? 'font-semibold text-white' : 'font-medium text-neutral-700'}`}>{c.label}</span>
           </button>
         )
       })}
@@ -548,7 +519,7 @@ export function BodyMap() {
             height, 64px below 640px / 78px from 640px up), minus this box's own pt-3, plus a 10px gap —
             so the tab pills sit 10px clear of the header instead of flush under it. */}
         <div ref={stickyBar} className="max-md:static max-md:pb-6 sticky top-[74px] z-[4] -mx-5 bg-white px-5 pt-3 sm:top-[88px] md:-mx-10 md:px-10 lg:static lg:top-auto lg:mx-0 lg:flex lg:min-h-0 lg:flex-col lg:bg-transparent lg:p-0">
-          <Tabs active={cat} onChange={choose} size="sm" className="no-scrollbar -mx-5 overflow-x-auto px-5 md:-mx-10 md:px-10 lg:hidden" />
+          <Tabs active={cat} onChange={choose} size="sm" className="no-scrollbar -mx-5 flex-nowrap overflow-x-auto px-5 pb-1 md:-mx-10 md:px-10 lg:hidden" />
           <div ref={sceneAnchor} className="relative -mx-5 h-[clamp(420px,64svh,580px)] md:mx-0 md:h-[clamp(280px,38svh,400px)] lg:h-auto lg:min-h-0 lg:flex-1">
             <div className="pointer-events-none absolute inset-x-[12%] bottom-[4%] h-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(16,69,132,0.09),rgba(47,143,224,0.06)_45%,transparent)]" />
             {sceneNear && (
