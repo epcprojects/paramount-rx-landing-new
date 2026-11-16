@@ -10,6 +10,8 @@ import logoSvg from '../../../public/images/logo.svg?raw'
 let resolveIntro
 /** Resolves when the hero should start its entrance (as the circle first begins to open). */
 export const introDone = new Promise((r) => { resolveIntro = r })
+/** Pages without the logo intro (e.g. products-option/) call this so things waiting on the intro start right away. */
+export const skipIntro = () => resolveIntro()
 
 export function Intro() {
   const root = useRef(null)
