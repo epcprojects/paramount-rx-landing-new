@@ -576,11 +576,12 @@ export function Biology() {
         <div className="flex flex-col gap-3">
           {/* Option 4: same dark glass cards as the desktop layout (they used to be solid colour blocks here) */}
           {families.map((f) => (
-            <a key={f.name} href={links.products} data-appear className="relative flex flex-col gap-4 overflow-hidden rounded-[20px] bg-[rgba(6,12,14,0.55)] px-6 py-6 text-white backdrop-blur-md md:px-7">
+            // Option 5: static cards (no scroll-in motion) with the desktop's icon look — white glyph on a frosted disc (--glass: 1)
+            <div key={f.name} className="relative flex flex-col gap-4 overflow-hidden rounded-[20px] bg-[rgba(6,12,14,0.55)] px-6 py-6 text-white backdrop-blur-md md:px-7" style={{ '--glass': 1 }}>
               <span className="flex items-center gap-4"><FamilyIcon icon={f.icon} color={f.fill} /><h3 className="t-h3">{f.name}</h3></span>
               <p className="t-body text-white/70">{f.body}</p>
-              <span className="t-small underline underline-offset-4 opacity-85">Learn more about {f.name.toLowerCase()}</span>
-            </a>
+              <a href={links.products} className="t-small self-start underline underline-offset-4 opacity-85">Learn more about {f.name.toLowerCase()}</a>
+            </div>
           ))}
         </div>
       </div>
