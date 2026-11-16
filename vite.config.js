@@ -18,6 +18,7 @@ export default defineConfig({
         option3: fileURLToPath(new URL('./option-3/index.html', import.meta.url)),
         option4: fileURLToPath(new URL('./option-4/index.html', import.meta.url)),
         option5: fileURLToPath(new URL('./option-5/index.html', import.meta.url)),
+        option5HeroOptions: fileURLToPath(new URL('./option-5/hero-section-options.html', import.meta.url)),
       },
     },
   },

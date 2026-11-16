@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { gsap, useGSAP, ScrollTrigger, appear, reducedMotion } from '../motion.js'
+import { gsap, useGSAP, ScrollTrigger, Observer, appear, reducedMotion, lenis } from '../motion.js'
 import { links, faqs } from '../content.js'
 import { PillDrop } from '../components/PillDrop.jsx'
 
@@ -519,6 +519,7 @@ export function Biology() {
   const root = useRef(null)
   const stage = useRef(null)
   const row = useRef(null)
+  const stepTo = useRef(null)
   const [active, setActive] = useState(0)
 
   // Option 5: the main page's scroll motion on this section — the panel holds in place while scrolling hands the
@@ -529,9 +530,10 @@ export function Biology() {
     const mm = gsap.matchMedia()
     mm.add('(min-width: 1024px) and (prefers-reduced-motion: no-preference)', () => {
       const cards = gsap.utils.toArray(row.current.children)
+      const ease = gsap.parseEase('sine.inOut') // soft start/finish to each card opening/closing
       const paint = (p) => {
         cards.forEach((el, i) => {
-          const w = Math.max(0, 1 - Math.abs(p - i)) // 1 = this card is the open one
+          const w = ease(Math.max(0, 1 - Math.abs(p - i))) // 1 = this card is the open one
           el.style.flexGrow = (1 + w).toFixed(3)
           el.style.height = `${(104 + 92 * w).toFixed(1)}px` // open card fits title + 2-line description + link, no empty space
           // the copy is fully faded by w = 0.78, before the shrinking card reaches the link (clipping starts ~0.73)
@@ -541,30 +543,110 @@ export function Biology() {
         setActive((cur) => (cur === a ? cur : a))
       }
       paint(0)
-      const st = ScrollTrigger.create({
+      // Slideshow-style stepping. While the panel is held on screen the page's smooth scroll is paused and scroll
+      // input (mouse wheel or trackpad) is read as gestures: one gesture = one card, played as a calm, eased glide that
+      // runs on its own clock (no tug-of-war with the scroll position, so no jerks). Each separate scroll counts (see
+      // onWheel); one made mid-glide is queued, not lost. At the first/last card, scrolling on releases the page.
+      const last = families.length - 1
+      const s = { p: 0 }
+      let at = 0 // the card that's open
+      let gliding = false
+      let queued = 0 // a scroll made while a card was still gliding: played as soon as the glide ends
+      let held = false
+      let lastWheel = 0
+      let st
+      const glide = (k) => {
+        at = k
+        gliding = true
+        gsap.to(s, {
+          p: k, duration: 0.6, ease: 'power2.inOut', overwrite: true, onUpdate: () => paint(s.p),
+          onComplete: () => { gliding = false; if (queued) { const d = queued; queued = 0; step(d) } },
+        })
+      }
+      const release = (dir) => {
+        held = false
+        queued = 0
+        obs.disable()
+        lenis?.start()
+        // hand the page back just outside the held range, so the next scroll carries straight on
+        const y = dir > 0 ? st.end + 2 : st.start - 2
+        if (lenis) lenis.scrollTo(y, { immediate: true, force: true }); else window.scrollTo(0, y)
+      }
+      // While held, pin the page's scroll position in place. Cancelling wheel events isn't enough on its own: Chrome
+      // won't cancel the rest of a scroll that was already under way when we took over, so it would slide past.
+      let holdY = 0
+      const keep = () => { if (held && Math.abs(window.scrollY - holdY) > 1) window.scrollTo(0, holdY) }
+      window.addEventListener('scroll', keep)
+      const hold = () => {
+        if (held) return
+        held = true
+        queued = 0
+        holdY = Math.round(Math.min(st.end - 2, Math.max(st.start + 2, window.scrollY)))
+        lastWheel = performance.now() // the scroll that carried the page in counts as one gesture, so it can't also flip a card
+        lenis?.stop()
+        window.scrollTo(0, holdY)
+        obs.enable()
+      }
+      const step = (dir) => {
+        if (!held) return
+        const k = at + dir
+        if (k < 0 || k > last) { release(dir); return }
+        glide(k)
+      }
+      // each separate scroll gesture asks for one card; while a card is still gliding, remember the latest request
+      const request = (dir) => { if (!held) return; if (gliding) queued = dir; else step(dir) }
+      // Mouse wheel: every notch is its own event, spaced out in time → one card each (a fast spin of several notches
+      // counts once). Trackpad: one swipe + its momentum is a continuous stream of events a few ms apart → one card.
+      const onWheel = (e) => {
+        if (!held) return
+        if (e.cancelable) e.preventDefault()
+        const now = performance.now()
+        const gap = now - lastWheel
+        lastWheel = now
+        if (gap < 130 || Math.abs(e.deltaY) < 2) return // still the same gesture
+        request(e.deltaY > 0 ? 1 : -1)
+      }
+      window.addEventListener('wheel', onWheel, { passive: false })
+      // touch screens wide enough for this layout: a swipe = one card
+      const obs = Observer.create({
+        target: window,
+        type: 'touch',
+        tolerance: 30,
+        preventDefault: true,
+        onUp: () => request(1), // finger moves up = scrolling down = next card
+        onDown: () => request(-1),
+      })
+      obs.disable()
+      st = ScrollTrigger.create({
         id: 'bio-pin',
         trigger: stage.current,
         start: 'center center', // the rounded panel sits centred on screen while it's held
-        end: () => `+=${window.innerHeight * 1.1 * families.length}`,
+        end: () => `+=${Math.round(window.innerHeight * 0.4)}`,
         pin: true,
         anticipatePin: 1,
-        scrub: 0.6,
-        onUpdate: (self) => paint(self.progress * (families.length - 1)),
+        onEnter: () => { gsap.killTweensOf(s); at = 0; s.p = 0; paint(0); hold() },
+        onEnterBack: () => { gsap.killTweensOf(s); at = last; s.p = last; paint(last); hold() },
+        // leaving (also by a jump, e.g. a header link): park the cards on the matching end card so it reads right on return
+        onLeave: () => { if (held) { held = false; obs.disable(); lenis?.start() } gsap.killTweensOf(s); at = last; s.p = last; paint(last) },
+        onLeaveBack: () => { if (held) { held = false; obs.disable(); lenis?.start() } gsap.killTweensOf(s); at = 0; s.p = 0; paint(0) },
       })
+      stepTo.current = (k) => { if (held && !gliding && k !== at) glide(k) } // pill clicks
       return () => {
+        stepTo.current = null
+        window.removeEventListener('wheel', onWheel)
+        window.removeEventListener('scroll', keep)
+        gsap.killTweensOf(s)
+        obs.kill()
         st.kill()
+        if (held) lenis?.start()
         cards.forEach((el) => { el.style.flexGrow = ''; el.style.height = ''; el.querySelector('[data-more]').style.opacity = '' })
       }
     })
     return () => mm.revert()
   }, { scope: root })
 
-  // clicking a closed pill scrolls to the point where that card is open
-  const jump = (i) => {
-    const st = ScrollTrigger.getById('bio-pin')
-    if (!st) return
-    window.scrollTo({ top: st.start + (i / (families.length - 1)) * (st.end - st.start), behavior: 'smooth' })
-  }
+  // clicking a closed pill glides to that card
+  const jump = (i) => stepTo.current?.(i)
 
   return (
     <section ref={root} className="relative z-10 bg-white">

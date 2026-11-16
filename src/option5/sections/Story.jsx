@@ -1,142 +1,133 @@
-import { useEffect, useRef } from 'react'
-import { gsap, useGSAP, reducedMotion } from '../motion.js'
+import { useEffect, useRef, useState } from 'react'
+import { gsap, useGSAP, ScrollTrigger, reducedMotion } from '../motion.js'
 import { links } from '../content.js'
 import { Cta, Tag, Img } from '../components/ui.jsx'
 import { IconTestosterone, IconPeptides, IconSexualHealth, IconWeightLoss, IconHairLoss, IconPerformance } from '../components/TreatmentIcons.jsx'
 
-// image = base path of the opt5-card-*-600/1000.webp photos (rendered with <Img>)
-export const cards = [
-  { name: 'Testosterone', tagline: 'Optimize your hormones. Reclaim your edge.', image: '/img/opt5-card-testosterone', Icon: IconTestosterone },
-  { name: 'Peptides & Longevity', tagline: 'Science-backed solutions for a longer, healthier life.', image: '/img/opt5-card-peptides', Icon: IconPeptides },
-  { name: 'Sexual Health', tagline: 'Confidence. Performance. Intimacy.', image: '/img/opt5-card-sexual-health', Icon: IconSexualHealth },
-  { name: 'Weight Loss', tagline: 'Sustainable results. A healthier, lighter you.', image: '/img/opt5-card-weight-loss', Icon: IconWeightLoss },
-  { name: 'Hair Loss', tagline: 'Stronger hair. Greater confidence.', image: '/img/opt5-card-hair-loss', Icon: IconHairLoss },
-  { name: 'Performance Enhancers', tagline: 'More energy, more strength, more you.', image: '/img/opt5-card-performance', Icon: IconPerformance },
-]
+const FAN_ROW_GAP = 12 // px — matches the grid's gap-3
+const FAN_COL_GAP = 12 // px — matches the grid's gap-3
+const FAN_CARD_RATIO = 254 / 259 // card height = width * 254/259, matches the cards' aspect-[259/254]
 
-/* ───────────── Option 5: treatment cards on a 3D spiral ring ─────────────
-   Same motion as the reference "Services" carousel (madetodisrupt.com): the cards sit on a tilted spiral —
-   each one is turned to its angle on the ring (rotateY = its angle), drops lower and drifts right as the angle
-   grows, and fades as it swings round to the back. Measured from the reference (card ≈ 480px wide):
-     x = 252·sinθ + 0.71·θ°   y = 1.85·θ°   z = 210·cosθ   opacity ≈ 0.6 + 0.4·cosθ
-   scaled here to our card width. `ring.a` is the ring position in cards (0 = Testosterone in front).
-   Desktop: the hero's pinned timeline (Top.jsx) scrubs it with the scroll. Touch: it advances on its own + swipes. */
-const N = cards.length
-// 'Peptides & Longevity' → 'Peptides & longevity'
-const sentenceCase = (s) => s.charAt(0) + s.slice(1).toLowerCase()
-export const ring = { a: 0, els: null }
-
-export function layoutRing(a = ring.a) {
-  ring.a = a
-  const els = ring.els
-  if (!els || !els.cards.length) return
-  const k = (els.cards[0].firstElementChild.offsetWidth || 480) / 480 // scale the reference's numbers to our card size
-  const step = 95 // the reference's spacing: 95° between cards
-  els.cards.forEach((card, i) => {
-    // a straight run like the reference, not a loop: cards still to come trail down-right behind the front one,
-    // cards already passed drift up-left; nothing sits before the first card
-    const rel = i - a
-    const deg = rel * step
-    const t = (deg * Math.PI) / 180
-    const front = Math.cos(t)
-    const far = Math.abs(deg) > 300 ? Math.max(0, 1 - (Math.abs(deg) - 300) / 40) : 1 // drop cards that are well round the back
-    gsap.set(card, {
-      x: (252 * Math.sin(t) + 0.71 * deg) * k,
-      y: 1.85 * deg * k,
-      z: 210 * front * k, // the front card sits forward, so it reads bigger than the rest (as on the reference)
-      rotationY: deg,
-      opacity: (0.6 + 0.4 * front) * far,
-      zIndex: Math.round(100 + front * 50),
-    })
-    // text only on the side facing you: once a card turns away its title/description fade out (no mirrored text from behind)
-    const txt = card.querySelector('[data-ring-text]')
-    if (txt) txt.style.opacity = Math.max(0, Math.min(1, front * 4))
-    card.firstElementChild.style.pointerEvents = Math.abs(rel) < 0.5 ? 'auto' : 'none' // only the front card is clickable
-  })
-  const active = Math.min(N - 1, Math.max(0, Math.round(a)))
-  els.dots.forEach((dot, i) => { dot.dataset.on = i === active ? '1' : '0' })
-}
-
-/** Treatment cards revealed under the hero, then turned on a 3D ring. */
-export function About() {
-  const sectionRef = useRef(null)
-  const headingRef = useRef(null)
-  const ringRef = useRef(null)
+/** Sizes the below-`md` (mobile/narrow-tablet) card grid to use the full available width while still
+ *  guaranteeing the heading + all 3 card rows fit within one screen's height — this section is pinned
+ *  during its unfold (see Top.jsx), so there's no way to scroll further to reach a row cut off below.
+ *  This used to be a hand-tuned `calc()` guess at how much vertical space the heading/padding leave
+ *  free, which on a real phone — where Safari's toolbar shrinks `100svh` well below what desktop tools
+ *  report — produced a grid far narrower than necessary, reading as oversized side padding. Measuring
+ *  the real rendered heading height and viewport instead means it uses exactly the space available. */
+function useMobileFanGridWidth(sectionRef, headingRef) {
+  const [width, setWidth] = useState(null)
 
   useEffect(() => {
-    const el = ringRef.current
-    ring.els = { cards: [...el.querySelectorAll('[data-ring-card]')], dots: [...sectionRef.current.querySelectorAll('[data-ring-dot]')] }
-    layoutRing(0)
-    const ro = new ResizeObserver(() => layoutRing())
-    ro.observe(el)
+    // Measured against the SMALL viewport (100svh = address bar showing) via a probe element: on a phone the
+    // browser bar hides as you scroll, which changes innerHeight/visualViewport and used to re-size the cards
+    // mid-scroll (they grew and the bottom row got cut). svh is constant, so the grid stays put; and we only
+    // re-measure when the width changes (rotation), never on the bar's height-only resizes.
+    const probe = document.createElement('div')
+    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none'
+    document.body.appendChild(probe)
+    let lastW = -1
+    const compute = () => {
+      const section = sectionRef.current
+      const heading = headingRef.current
+      if (window.innerWidth === lastW) return
+      lastW = window.innerWidth
+      if (!section || !heading || window.innerWidth >= 768) { setWidth(null); return }
 
-    // touch screens: the ring turns by itself every few seconds and follows sideways swipes
-    const touch = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 1024
-    let tween, timer, x0 = null, y0 = 0
-    const go = (to) => {
-      tween?.kill()
-      to = Math.min(N - 1, Math.max(0, to)) // the run has ends, like the reference
-      const p = { a: ring.a }
-      // going back to the start turns through every card, so give it more time
-      tween = gsap.to(p, { a: to, duration: Math.abs(to - ring.a) > 1.5 ? 1.8 : 0.9, ease: 'power3.inOut', onUpdate: () => layoutRing(p.a) })
+      const svh = probe.offsetHeight || window.innerHeight
+      const sectionCS = getComputedStyle(section)
+      const reservedV = parseFloat(sectionCS.paddingTop) + parseFloat(sectionCS.paddingBottom)
+      const headingCS = getComputedStyle(heading)
+      const headingSpace = heading.getBoundingClientRect().height + parseFloat(headingCS.marginBottom)
+
+      const availableForGrid = svh - reservedV - headingSpace
+      const rowHeight = (availableForGrid - 2 * FAN_ROW_GAP) / 3
+      const cardWidthByHeight = rowHeight / FAN_CARD_RATIO
+      const gridWidthByHeight = 2 * cardWidthByHeight + FAN_COL_GAP
+
+      const containerWidth = section.clientWidth - parseFloat(sectionCS.paddingLeft) - parseFloat(sectionCS.paddingRight)
+
+      // No "legibility floor" here on purpose: clamping up on a very short viewport would silently
+      // defeat the fit-within-height guarantee this hook exists for. 100px only guards against a
+      // zero/negative result from a measurement glitch, not a real design minimum.
+      setWidth(Math.round(Math.max(100, Math.min(containerWidth, gridWidthByHeight))))
+      // #about's height can change with this grid; keep ScrollTrigger's cached positions for
+      // sections below it in sync, the same way Top.jsx's own resize handler does.
+      ScrollTrigger.refresh()
     }
-    const inView = () => { const r = sectionRef.current.getBoundingClientRect(); return r.top < innerHeight * 0.4 && r.bottom > innerHeight * 0.6 }
-    const restart = () => { clearInterval(timer); timer = setInterval(() => { if (inView() && !document.hidden && !reducedMotion()) go(Math.round(ring.a) >= N - 1 ? 0 : Math.round(ring.a) + 1) }, 3200) }
-    const down = (e) => { x0 = e.touches[0].clientX; y0 = e.touches[0].clientY }
-    const up = (e) => {
-      if (x0 == null) return
-      const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0
-      x0 = null
-      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { go(Math.round(ring.a) + (dx < 0 ? 1 : -1)); restart() }
+    compute()
+    window.addEventListener('resize', compute)
+    window.addEventListener('orientationchange', compute)
+    return () => {
+      window.removeEventListener('resize', compute)
+      window.removeEventListener('orientationchange', compute)
+      probe.remove()
     }
-    if (touch) { restart(); el.addEventListener('touchstart', down, { passive: true }); el.addEventListener('touchend', up) }
-    ring.go = (dir) => { go(Math.round(ring.a) + dir); if (touch) restart() }
-    return () => { ro.disconnect(); tween?.kill(); clearInterval(timer); el.removeEventListener('touchstart', down); el.removeEventListener('touchend', up); ring.els = null }
-  }, [])
+  }, [sectionRef, headingRef])
+
+  return width
+}
+
+export const cards = [
+  { name: 'Testosterone', tagline: 'Optimize your hormones. Reclaim your edge.', image: '/img/card-testosterone-500.webp', Icon: IconTestosterone },
+  { name: 'Peptides & Longevity', tagline: 'Science-backed solutions for a longer, healthier life.', image: '/img/card-peptides-500.webp', Icon: IconPeptides },
+  { name: 'Sexual Health', tagline: 'Confidence. Performance. Intimacy.', image: '/img/card-sexual-health-500.webp', Icon: IconSexualHealth },
+  { name: 'Weight Loss', tagline: 'Sustainable results. A healthier, lighter you.', image: '/img/card-weight-loss-500.webp', Icon: IconWeightLoss },
+  { name: 'Hair Loss', tagline: 'Stronger hair. Greater confidence.', image: '/img/card-hair-loss-500.webp', Icon: IconHairLoss },
+  { name: 'Performance Enhancers', tagline: 'More energy, more strength, more you.', image: '/img/card-performance-500.webp', Icon: IconPerformance },
+]
+
+/** Treatment cards revealed under the hero tiles, unfolding from edge-on. */
+export function About() {
+  // The cards' unfold lives in the hero's pinned timeline (Top.jsx), so the page holds until they're all flat.
+  const sectionRef = useRef(null)
+  const headingRef = useRef(null)
+  const mobileGridWidth = useMobileFanGridWidth(sectionRef, headingRef)
 
   return (
-    <section id="about" className="relative z-10 h-lvh min-h-[560px] overflow-x-clip bg-gray-100">
-      <div ref={sectionRef} className="flex h-svh min-h-[560px] flex-col px-3 pt-[92px] pb-6 sm:px-[30px] sm:pt-[112px] sm:pb-8 lg:pt-[118px]">{/* top room for the floating header */}
-        <div ref={headingRef} data-fan-head className="mx-auto flex max-w-[985px] flex-col items-center text-center">
+    <section id="about" className="relative z-10 h-lvh min-h-[560px] overflow-x-clip bg-gray-100">{/* full large-viewport height (browser bar hidden) so nothing below peeks in */}
+      <div ref={sectionRef} className="flex h-svh min-h-[560px] items-center px-3 pt-[92px] pb-5 sm:px-[30px] sm:pt-[112px] sm:pb-8 lg:pt-[118px] lg:pb-8">{/* the visible-with-bar area the cards are fitted into */}{/* Option 4: top room for the floating header on every screen size, since it stays visible over this pinned section (phone pill ends ~76px, tablet ~90px, desktop ~102px) */}
+      <div className="relative z-10 w-full">
+        {/* Heading — wording from the live site's "Choose a Health Journey" treatment picker */}
+        <div ref={headingRef} data-fan-head className="mx-auto mb-8 flex max-w-[985px] flex-col items-center text-center sm:mb-14">
           <Tag dot={false}>Treatments</Tag>
           <h2 id="treatments-heading" className="t-h2 mt-3 max-w-none md:whitespace-nowrap">Choose Your Health Journey</h2>
         </div>
-
-        {/* the ring: every card sits at the centre and layoutRing() moves it into its spot */}
-        <ul ref={ringRef} aria-labelledby="treatments-heading" className="relative mt-4 min-h-0 flex-1 [perspective:1600px] [touch-action:pan-y] [mask-image:linear-gradient(to_bottom,transparent,#000_12%,#000_88%,transparent)]">{/* soft top/bottom fade: cards drifting up-left or down-right melt out instead of running over the heading */}
-          {cards.map((c) => (
-            <li key={c.name} data-ring-card className="pointer-events-none absolute inset-0 flex items-center justify-center will-change-transform">
-              <div data-ring-in className="w-[min(460px,80vw,calc((100svh-330px)*1.0))]">
-                <a
-                  href={links.products}
-                  aria-label={`Explore ${c.name}`}
-                  className="group relative block aspect-[1/0.8] overflow-hidden rounded-[18px] bg-ink text-white [clip-path:inset(0_round_18px)]"
-                >{/* clip-path keeps the corners rounded once the card is turned in 3D (overflow + radius alone get dropped there) */}
-                  <Img base={c.image} widths={[600, 1000]} sizes="(min-width: 1024px) 540px, 92vw" loading="lazy" className="absolute inset-0 h-full w-full object-cover object-[center_30%] transition-transform duration-700 ease-out group-hover:scale-105" />
-                  <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/15 to-transparent" />
-                  {/* title + description bottom-left, same copy as the hero's treatment cards; title in sentence case */}
-                  <span data-ring-text className="relative z-10 flex h-full flex-col justify-end p-5 text-left sm:p-7">
-                    <span className="block text-[clamp(20px,2.1vw,28px)] leading-tight font-semibold tracking-[-0.01em]">{sentenceCase(c.name)}</span>
-                    <span className="mt-1.5 block max-w-[34ch] text-[13px] leading-snug text-white/90 sm:text-[16px]">{c.tagline}</span>
+        {/* Treatment cards — same art, icons and copy as the live paramounthealthrx.com cards (3 × 2).
+            Below md, width comes from useMobileFanGridWidth (measured, see above); the calc() here is
+            only the pre-measurement fallback for the first paint. md+ (tablet/desktop, 3 cols) keeps
+            its own formula untouched. */}
+        <ul
+          data-fanwrap
+          style={mobileGridWidth ? { maxWidth: `${mobileGridWidth}px` } : undefined}
+          className="mx-auto grid w-full max-w-[min(985px,calc((100svh-230px)*0.70))] grid-cols-2 gap-3 [perspective:1200px] sm:gap-5 md:max-w-[min(985px,calc((100svh-290px)*1.53+40px))] lg:max-w-[min(985px,calc((100svh-350px)*1.53+40px))] md:grid-cols-3"
+          aria-labelledby="treatments-heading"
+        >
+          {cards.map((c, i) => (
+            <li key={c.name} data-fan data-col={i % 3} data-row={Math.floor(i / 3)} className="will-change-transform">
+              <a
+                href={links.products}
+                aria-label={`Explore ${c.name}`}
+                className="group relative block aspect-[259/254] overflow-hidden rounded-[22px] border-2 border-white/50 text-left text-white shadow-[0_18px_40px_-24px_rgba(10,26,47,0.55)]"
+              >
+                <div aria-hidden className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105" style={{ backgroundImage: `url(${c.image})` }} />
+                <div className="relative z-10 flex h-full flex-col items-start justify-between p-3 sm:p-5">
+                  <span className="flex size-10 items-center justify-center rounded-full border border-white/30 bg-black/50 backdrop-blur-[52px] transition-colors duration-300 group-hover:bg-sky sm:size-[54px]">
+                    <c.Icon />
                   </span>
-                </a>
-              </div>
+                  <span className="block w-full">
+                    <span className="block text-[16px] leading-tight font-semibold tracking-[-0.01em] sm:text-[22px]">{c.name}</span>
+                    <span className="mt-1 flex items-end justify-between gap-2">
+                      <span className="line-clamp-2 text-[11px] leading-[1.3] text-white/90 sm:line-clamp-none sm:text-[15px] sm:leading-snug">{c.tagline}</span>{/* Option 4: 2 lines max on phones so short screens (iPhone SE) don't cut it mid-word */}
+                      <svg viewBox="0 0 16 16" className="mb-0.5 h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 3.5L10.5 8 6 12.5" /></svg>
+                    </span>
+                  </span>
+                </div>
+              </a>
             </li>
           ))}
         </ul>
-
-        {/* position dots (+ arrows on touch screens) */}
-        <div data-ring-in className="mt-3 flex items-center justify-center gap-4 lg:hidden">
-          <button type="button" aria-label="Previous treatment" onClick={() => ring.go?.(-1)} className="flex size-9 items-center justify-center rounded-full border border-ink/15 text-ink">
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M10 3.5L5.5 8 10 12.5" /></svg>
-          </button>
-          <div className="flex items-center gap-2">
-            {cards.map((c, i) => <span key={c.name} data-ring-dot data-on={i === 0 ? '1' : '0'} className="h-1.5 w-1.5 rounded-full bg-ink/25 transition-all duration-300 data-[on=1]:w-6 data-[on=1]:bg-navy" />)}
-          </div>
-          <button type="button" aria-label="Next treatment" onClick={() => ring.go?.(1)} className="flex size-9 items-center justify-center rounded-full border border-ink/15 text-ink">
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 3.5L10.5 8 6 12.5" /></svg>
-          </button>
-        </div>
+      </div>
       </div>
     </section>
   )

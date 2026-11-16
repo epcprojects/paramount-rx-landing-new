@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { gsap, useGSAP, ScrollTrigger, Observer, ease, reducedMotion, lenis } from '../motion.js'
 import { introDone } from '../components/Intro.jsx'
 import { HeroFilm, addFilm, playFilmEntrance, FILM_LEN } from '../components/HeroFilm.jsx'
-import { cards, layoutRing } from './Story.jsx'
 import { menu, links } from '../content.js'
 import { Cta, Tag, Img } from '../components/ui.jsx'
 
@@ -277,7 +276,7 @@ export function Hero() {
         }
       } else {
         tl = gsap.timeline({
-          scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=640%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1 }, // longer than Option 4: room to turn the card ring
+          scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=280%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1 },
         })
       }
       // 1 — the film: runner + orbiting pills, then he zooms out and the dark stage fades away (0.65 → 0.9)
@@ -288,24 +287,19 @@ export function Hero() {
         .set(q('[data-film-hint]'), { autoAlpha: 0 }, 0.65)
         .set(root.current, { pointerEvents: 'none' }, FILM_LEN)
 
-      // 3 — Option 5: the treatment ring rises in (heading, then the cards and dots)…
+      // 3 — the treatment cards unfold from edge-on while the stage is still pinned (same motion as the main page)
       const T = 0.7
       const head = stage.querySelector('[data-fan-head]')
       if (head) tl.fromTo(head, { opacity: 0, y: 30 }, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.35, immediateRender: true }, T)
-      tl.fromTo(stage.querySelectorAll('[data-ring-in]'), { opacity: 0, y: 70, scale: 0.92 },
-        { opacity: 1, y: 0, scale: 1, ease: 'power2.out', duration: 0.5, stagger: 0.05, immediateRender: true }, T + 0.1)
-      // …then on desktop the scroll turns it one card at a time, with a short rest on each (like the reference).
-      // Touch screens get the ring advancing on its own + swipes instead (Story.jsx), since one swipe plays this timeline.
-      layoutRing(0)
-      if (!touch) {
-        const p = { a: 0 }
-        tl.to({}, { duration: 0.2 })
-        for (let k = 1; k < cards.length; k++) {
-          tl.to(p, { a: k, duration: 0.3, ease: 'power2.inOut', onUpdate: () => layoutRing(p.a) })
-            .to({}, { duration: 0.15 })
-        }
-      }
-      tl.to({}, { duration: 0.2 }) // short hold before the pin releases
+      const origins = ['100% 50%', '50% 50%', '0% 50%']
+      const angles = [78, 82, -78]
+      stage.querySelectorAll('[data-fan]').forEach((card) => {
+        const col = Number(card.dataset.col)
+        const row = Number(card.dataset.row)
+        tl.fromTo(card, { rotationY: angles[col], transformOrigin: origins[col] },
+          { rotationY: 0, ease: 'power2.out', duration: 0.55, immediateRender: true }, T + 0.1 + row * 0.15)
+      })
+      tl.to({}, { duration: 0.2 }) // short hold on the finished grid before the pin releases
       ScrollTrigger.refresh()
     }
     const raf = requestAnimationFrame(build)
