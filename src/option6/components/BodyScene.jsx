@@ -3,7 +3,10 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js'
 import { gsap } from '../motion.js'
-import { category as getCategory } from '../data/treatments.js'
+import { category as getCategory, treatments } from '../data/treatments.js'
+
+// phones: each pin shows how many products its category has
+const countFor = (id) => treatments.filter((t) => (id === 'in-demand' ? t.inDemand : t.category === id)).length
 
 // 3D body for "Every treatment, mapped to the body" — a plain three.js port of the Paramount products prototype
 // (same model, camera shots, region glow shader, pins, drag-to-rotate with inertia).
@@ -393,10 +396,10 @@ export default function BodyScene({ category, onSelect, scroll, reducedMotion })
                 aria-pressed={active}
                 onPointerDown={(e) => e.stopPropagation()}
                 onClick={(e) => { e.stopPropagation(); onSelect(a.id) }}
-                className={`pin group/pin relative grid h-8 w-8 cursor-pointer place-items-center ${active ? 'pin-active' : ''}`}
+                className={`pin group/pin relative grid h-8 w-8 cursor-pointer place-items-center max-md:h-11 max-md:w-11 ${active ? 'pin-active' : ''}`}
               >
                 <span className="pin-ring" />
-                <span className="pin-dot" />
+                <span className="pin-dot"><span className="pin-count" aria-hidden>{countFor(a.id)}</span></span>
                 <span className={`pointer-events-none absolute top-1/2 left-[calc(100%+2px)] -translate-y-1/2 rounded-md border border-neutral-200 bg-white/95 px-2 py-1 text-[11px] font-medium whitespace-nowrap text-neutral-800 shadow-sm backdrop-blur transition-all duration-300 ${active ? 'opacity-100' : '-translate-x-1 opacity-0 group-hover/pin:translate-x-0 group-hover/pin:opacity-100'}`}>{label}</span>
               </button>
             </div>
