@@ -85,6 +85,9 @@ const jobs = [
   [`${GEN}/card-sexual-health.png`, 't-sexual-health', [600, 896], 80],
   [`${GEN}/card-peptides.png`, 't-peptides', [600, 896], 80],
   [`${GEN}/card-hair-loss.png`, 't-hair-loss', [600, 896], 80],
+  // Option 5 treatment ring cards (client-supplied photos)
+  ...['testosterone', 'peptides', 'sexual-health', 'weight-loss', 'hair-loss', 'performance']
+    .map((n) => [`${SRC}/opt5/card-${n}.jpg`, `opt5-card-${n}`, [600, 1000], 82]),
 ]
 
 await mkdir(OUT, { recursive: true })
