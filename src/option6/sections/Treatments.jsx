@@ -10,7 +10,6 @@ import { cards } from './Story.jsx'
 // Phones and tablets: swipe the deck sideways or tap a name.
 
 const N = cards.length
-const pad = (i) => String(i + 1).padStart(2, '0')
 const clamp = (v) => Math.min(N - 1, Math.max(0, v))
 
 /** Hook for the hero timeline: Top.jsx calls treat.set(p) with p from 0 (first card on top) to N - 1. */
@@ -85,7 +84,7 @@ export function About() {
 
   return (
     <section ref={root} id="about" className="relative z-10 h-lvh min-h-[600px] overflow-hidden bg-gray-100">{/* full large-viewport height (browser bar hidden) so nothing below peeks in */}
-      <div className="mx-auto flex h-svh min-h-[600px] max-w-[1200px] flex-col gap-5 px-5 pt-[92px] pb-8 sm:px-8 sm:pt-[112px] lg:grid lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-12 lg:pt-[118px] lg:pb-12">
+      <div className="mx-auto flex h-svh min-h-[600px] max-w-[1200px] flex-col gap-5 px-5 pt-[92px] pb-8 sm:px-8 sm:pt-[112px] lg:grid lg:grid-cols-[1fr_1.1fr] lg:items-center lg:gap-20 xl:gap-24 lg:pt-[118px] lg:pb-12">
         <div data-fan-head className="flex flex-col gap-4 lg:gap-6">
           <Tag dot={false}>Treatments</Tag>
           <h2 id="treatments-heading" className="t-h2 lg:max-w-[11ch]">Choose Your Health Journey</h2>
@@ -95,7 +94,7 @@ export function About() {
             {cards.map((c, i) => (
               <li key={c.name} className="border-b border-neutral-200">
                 <a href={links.products} aria-label={`Explore ${c.name}`}
-                  className={`group flex items-center justify-between gap-4 py-2.5 transition-all duration-500 hover:text-navy ${i === cur ? 'text-ink' : 'text-neutral-400'}`}>
+                  className={`group flex items-center justify-between gap-4 py-3 transition-all [@media(min-height:820px)]:py-4 duration-500 hover:text-navy ${i === cur ? 'text-ink' : 'text-neutral-400'}`}>
                   <span className={`text-[20px] font-medium transition-all duration-500 ${i === cur ? 'translate-x-2 text-[26px] font-semibold' : ''}`}>{c.name}</span>
                   <svg width="18" height="18" viewBox="0 0 10 9" fill="none" aria-hidden className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"><path fill="currentColor" d="M9.82143 4.73214L5.89286 8.48214C5.66964 8.68304 5.33482 8.68304 5.13393 8.45982C4.93304 8.23661 4.93304 7.90179 5.15625 7.70089L8.125 4.86607H0.535714C0.223214 4.86607 0 4.64286 0 4.33036C0 4.04018 0.223214 3.79464 0.535714 3.79464H8.125L5.15625 0.982143C4.93304 0.78125 4.93304 0.424107 5.13393 0.223214C5.33482 6.70552e-08 5.69196 6.70552e-08 5.89286 0.200893L9.82143 3.95089C9.93304 4.0625 10 4.19643 10 4.33036C10 4.48661 9.93304 4.62054 9.82143 4.73214Z" /></svg>
                 </a>
@@ -125,7 +124,6 @@ export function About() {
               <Img base={c.photo} widths={[600, 1000]} sizes="(min-width: 1024px) 560px, 92vw" alt="" draggable={false} loading={i < 2 ? 'eager' : 'lazy'} className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105" />
               <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
               <span className="absolute top-5 left-5 flex size-12 items-center justify-center rounded-full border border-white/30 bg-black/40 backdrop-blur-md sm:top-6 sm:left-6"><c.Icon /></span>
-              <span className="absolute top-6 right-6 text-sm font-semibold tabular-nums text-white/80 sm:top-7 sm:right-7">{pad(i)} / {pad(N - 1)}</span>
               <span className="absolute inset-x-5 bottom-5 flex flex-col items-start gap-3 sm:inset-x-7 sm:bottom-7 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                 <span className="flex flex-col gap-2">
                   <span className="text-[24px] leading-tight font-semibold sm:text-[32px]">{c.name}</span>
