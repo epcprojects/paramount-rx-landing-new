@@ -90,12 +90,15 @@ export function About() {
           <Tag dot={false}>Treatments</Tag>
           <h2 id="treatments-heading" className="t-h2 lg:max-w-[11ch]">Choose Your Health Journey</h2>
 
-          {/* desktop: the full list, the current one pushed in and enlarged */}
+          {/* desktop: the full list, the current one pushed in and enlarged; every row links on to the products page */}
           <ol className="mt-2 hidden flex-col lg:flex">
             {cards.map((c, i) => (
-              <li key={c.name} className={`flex items-baseline gap-4 border-b border-neutral-200 py-2.5 transition-all duration-500 ${i === cur ? 'translate-x-2 text-ink' : 'text-neutral-400'}`}>
-                <span className="w-7 text-[13px] font-semibold tabular-nums">{pad(i)}</span>
-                <span className={`text-[20px] font-medium transition-all duration-500 ${i === cur ? 'text-[26px] font-semibold' : ''}`}>{c.name}</span>
+              <li key={c.name} className="border-b border-neutral-200">
+                <a href={links.products} aria-label={`Explore ${c.name}`}
+                  className={`group flex items-center justify-between gap-4 py-2.5 transition-all duration-500 hover:text-navy ${i === cur ? 'text-ink' : 'text-neutral-400'}`}>
+                  <span className={`text-[20px] font-medium transition-all duration-500 ${i === cur ? 'translate-x-2 text-[26px] font-semibold' : ''}`}>{c.name}</span>
+                  <svg width="18" height="18" viewBox="0 0 10 9" fill="none" aria-hidden className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"><path fill="currentColor" d="M9.82143 4.73214L5.89286 8.48214C5.66964 8.68304 5.33482 8.68304 5.13393 8.45982C4.93304 8.23661 4.93304 7.90179 5.15625 7.70089L8.125 4.86607H0.535714C0.223214 4.86607 0 4.64286 0 4.33036C0 4.04018 0.223214 3.79464 0.535714 3.79464H8.125L5.15625 0.982143C4.93304 0.78125 4.93304 0.424107 5.13393 0.223214C5.33482 6.70552e-08 5.69196 6.70552e-08 5.89286 0.200893L9.82143 3.95089C9.93304 4.0625 10 4.19643 10 4.33036C10 4.48661 9.93304 4.62054 9.82143 4.73214Z" /></svg>
+                </a>
               </li>
             ))}
           </ol>
