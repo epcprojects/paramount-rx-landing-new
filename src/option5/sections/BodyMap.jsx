@@ -54,7 +54,7 @@ function useNearViewport(margin = '600px') {
 /* ---------- category tabs ---------- */
 
 // Category cards (same look as the Products page option): a photo behind each category with its name and a product
-// count. Desktop: a compact grid in the left column. Phones / tablets: a swipeable row. Photos are stand-ins.
+// count, as a swipeable row on phones / tablets. Desktop keeps the original pills. Photos are stand-ins.
 const tabPhoto = {
   all: ['/img/steps-bg-1', [800, 1800]],
   'in-demand': ['/img/runners-duo', [1425, 1920]],
@@ -81,10 +81,20 @@ function Tabs({ active, onChange, size = 'md', className = '' }) {
     el.scrollTo({ left: Math.max(0, left), behavior: 'smooth' })
   }, [active])
   return (
-    <div ref={ref} role="tablist" aria-label="Treatment categories" className={`${sm ? 'flex gap-2.5' : 'grid-cols-2 gap-2 xl:grid-cols-3'} ${className}`}>
+    <div ref={ref} role="tablist" aria-label="Treatment categories" className={`flex ${sm ? 'gap-2.5' : `gap-2 ${className.includes('flex-nowrap') ? '' : 'flex-wrap'}`} ${className}`}>
       {categories.map((c) => {
         const on = c.id === active
         const [photo, widths] = tabPhoto[c.id] || tabPhoto.all
+        if (!sm) {
+          const big = c.id === 'in-demand'
+          return (
+            <button key={c.id} type="button" role="tab" aria-selected={on} onClick={() => onChange(c.id)}
+              className={`flex shrink-0 cursor-pointer items-center gap-2 rounded-full border px-[22px] py-3 transition-colors ${on ? 'border-navy bg-navy' : 'border-neutral-200 bg-white hover:border-navy'}`}>
+              {c.icon && <img src={c.icon} alt="" aria-hidden width={big ? 28 : 24} height={big ? 28 : 24} className={`${big ? 'size-7' : 'size-6'} shrink-0 object-contain`} />}
+              <span className={`whitespace-nowrap text-base ${on ? 'font-semibold text-white' : 'font-medium text-neutral-700'}`}>{c.label}</span>
+            </button>
+          )
+        }
         return (
           <button
             key={c.id}
@@ -92,13 +102,13 @@ function Tabs({ active, onChange, size = 'md', className = '' }) {
             role="tab"
             aria-selected={on}
             onClick={() => onChange(c.id)}
-            className={`group relative shrink-0 cursor-pointer overflow-hidden rounded-[12px] text-left text-white transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_18px_30px_-16px_rgba(10,26,47,0.55)] ${sm ? 'my-2 h-[84px] w-[128px]' : 'h-[52px] w-full xl:h-[68px]'} ${on ? 'shadow-[0_12px_24px_-14px_rgba(16,69,132,0.7)] ring-[2.5px] ring-navy ring-offset-2 ring-offset-white' : 'shadow-[0_8px_18px_-14px_rgba(10,26,47,0.5)]'}`}
+            className={`group relative shrink-0 cursor-pointer overflow-hidden rounded-[12px] text-left text-white transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(.22,1,.36,1)] hover:-translate-y-1 hover:scale-[1.03] hover:shadow-[0_18px_30px_-16px_rgba(10,26,47,0.55)] my-2 h-[84px] w-[128px] ${on ? 'shadow-[0_12px_24px_-14px_rgba(16,69,132,0.7)] ring-[2.5px] ring-navy ring-offset-2 ring-offset-white' : 'shadow-[0_8px_18px_-14px_rgba(10,26,47,0.5)]'}`}
           >
             <Img base={photo} widths={widths} sizes="160px" alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 ease-[cubic-bezier(.22,1,.36,1)] group-hover:scale-110" />
             <span aria-hidden className={`absolute inset-0 transition-colors duration-500 ${on ? 'bg-gradient-to-t from-navy/90 via-navy/45 to-navy/10' : 'bg-gradient-to-t from-black/80 via-black/30 to-black/5 group-hover:from-navy/85 group-hover:via-navy/35'}`} />
             <span className="absolute top-1.5 right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border border-white/20 bg-black/45 px-1 text-[10px] font-bold tabular-nums backdrop-blur-md">{tabCount(c.id)}</span>
             {c.id === 'in-demand' && c.icon && <img src={c.icon} alt="" aria-hidden width={20} height={20} className="absolute top-1.5 left-1.5 size-5 object-contain" />}
-            <span className={`absolute inset-x-2.5 bottom-2 leading-tight font-semibold ${sm ? 'text-[13px]' : 'text-[12px] xl:text-[13px]'}`}>{c.label}</span>
+            <span className={`absolute inset-x-2.5 bottom-2 leading-tight font-semibold text-[13px]`}>{c.label}</span>
           </button>
         )
       })}
@@ -531,7 +541,7 @@ export function BodyMap() {
             <p className="text-[13px] font-semibold text-navy">{info.label}</p>
             <p className="mt-0.5 max-w-[20rem] text-xs leading-snug text-neutral-500 md:max-w-none lg:max-w-[20rem]">{info.blurb}</p>
           </div>
-          <Tabs active={cat} onChange={choose} className="hidden max-w-[26rem] lg:grid" />
+          <Tabs active={cat} onChange={choose} className="hidden max-w-[26rem] lg:flex" />
         </div>
 
         {/* top offset = floating mobile header's own rendered bottom edge (12px top padding + its pill
