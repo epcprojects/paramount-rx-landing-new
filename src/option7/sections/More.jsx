@@ -554,6 +554,8 @@ export function Biology() {
       let queued = 0 // a scroll made while a card was still gliding: played as soon as the glide ends
       let held = false
       let lastWheel = 0
+      // the wheel/trackpad stream currently being read (see onWheel)
+      let g = { acc: 0, fired: false, at: 0, peak: 0, floor: Infinity, decayed: false }
       let st
       const glide = (k) => {
         at = k
@@ -583,6 +585,7 @@ export function Biology() {
         queued = 0
         holdY = Math.round(Math.min(st.end - 2, Math.max(st.start + 2, window.scrollY)))
         lastWheel = performance.now() // the scroll that carried the page in counts as one gesture, so it can't also flip a card
+        g = { acc: 0, fired: true, at: lastWheel, peak: 0, floor: Infinity, decayed: false }
         lenis?.stop()
         window.scrollTo(0, holdY)
         obs.enable()
@@ -595,15 +598,33 @@ export function Biology() {
       }
       // each separate scroll gesture asks for one card; while a card is still gliding, remember the latest request
       const request = (dir) => { if (!held) return; if (gliding) queued = dir; else step(dir) }
-      // Mouse wheel: every notch is its own event, spaced out in time → one card each (a fast spin of several notches
-      // counts once). Trackpad: one swipe + its momentum is a continuous stream of events a few ms apart → one card.
+      // One scroll gesture = one card. Mouse wheel: every notch is its own event, spaced out in time (a fast spin of
+      // several notches counts once). Trackpad: a swipe is a stream of events a few ms apart that keeps coasting
+      // (momentum) for a second or more — so a pause alone can't separate swipes, or a second swipe made while the
+      // first is still coasting gets swallowed. A new swipe is therefore also recognised when, after the stream has
+      // slowed down, it speeds up again.
       const onWheel = (e) => {
         if (!held) return
         if (e.cancelable) e.preventDefault()
         const now = performance.now()
         const gap = now - lastWheel
         lastWheel = now
-        if (gap < 130 || Math.abs(e.deltaY) < 2) return // still the same gesture
+        const d = Math.abs(e.deltaY) * (e.deltaMode === 1 ? 16 : 1)
+        if (d < 1) return
+        let fresh = gap >= 140
+        if (!fresh && g.fired) {
+          g.peak = Math.max(g.peak, d)
+          if (!g.decayed && d < g.peak * 0.55) g.decayed = true // the swipe is coasting down
+          if (g.decayed) g.floor = Math.min(g.floor, d)
+          if (g.decayed && now - g.at > 220 && d > Math.max(8, g.floor * 2 + 4)) fresh = true // …and a new swipe lifts it again
+        }
+        if (fresh) g = { acc: 0, fired: false, at: 0, peak: 0, floor: Infinity, decayed: false }
+        if (g.fired) return // still the same gesture
+        g.acc += d
+        if (g.acc < 18) return // ignore the tiniest brushes of the trackpad
+        g.fired = true
+        g.at = now
+        g.peak = d
         request(e.deltaY > 0 ? 1 : -1)
       }
       window.addEventListener('wheel', onWheel, { passive: false })
