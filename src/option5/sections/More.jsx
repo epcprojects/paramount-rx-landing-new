@@ -534,7 +534,8 @@ export function Biology() {
           const w = Math.max(0, 1 - Math.abs(p - i)) // 1 = this card is the open one
           el.style.flexGrow = (1 + w).toFixed(3)
           el.style.height = `${(104 + 92 * w).toFixed(1)}px` // open card fits title + 2-line description + link, no empty space
-          el.querySelector('[data-more]').style.opacity = Math.max(0, (w - 0.45) / 0.55).toFixed(3)
+          // the copy is fully faded by w = 0.78, before the shrinking card reaches the link (clipping starts ~0.73)
+          el.querySelector('[data-more]').style.opacity = Math.max(0, (w - 0.78) / 0.22).toFixed(3)
         })
         const a = Math.round(p)
         setActive((cur) => (cur === a ? cur : a))
