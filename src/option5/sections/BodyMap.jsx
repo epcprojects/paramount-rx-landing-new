@@ -1,5 +1,6 @@
 import { forwardRef, lazy, Suspense, useCallback, useEffect, useId, useImperativeHandle, useRef, useState } from 'react'
-import { gsap, useGSAP, reducedMotion as prefersReduced } from '../motion.js'
+import { createPortal } from 'react-dom'
+import { gsap, useGSAP, lenis, reducedMotion as prefersReduced } from '../motion.js'
 import { categories, category as getCategory, inCategory, treatments } from '../data/treatments.js'
 import { links } from '../content.js'
 
@@ -148,6 +149,103 @@ function ProductArt({ form, className }) {
       <ellipse cx="50" cy="114" rx="24" ry="3.5" fill="#000" opacity="0.08" />
       {body}
     </svg>
+  )
+}
+
+/* ---------- phones: bottom sheet with one category's products ---------- */
+
+// Option 5, phones only: the long list under the body is gone; tapping a pin on the body (or a category pill)
+// slides this sheet up with just that category's treatments. Tap the backdrop, the close button, swipe it
+// down or press Esc to dismiss. The page behind is held still while it's open.
+function CategorySheet({ id, onClose }) {
+  const open = !!id
+  const [shown, setShown] = useState(id) // keeps the last category on screen while the sheet slides away
+  const sheet = useRef(null)
+  const drag = useRef(null)
+  if (id && id !== shown) setShown(id)
+  const info = shown ? getCategory(shown) : null
+  const items = shown ? inCategory(shown) : []
+
+  useEffect(() => {
+    if (!open) return
+    lenis?.stop()
+    const html = document.documentElement
+    const prev = html.style.overflow
+    html.style.overflow = 'hidden'
+    const onKey = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', onKey)
+    sheet.current?.focus({ preventScroll: true })
+    return () => { lenis?.start(); html.style.overflow = prev; window.removeEventListener('keydown', onKey) }
+  }, [open, onClose])
+
+  // swipe the sheet down to close (only when its list is scrolled to the top)
+  const onTouchStart = (e) => { drag.current = { y: e.touches[0].clientY, dy: 0, list: e.currentTarget.querySelector('[data-sheet-list]') } }
+  const onTouchMove = (e) => {
+    const d = drag.current
+    if (!d || (d.list && d.list.scrollTop > 0)) return
+    d.dy = Math.max(0, e.touches[0].clientY - d.y)
+    sheet.current.style.transition = 'none'
+    sheet.current.style.transform = `translateY(${d.dy}px)`
+  }
+  const onTouchEnd = () => {
+    const d = drag.current
+    drag.current = null
+    if (!d) return
+    sheet.current.style.transition = ''
+    sheet.current.style.transform = ''
+    if (d.dy > 90) onClose()
+  }
+
+  return createPortal(
+    <div className={`fixed inset-0 z-[90] md:hidden ${open ? '' : 'pointer-events-none'}`} aria-hidden={!open}>
+      <div onClick={onClose} className={`absolute inset-0 bg-[#0a1a2f]/40 backdrop-blur-[2px] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0'}`} />
+      <div
+        ref={sheet}
+        role="dialog"
+        aria-modal="true"
+        aria-label={info ? `${info.label} treatments` : 'Treatments'}
+        tabIndex={-1}
+        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
+        className={`font-system absolute inset-x-0 bottom-0 flex max-h-[78svh] flex-col rounded-t-[24px] bg-white shadow-[0_-20px_50px_-20px_rgba(10,26,47,0.35)] outline-none transition-transform duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${open ? 'translate-y-0' : 'translate-y-full'}`}
+      >
+        <div className="flex justify-center pt-2.5 pb-1"><span className="h-1.5 w-10 rounded-full bg-neutral-300" /></div>
+        {info && (
+          <div className="flex items-start gap-3 border-b border-neutral-100 px-5 pt-2 pb-4">
+            <div className="min-w-0 flex-1">
+              <p className="t-h4 text-[#242424]">{info.label} <span className="text-neutral-400">({items.length})</span></p>
+              <p className="mt-1 text-xs leading-snug text-neutral-500">{info.blurb}</p>
+            </div>
+            <button type="button" onClick={onClose} aria-label="Close" className="grid size-9 shrink-0 place-items-center rounded-full bg-neutral-100 text-neutral-600">
+              <svg viewBox="0 0 16 16" className="size-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden><path d="M4 4l8 8M12 4l-8 8" /></svg>
+            </button>
+          </div>
+        )}
+        <ul data-sheet-list data-lenis-prevent className="flex min-h-0 flex-col gap-2 overflow-y-auto overscroll-contain px-5 pt-4 pb-[max(20px,env(safe-area-inset-bottom))]">
+          {items.length === 0 && info && (
+            <li className="rounded-xl bg-[#eef5fd] p-3.5 ring-1 ring-[#d9e7f7]">
+              <p className="text-[13px] font-semibold text-[#242424]">Not available in your state yet</p>
+              <p className="mt-0.5 text-xs leading-snug text-neutral-500">A provider can still discuss {info.label.toLowerCase()} options with you.</p>
+            </li>
+          )}
+          {items.map((t) => (
+            <li key={t.id}>
+              <a href={links.products} className="flex h-[60px] items-center gap-2.5 rounded-xl border border-neutral-300 bg-white p-1 pr-2.5 text-left active:border-navy">
+                <span className="grid aspect-square h-full shrink-0 place-items-center rounded-lg bg-neutral-100"><ProductArt form={t.form} className="h-[36px]" /></span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate text-sm font-medium text-[#242424]">{t.name}</span>
+                  <span className="block truncate text-xs text-neutral-500">{t.form} · from {usd(t.price)}</span>
+                </span>
+                <svg viewBox="0 0 16 16" className="size-4 shrink-0 text-neutral-400" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 3.5L10.5 8 6 12.5" /></svg>
+              </a>
+            </li>
+          ))}
+          <li className="pt-2">
+            <a href={links.products} className="flex w-full items-center justify-center gap-1.5 rounded-full bg-navy px-4 py-3 text-sm font-semibold text-white">Start a consultation</a>
+          </li>
+        </ul>
+      </div>
+    </div>,
+    document.body,
   )
 }
 
@@ -344,6 +442,10 @@ const ProductList = forwardRef(function ProductList({ focus, onScrollFocus, redu
 export function BodyMap() {
   const [cat, setCat] = useState('all')
   const desktop = useMedia('(min-width: 1024px)')
+  const phone = useMedia('(max-width: 767px)') // Option 5: phones get a bigger body + a bottom sheet instead of the list
+  const [sheet, setSheet] = useState(null) // category shown in the phone bottom sheet (null = closed)
+  const closedAt = useRef(0)
+  const closeSheet = useCallback(() => { closedAt.current = performance.now(); setSheet(null) }, [])
   const [reduced] = useState(() => prefersReduced())
   const root = useRef(null)
   const stickyBar = useRef(null)
@@ -357,7 +459,14 @@ export function BodyMap() {
     const el = stickyBar.current
     return el ? (parseFloat(getComputedStyle(el).top) || 0) + el.offsetHeight : 0
   }, [])
-  const choose = useCallback((id) => { setCat(id); list.current?.scrollToCategory(id) }, [])
+  const choose = useCallback((id) => {
+    // phones: ignore the tap that just closed the sheet landing on the body behind it as the sheet slides away
+    // (that 'ghost' tap would reopen it on another category)
+    if (phone && performance.now() - closedAt.current < 500) return
+    setCat(id)
+    if (phone) { setSheet(id === 'all' ? null : id); return } // phones: a pin / pill opens that category's sheet
+    list.current?.scrollToCategory(id)
+  }, [phone])
 
   // desktop: the page scrolls normally over this section; only with the pointer over the treatment list on the
   // right does the wheel scroll the list (gliding smoothly), and once the list hits its top or bottom the page takes over.
@@ -409,9 +518,9 @@ export function BodyMap() {
         {/* top offset = floating mobile header's own rendered bottom edge (12px top padding + its pill
             height, 64px below 640px / 78px from 640px up), minus this box's own pt-3, plus a 10px gap —
             so the tab pills sit 10px clear of the header instead of flush under it. */}
-        <div ref={stickyBar} className="sticky top-[74px] z-[4] -mx-5 bg-white px-5 pt-3 sm:top-[88px] md:-mx-10 md:px-10 lg:static lg:top-auto lg:mx-0 lg:flex lg:min-h-0 lg:flex-col lg:bg-transparent lg:p-0">
+        <div ref={stickyBar} className="max-md:static max-md:pb-6 sticky top-[74px] z-[4] -mx-5 bg-white px-5 pt-3 sm:top-[88px] md:-mx-10 md:px-10 lg:static lg:top-auto lg:mx-0 lg:flex lg:min-h-0 lg:flex-col lg:bg-transparent lg:p-0">
           <Tabs active={cat} onChange={choose} size="sm" className="no-scrollbar -mx-5 flex-nowrap overflow-x-auto px-5 pb-1 md:-mx-10 md:px-10 lg:hidden" />
-          <div ref={sceneAnchor} className="relative -mx-5 h-[clamp(220px,34svh,300px)] md:mx-0 md:h-[clamp(280px,38svh,400px)] lg:h-auto lg:min-h-0 lg:flex-1">
+          <div ref={sceneAnchor} className="relative -mx-5 h-[clamp(420px,64svh,580px)] md:mx-0 md:h-[clamp(280px,38svh,400px)] lg:h-auto lg:min-h-0 lg:flex-1">
             <div className="pointer-events-none absolute inset-x-[12%] bottom-[4%] h-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(16,69,132,0.09),rgba(47,143,224,0.06)_45%,transparent)]" />
             {sceneNear && (
               <Suspense fallback={null}>
@@ -436,14 +545,17 @@ export function BodyMap() {
               </svg>
             </div>
             {/* phones/tablets: soft blurred fade under the sticky body so list items slide out of view smoothly */}
-            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-full h-14 bg-gradient-to-b from-white via-white/70 to-white/0 backdrop-blur-[6px] [mask-image:linear-gradient(to_bottom,black_30%,transparent)] lg:hidden" />
+            <div aria-hidden className="pointer-events-none absolute inset-x-0 top-full h-14 bg-gradient-to-b from-white via-white/70 to-white/0 backdrop-blur-[6px] [mask-image:linear-gradient(to_bottom,black_30%,transparent)] max-md:hidden lg:hidden" />
           </div>
+          {/* phones: the pins are the way in now, so say so */}
+          <p className="mt-1 text-center text-[13px] text-neutral-500 md:hidden">Tap a point on the body to see its treatments</p>
         </div>
 
-        <aside ref={side} className="hero-side relative z-[3] mx-auto min-h-0 w-full max-w-[42rem] lg:mx-0 lg:max-w-none">
-          <ProductList ref={list} focus={cat} onScrollFocus={setCat} reduced={reduced} inline={!desktop} topOffset={topOffset} />
+        <aside ref={side} className="hero-side relative max-md:hidden z-[3] mx-auto min-h-0 w-full max-w-[42rem] lg:mx-0 lg:max-w-none">
+          {!phone && <ProductList ref={list} focus={cat} onScrollFocus={setCat} reduced={reduced} inline={!desktop} topOffset={topOffset} />}{/* phones use the bottom sheet instead */}
         </aside>
       </div>
+      {phone && <CategorySheet id={sheet} onClose={closeSheet} />}
     </section>
   )
 }
