@@ -1,133 +1,53 @@
 import { useEffect, useRef, useState } from 'react'
-import { gsap, useGSAP, ScrollTrigger, reducedMotion } from '../motion.js'
+import { gsap, useGSAP, reducedMotion } from '../motion.js'
 import { links } from '../content.js'
 import { Cta, Tag, Img } from '../components/ui.jsx'
 import { IconTestosterone, IconPeptides, IconSexualHealth, IconWeightLoss, IconHairLoss, IconPerformance } from '../components/TreatmentIcons.jsx'
 
-const FAN_ROW_GAP = 12 // px — matches the grid's gap-3
-const FAN_COL_GAP = 12 // px — matches the grid's gap-3
-const FAN_CARD_RATIO = 254 / 259 // card height = width * 254/259, matches the cards' aspect-[259/254]
-
-/** Sizes the below-`md` (mobile/narrow-tablet) card grid to use the full available width while still
- *  guaranteeing the heading + all 3 card rows fit within one screen's height — this section is pinned
- *  during its unfold (see Top.jsx), so there's no way to scroll further to reach a row cut off below.
- *  This used to be a hand-tuned `calc()` guess at how much vertical space the heading/padding leave
- *  free, which on a real phone — where Safari's toolbar shrinks `100svh` well below what desktop tools
- *  report — produced a grid far narrower than necessary, reading as oversized side padding. Measuring
- *  the real rendered heading height and viewport instead means it uses exactly the space available. */
-function useMobileFanGridWidth(sectionRef, headingRef) {
-  const [width, setWidth] = useState(null)
-
-  useEffect(() => {
-    // Measured against the SMALL viewport (100svh = address bar showing) via a probe element: on a phone the
-    // browser bar hides as you scroll, which changes innerHeight/visualViewport and used to re-size the cards
-    // mid-scroll (they grew and the bottom row got cut). svh is constant, so the grid stays put; and we only
-    // re-measure when the width changes (rotation), never on the bar's height-only resizes.
-    const probe = document.createElement('div')
-    probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:100svh;visibility:hidden;pointer-events:none'
-    document.body.appendChild(probe)
-    let lastW = -1
-    const compute = () => {
-      const section = sectionRef.current
-      const heading = headingRef.current
-      if (window.innerWidth === lastW) return
-      lastW = window.innerWidth
-      if (!section || !heading || window.innerWidth >= 768) { setWidth(null); return }
-
-      const svh = probe.offsetHeight || window.innerHeight
-      const sectionCS = getComputedStyle(section)
-      const reservedV = parseFloat(sectionCS.paddingTop) + parseFloat(sectionCS.paddingBottom)
-      const headingCS = getComputedStyle(heading)
-      const headingSpace = heading.getBoundingClientRect().height + parseFloat(headingCS.marginBottom)
-
-      const availableForGrid = svh - reservedV - headingSpace
-      const rowHeight = (availableForGrid - 2 * FAN_ROW_GAP) / 3
-      const cardWidthByHeight = rowHeight / FAN_CARD_RATIO
-      const gridWidthByHeight = 2 * cardWidthByHeight + FAN_COL_GAP
-
-      const containerWidth = section.clientWidth - parseFloat(sectionCS.paddingLeft) - parseFloat(sectionCS.paddingRight)
-
-      // No "legibility floor" here on purpose: clamping up on a very short viewport would silently
-      // defeat the fit-within-height guarantee this hook exists for. 100px only guards against a
-      // zero/negative result from a measurement glitch, not a real design minimum.
-      setWidth(Math.round(Math.max(100, Math.min(containerWidth, gridWidthByHeight))))
-      // #about's height can change with this grid; keep ScrollTrigger's cached positions for
-      // sections below it in sync, the same way Top.jsx's own resize handler does.
-      ScrollTrigger.refresh()
-    }
-    compute()
-    window.addEventListener('resize', compute)
-    window.addEventListener('orientationchange', compute)
-    return () => {
-      window.removeEventListener('resize', compute)
-      window.removeEventListener('orientationchange', compute)
-      probe.remove()
-    }
-  }, [sectionRef, headingRef])
-
-  return width
-}
-
 export const cards = [
-  { name: 'Testosterone', tagline: 'Optimize your hormones. Reclaim your edge.', image: '/img/card-testosterone-500.webp', Icon: IconTestosterone },
-  { name: 'Peptides & Longevity', tagline: 'Science-backed solutions for a longer, healthier life.', image: '/img/card-peptides-500.webp', Icon: IconPeptides },
-  { name: 'Sexual Health', tagline: 'Confidence. Performance. Intimacy.', image: '/img/card-sexual-health-500.webp', Icon: IconSexualHealth },
-  { name: 'Weight Loss', tagline: 'Sustainable results. A healthier, lighter you.', image: '/img/card-weight-loss-500.webp', Icon: IconWeightLoss },
-  { name: 'Hair Loss', tagline: 'Stronger hair. Greater confidence.', image: '/img/card-hair-loss-500.webp', Icon: IconHairLoss },
-  { name: 'Performance Enhancers', tagline: 'More energy, more strength, more you.', image: '/img/card-performance-500.webp', Icon: IconPerformance },
+  { name: 'Testosterone', tagline: 'Optimize your hormones. Reclaim your edge.', image: '/img/card-testosterone-500.webp', photo: '/img/opt5-card-testosterone', Icon: IconTestosterone },
+  { name: 'Peptides & Longevity', tagline: 'Science-backed solutions for a longer, healthier life.', image: '/img/card-peptides-500.webp', photo: '/img/opt5-card-peptides', Icon: IconPeptides },
+  { name: 'Sexual Health', tagline: 'Confidence. Performance. Intimacy.', image: '/img/card-sexual-health-500.webp', photo: '/img/opt5-card-sexual-health', Icon: IconSexualHealth },
+  { name: 'Weight Loss', tagline: 'Sustainable results. A healthier, lighter you.', image: '/img/card-weight-loss-500.webp', photo: '/img/opt5-card-weight-loss', Icon: IconWeightLoss },
+  { name: 'Hair Loss', tagline: 'Stronger hair. Greater confidence.', image: '/img/card-hair-loss-500.webp', photo: '/img/opt5-card-hair-loss', Icon: IconHairLoss },
+  { name: 'Performance Enhancers', tagline: 'More energy, more strength, more you.', image: '/img/card-performance-500.webp', photo: '/img/opt5-card-performance', Icon: IconPerformance },
 ]
 
-/** Treatment cards revealed under the hero tiles, unfolding from edge-on. */
+/** Option 5: the treatments as a horizontal reel (Concept H from the Hero Section Options page) — big tall cards on
+ *  a strip. Desktop: the hero's pinned timeline (Top.jsx) brings the cards in, then slides the reel sideways as you
+ *  scroll, with each photo drifting inside its card. Touch screens: the strip is a swipeable row. */
 export function About() {
-  // The cards' unfold lives in the hero's pinned timeline (Top.jsx), so the page holds until they're all flat.
-  const sectionRef = useRef(null)
-  const headingRef = useRef(null)
-  const mobileGridWidth = useMobileFanGridWidth(sectionRef, headingRef)
+  const [touch, setTouch] = useState(false)
+  useEffect(() => { setTouch(window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 1024) }, [])
 
   return (
     <section id="about" className="relative z-10 h-lvh min-h-[560px] overflow-x-clip bg-gray-100">{/* full large-viewport height (browser bar hidden) so nothing below peeks in */}
-      <div ref={sectionRef} className="flex h-svh min-h-[560px] items-center px-3 pt-[92px] pb-5 sm:px-[30px] sm:pt-[112px] sm:pb-8 lg:pt-[118px] lg:pb-8">{/* the visible-with-bar area the cards are fitted into */}{/* Option 4: top room for the floating header on every screen size, since it stays visible over this pinned section (phone pill ends ~76px, tablet ~90px, desktop ~102px) */}
-      <div className="relative z-10 w-full">
-        {/* Heading — wording from the live site's "Choose a Health Journey" treatment picker */}
-        <div ref={headingRef} data-fan-head className="mx-auto mb-8 flex max-w-[985px] flex-col items-center text-center sm:mb-14">
+      <div className="flex h-svh min-h-[560px] flex-col justify-center pt-[92px] pb-6 sm:pt-[112px] sm:pb-8 lg:pt-[118px]">{/* top room for the floating header */}
+        <div data-fan-head className="mb-10 px-5 sm:mb-14 sm:px-[8vw] lg:mb-20">
           <Tag dot={false}>Treatments</Tag>
-          <h2 id="treatments-heading" className="t-h2 mt-3 max-w-none md:whitespace-nowrap">Choose Your Health Journey</h2>
+          <h2 id="treatments-heading" className="t-h2 mt-3">Choose Your Health Journey</h2>
         </div>
-        {/* Treatment cards — same art, icons and copy as the live paramounthealthrx.com cards (3 × 2).
-            Below md, width comes from useMobileFanGridWidth (measured, see above); the calc() here is
-            only the pre-measurement fallback for the first paint. md+ (tablet/desktop, 3 cols) keeps
-            its own formula untouched. */}
-        <ul
-          data-fanwrap
-          style={mobileGridWidth ? { maxWidth: `${mobileGridWidth}px` } : undefined}
-          className="mx-auto grid w-full max-w-[min(985px,calc((100svh-230px)*0.70))] grid-cols-2 gap-3 [perspective:1200px] sm:gap-5 md:max-w-[min(985px,calc((100svh-290px)*1.53+40px))] lg:max-w-[min(985px,calc((100svh-350px)*1.53+40px))] md:grid-cols-3"
-          aria-labelledby="treatments-heading"
-        >
-          {cards.map((c, i) => (
-            <li key={c.name} data-fan data-col={i % 3} data-row={Math.floor(i / 3)} className="will-change-transform">
-              <a
-                href={links.products}
-                aria-label={`Explore ${c.name}`}
-                className="group relative block aspect-[259/254] overflow-hidden rounded-[22px] border-2 border-white/50 text-left text-white shadow-[0_18px_40px_-24px_rgba(10,26,47,0.55)]"
-              >
-                <div aria-hidden className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105" style={{ backgroundImage: `url(${c.image})` }} />
-                <div className="relative z-10 flex h-full flex-col items-start justify-between p-3 sm:p-5">
-                  <span className="flex size-10 items-center justify-center rounded-full border border-white/30 bg-black/50 backdrop-blur-[52px] transition-colors duration-300 group-hover:bg-sky sm:size-[54px]">
-                    <c.Icon />
-                  </span>
-                  <span className="block w-full">
-                    <span className="block text-[16px] leading-tight font-semibold tracking-[-0.01em] sm:text-[22px]">{c.name}</span>
-                    <span className="mt-1 flex items-end justify-between gap-2">
-                      <span className="line-clamp-2 text-[11px] leading-[1.3] text-white/90 sm:line-clamp-none sm:text-[15px] sm:leading-snug">{c.tagline}</span>{/* Option 4: 2 lines max on phones so short screens (iPhone SE) don't cut it mid-word */}
-                      <svg viewBox="0 0 16 16" className="mb-0.5 h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 3.5L10.5 8 6 12.5" /></svg>
+        <div className={touch ? 'no-scrollbar -my-8 snap-x snap-mandatory overflow-x-auto overscroll-x-contain py-8' : ''}>
+          <ul data-reel-track aria-labelledby="treatments-heading" className="flex w-max items-center gap-4 px-5 will-change-transform sm:gap-6 sm:px-[8vw]">
+            {cards.map((c) => (
+              <li key={c.name} data-reel-card className="w-[min(380px,76vw)] shrink-0 snap-center sm:w-[min(380px,46vw)] lg:w-[min(380px,74vw)]">
+                <a href={links.products} aria-label={`Explore ${c.name}`} className="group relative block h-[min(480px,calc(100svh-360px))] min-h-[340px] sm:h-[min(560px,calc(100svh-400px))] lg:h-[min(520px,calc(100svh-330px))] overflow-hidden rounded-[30px] text-white shadow-[0_30px_60px_-30px_rgba(10,26,47,0.55)]">
+                  <Img data-reel-img base={c.photo} widths={[600, 1000]} sizes="(min-width: 640px) 380px, 76vw" alt="" loading="lazy" className="absolute top-[-12%] left-[-12%] h-[124%] w-[124%] max-w-none object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105" />
+                  <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/20" />
+                  <span className="absolute top-5 right-5 flex size-12 items-center justify-center rounded-full border border-white/30 bg-black/40 backdrop-blur-md transition-colors duration-300 group-hover:bg-sky"><c.Icon /></span>
+                  <span className="absolute inset-x-6 bottom-6 flex flex-col items-start gap-2">
+                    <span className="text-[24px] leading-tight font-semibold sm:text-[26px]">{c.name}</span>
+                    <span className="max-w-[30ch] text-[14px] leading-snug text-white/85 sm:text-[15px]">{c.tagline}</span>
+                    <span className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-[13px] font-semibold text-ink transition-colors duration-300 group-hover:bg-sky group-hover:text-white">
+                      Explore
+                      <svg viewBox="0 0 16 16" className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M6 3.5L10.5 8 6 12.5" /></svg>
                     </span>
                   </span>
-                </div>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   )

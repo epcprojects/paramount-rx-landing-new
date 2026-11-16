@@ -276,7 +276,7 @@ export function Hero() {
         }
       } else {
         tl = gsap.timeline({
-          scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=280%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1 },
+          scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=460%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1, invalidateOnRefresh: true }, // Option 5: longer, to give the reel room to slide
         })
       }
       // 1 — the film: runner + orbiting pills, then he zooms out and the dark stage fades away (0.65 → 0.9)
@@ -287,19 +287,24 @@ export function Hero() {
         .set(q('[data-film-hint]'), { autoAlpha: 0 }, 0.65)
         .set(root.current, { pointerEvents: 'none' }, FILM_LEN)
 
-      // 3 — the treatment cards unfold from edge-on while the stage is still pinned (same motion as the main page)
+      // 3 — the treatments section appears while the stage is still pinned
       const T = 0.7
       const head = stage.querySelector('[data-fan-head]')
       if (head) tl.fromTo(head, { opacity: 0, y: 30 }, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.35, immediateRender: true }, T)
-      const origins = ['100% 50%', '50% 50%', '0% 50%']
-      const angles = [78, 82, -78]
-      stage.querySelectorAll('[data-fan]').forEach((card) => {
-        const col = Number(card.dataset.col)
-        const row = Number(card.dataset.row)
-        tl.fromTo(card, { rotationY: angles[col], transformOrigin: origins[col] },
-          { rotationY: 0, ease: 'power2.out', duration: 0.55, immediateRender: true }, T + 0.1 + row * 0.15)
-      })
-      tl.to({}, { duration: 0.2 }) // short hold on the finished grid before the pin releases
+      // Option 5: the treatment reel (Story.jsx) — cards rise in, then on desktop the reel slides sideways with the
+      // scroll while each photo drifts inside its card. Touch screens swipe the reel themselves.
+      const track = stage.querySelector('[data-reel-track]')
+      tl.fromTo(stage.querySelectorAll('[data-reel-card]'), { y: 90, opacity: 0 },
+        { y: 0, opacity: 1, ease: 'power2.out', duration: 0.5, stagger: 0.05, immediateRender: true }, T + 0.1)
+      if (!touch && track) {
+        const dist = () => Math.max(0, track.scrollWidth - window.innerWidth)
+        const R = T + 0.75
+        tl.fromTo(track, { x: 0 }, { x: () => -dist(), ease: 'none', duration: 1.6, immediateRender: false }, R)
+          .fromTo(stage.querySelectorAll('[data-reel-img]'), { xPercent: -10 }, { xPercent: 10, ease: 'none', duration: 1.6, immediateRender: false }, R)
+          .fromTo(stage.querySelectorAll('[data-reel-card]'), { rotation: 0, y: 0 },
+            { rotation: (i) => (i % 2 ? -1.5 : 1.5), y: (i) => (i % 2 ? -18 : 24), ease: 'sine.inOut', duration: 1.6, immediateRender: false }, R)
+      }
+      tl.to({}, { duration: 0.2 }) // short hold at the end of the reel before the pin releases
       ScrollTrigger.refresh()
     }
     const raf = requestAnimationFrame(build)

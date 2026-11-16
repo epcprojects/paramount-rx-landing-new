@@ -98,7 +98,7 @@ export function Intro() {
 
       {/* the Paramount HealthRx logo (inlined so each letter can be drawn on) */}
       {/* starts invisible (and its letters unfilled, see .intro-zero in index.css) — only the animation reveals it */}
-      <div data-words role="img" aria-label="Paramount HealthRx" style={{ opacity: 0 }} className="relative w-[min(60vw,400px)] [&_svg]:h-auto [&_svg]:w-full [&_svg]:overflow-visible" dangerouslySetInnerHTML={{ __html: logoSvg }} />
+      <div data-words role="img" aria-label="Paramount HealthRx" style={{ opacity: 0 }} className="relative w-[min(52vw,300px)] [&_svg]:h-auto [&_svg]:w-full [&_svg]:overflow-visible" dangerouslySetInnerHTML={{ __html: logoSvg }} />
     </div>
   )
 }
