@@ -10,7 +10,6 @@ import { cards } from './Story.jsx'
 // Phones and tablets: tap a name.
 
 const N = cards.length
-const pad = (i) => String(i + 1).padStart(2, '0')
 
 /** Hook for the hero timeline: Top.jsx calls treat.set(p) with p from 1 (first name filled) to N (all filled). */
 export const treat = { set: null, from: 1, to: N }
@@ -63,18 +62,17 @@ export function About() {
 
   const c = cards[cur]
   return (
-    <section ref={root} id="about" className="relative z-10 h-lvh min-h-[620px] overflow-hidden bg-white">{/* full large-viewport height (browser bar hidden) so nothing below peeks in */}
+    <section ref={root} id="about" className="relative z-10 h-lvh min-h-[620px] overflow-hidden bg-gray-100">{/* full large-viewport height (browser bar hidden) so nothing below peeks in */}
       <div className="mx-auto flex h-svh min-h-[620px] max-w-[1280px] flex-col gap-5 px-5 pt-[92px] pb-6 sm:px-8 sm:pt-[112px] sm:pb-8 lg:grid lg:grid-cols-[1.35fr_1fr] lg:items-center lg:gap-12 lg:pt-[118px] lg:pb-12">
         <div data-fan-head>
-          <Tag dot={false}>Treatments · Choose Your Health Journey</Tag>
-          <h2 id="treatments-heading" className="sr-only">Choose Your Health Journey</h2>
-          <ol className="mt-3 flex flex-col sm:mt-5 lg:mt-6">
+          <Tag dot={false}>Treatments</Tag>
+          <h2 id="treatments-heading" className="t-h2 mt-3">Choose Your Health Journey</h2>
+          <ol className="mt-4 flex flex-col sm:mt-6 lg:mt-8">
             {cards.map((card, i) => (
               <li key={card.name} className="border-b border-neutral-200">
                 <button type="button" onClick={touch ? () => go(i) : undefined} tabIndex={touch ? 0 : -1} aria-pressed={touch ? i === cur : undefined}
-                  className={`flex w-full items-baseline gap-3 py-1 text-left sm:gap-5 sm:py-1.5 ${touch ? 'cursor-pointer' : 'cursor-default'}`}>
-                  <span className="w-6 shrink-0 text-[12px] font-semibold tabular-nums text-neutral-400 sm:w-8 sm:text-[13px]">{pad(i)}</span>
-                  <span data-line className="bg-clip-text text-[clamp(22px,6.4vw,40px)] leading-[1.12] font-semibold tracking-[-0.03em] text-transparent will-change-transform lg:text-[clamp(30px,4.2vw,64px)] lg:leading-[1.08]">{card.name}</span>
+                  className={`flex w-full items-baseline py-2 text-left sm:py-2.5 lg:py-3.5 ${touch ? 'cursor-pointer' : 'cursor-default'}`}>
+                  <span data-line className="bg-clip-text pb-[0.1em] text-[clamp(20px,5.4vw,28px)] leading-[1.1] font-semibold tracking-[-0.03em] text-transparent will-change-transform lg:text-[clamp(24px,2.5vw,38px)] lg:leading-[1.08]">{card.name}</span>
                 </button>
               </li>
             ))}
