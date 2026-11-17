@@ -301,6 +301,21 @@ export function Hero() {
         tl.fromTo(prog, { p: treat.from }, { p: treat.to, ease: 'none', duration: 1.6, immediateRender: false, onUpdate: () => treat.set?.(prog.p) }, T + 0.75)
       }
       tl.to({}, { duration: 0.2 }) // short hold at the end of the reel before the pin releases
+      // desktop: clicking a name in the treatments list scrolls straight to the point where that card is on top
+      treat.goTo = touch ? null : (i) => {
+        const st = tl.scrollTrigger
+        if (!st) return
+        const from = Math.round(treat.now?.() ?? treat.from)
+        if (i === from) return
+        const t = T + 0.75 + 1.6 * (i - treat.from) / (treat.to - treat.from)
+        const y = st.start + (st.end - st.start) * (t / tl.duration())
+        // jump the page to that card's spot at once (skipping the scrubbed glide through the cards in between),
+        // then let the deck play a single one-card move
+        if (lenis) lenis.scrollTo(y, { immediate: true, force: true }); else window.scrollTo(0, y)
+        ScrollTrigger.update()
+        st.getTween?.()?.progress(1)
+        treat.hop?.(from, i)
+      }
       ScrollTrigger.refresh()
     }
     const raf = requestAnimationFrame(build)

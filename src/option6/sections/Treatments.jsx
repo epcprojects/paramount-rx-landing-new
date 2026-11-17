@@ -13,7 +13,7 @@ const N = cards.length
 const clamp = (v) => Math.min(N - 1, Math.max(0, v))
 
 /** Hook for the hero timeline: Top.jsx calls treat.set(p) with p from 0 (first card on top) to N - 1. */
-export const treat = { set: null, from: 0, to: N - 1 }
+export const treat = { set: null, goTo: null, hop: null, now: null, from: 0, to: N - 1 }
 
 function Explore() {
   return (
@@ -42,27 +42,71 @@ export function About() {
   useEffect(() => {
     setTouch(window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 1024)
     const els = gsap.utils.toArray('[data-stack-card]', root.current)
+    const shades = els.map((el) => el.querySelector('[data-shade]'))
+    const plates = gsap.utils.toArray('[data-plate]', root.current)
     const place = () => {
       const p = st.current.p
+      const h = els[0]?.offsetHeight || 0 // read once per frame (reading it per card, between writes, forced extra layouts)
       els.forEach((el, i) => {
         const d = i - p // > 0: still in the deck (d slots down), < 0: thrown away
         if (d >= 0) {
-          gsap.set(el, { x: 0, y: d * 22, scale: 1 - d * 0.06, rotation: 0, opacity: d > 3 ? 0 : 1, zIndex: 100 - i, filter: `brightness(${1 - Math.min(d, 3) * 0.12})` })
+          // a real stack: each card behind is a little narrower and sits 16px lower, so a clear strip of it peeks out
+          // under the one in front (the scale's shrink is added back to the offset so the strip doesn't get swallowed)
+          // the 4th card back fades in/out gradually instead of popping; depth is a dark layer's opacity, not a CSS
+          // filter (a filter repaints the whole photo every frame, which is what made the motion stutter)
+          const k = Math.min(d, 3)
+          const sc = 1 - k * 0.05
+          gsap.set(el, { x: 0, y: k * 16 + (1 - sc) * h / 2, scale: sc, rotation: 0, opacity: Math.max(0, Math.min(1, 4 - d)), zIndex: 100 - i })
+          if (shades[i]) shades[i].style.opacity = (k * 0.14).toFixed(3)
         } else {
           const t = Math.min(1, -d) // 0 → 1 as the card is thrown
-          gsap.set(el, { x: t * 140, y: -t * window.innerHeight * 0.85, rotation: t * (i % 2 ? 14 : -14), scale: 1, opacity: 1 - t * 0.2, zIndex: 100 + i, filter: 'brightness(1)' })
+          gsap.set(el, { x: t * 140, y: -t * window.innerHeight * 0.85, rotation: t * (i % 2 ? 14 : -14), scale: 1, opacity: 1 - t * 0.2, zIndex: 100 + i })
+          if (shades[i]) shades[i].style.opacity = '0'
         }
+      })
+      // the three back plates always sit in the three slots behind the top card (under the real cards), so the stack
+      // keeps its four layers even when there are no more real cards behind — right up to the last one
+      plates.forEach((el, j) => {
+        const sc = 1 - (j + 1) * 0.05
+        gsap.set(el, { y: (j + 1) * 16 + (1 - sc) * h / 2, scale: sc, zIndex: 3 - j }) // nearest plate on top of the ones further back
       })
       const a = clamp(Math.round(p))
       setCur((c) => (c === a ? c : a))
     }
-    treat.set = (p) => { st.current.p = p; place() }
+    // a jump straight to card k (a click on its name): the deck moves to k at once and only ONE card animates, like a
+    // single step — going forward the current top card is thrown away to reveal k, going back k drops onto the deck.
+    // Scroll updates that arrive mid-hop are held until it ends, so they can't snap the moving card.
+    let hopping = null
+    const thrown = (i) => ({ x: 140, y: -window.innerHeight * 0.85, rotation: i % 2 ? 14 : -14, scale: 1, opacity: 0.8 })
+    const front = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 }
+    treat.hop = (from, k) => {
+      hopping?.kill()
+      // going back, keep the deck exactly as it was shown (the previous card stays behind) while k drops on top;
+      // the cards underneath settle into their real order only once k covers them
+      st.current.p = k < from ? from : k
+      place()
+      st.current.p = k
+      setCur(k)
+      const el = k > from ? els[from] : els[k]
+      const fromState = k > from ? front : thrown(k)
+      const toState = k > from ? thrown(from) : front
+      gsap.set(el, { zIndex: 300 })
+      if (shades[els.indexOf(el)]) shades[els.indexOf(el)].style.opacity = '0'
+      hopping = gsap.fromTo(el, fromState, {
+        ...toState, duration: 0.7, ease: 'power2.inOut',
+        onComplete: () => { hopping = null; place() },
+      })
+    }
+    treat.now = () => st.current.p
+    treat.set = (p) => { st.current.p = p; if (!hopping) place() }
     place()
-    return () => { treat.set = null; tween.current?.kill() }
+    return () => { treat.set = null; treat.hop = null; treat.now = null; hopping?.kill(); tween.current?.kill() }
   }, [])
 
   // touch: glide the deck to card i
   const go = (i) => {
+    const from = Math.round(st.current.p)
+    if (i !== from && Math.abs(i - from) > 1 && treat.hop) { tween.current?.kill(); treat.hop(from, clamp(i)); return } // far jump: one card moves
     tween.current?.kill()
     tween.current = gsap.to(st.current, { p: clamp(i), duration: 0.7, ease: 'power2.inOut', onUpdate: () => treat.set?.(st.current.p) })
   }
@@ -93,11 +137,12 @@ export function About() {
           <ol className="mt-2 hidden flex-col lg:flex">
             {cards.map((c, i) => (
               <li key={c.name} className="border-b border-neutral-200">
-                <a href={links.products} aria-label={`Explore ${c.name}`}
-                  className={`group flex items-center justify-between gap-4 py-3 transition-all [@media(min-height:820px)]:py-4 duration-500 hover:text-navy ${i === cur ? 'text-ink' : 'text-neutral-400'}`}>
-                  <span className={`text-[20px] font-medium transition-all duration-500 ${i === cur ? 'translate-x-2 text-[26px] font-semibold' : ''}`}>{c.name}</span>
-                  <svg width="18" height="18" viewBox="0 0 10 9" fill="none" aria-hidden className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"><path fill="currentColor" d="M9.82143 4.73214L5.89286 8.48214C5.66964 8.68304 5.33482 8.68304 5.13393 8.45982C4.93304 8.23661 4.93304 7.90179 5.15625 7.70089L8.125 4.86607H0.535714C0.223214 4.86607 0 4.64286 0 4.33036C0 4.04018 0.223214 3.79464 0.535714 3.79464H8.125L5.15625 0.982143C4.93304 0.78125 4.93304 0.424107 5.13393 0.223214C5.33482 6.70552e-08 5.69196 6.70552e-08 5.89286 0.200893L9.82143 3.95089C9.93304 4.0625 10 4.19643 10 4.33036C10 4.48661 9.93304 4.62054 9.82143 4.73214Z" /></svg>
-                </a>
+                <div className={`group flex items-center justify-between gap-4 transition-colors duration-500 hover:text-navy ${i === cur ? 'text-ink' : 'text-neutral-400'}`}>
+                  {/* the name brings that card to the top of the deck; the arrow goes on to the products page */}
+                  <button type="button" onClick={() => treat.goTo?.(i)} aria-current={i === cur ? 'true' : undefined}
+                    className={`flex-1 cursor-pointer py-3 text-left text-[20px] font-medium transition-all duration-500 [@media(min-height:820px)]:py-4 ${i === cur ? 'translate-x-2 text-[26px] font-semibold' : ''}`}>{c.name}</button>
+                  <a href={links.products} aria-label={`Explore ${c.name}`} className="-m-2 p-2"><svg width="18" height="18" viewBox="0 0 10 9" fill="none" aria-hidden className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"><path fill="currentColor" d="M9.82143 4.73214L5.89286 8.48214C5.66964 8.68304 5.33482 8.68304 5.13393 8.45982C4.93304 8.23661 4.93304 7.90179 5.15625 7.70089L8.125 4.86607H0.535714C0.223214 4.86607 0 4.64286 0 4.33036C0 4.04018 0.223214 3.79464 0.535714 3.79464H8.125L5.15625 0.982143C4.93304 0.78125 4.93304 0.424107 5.13393 0.223214C5.33482 6.70552e-08 5.69196 6.70552e-08 5.89286 0.200893L9.82143 3.95089C9.93304 4.0625 10 4.19643 10 4.33036C10 4.48661 9.93304 4.62054 9.82143 4.73214Z" /></svg></a>
+                </div>
               </li>
             ))}
           </ol>
@@ -118,11 +163,17 @@ export function About() {
 
         <div data-deck className="relative mb-[60px] min-h-[320px] flex-1 lg:mb-0 lg:h-[min(560px,calc(100svh-230px))] lg:flex-none"
           style={{ touchAction: touch ? 'pan-y' : undefined }} onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => { start.current = null }} onClickCapture={onClickCapture}>
+          {/* back plates: the stack's depth when the real cards behind run out */}
+          {[0, 1, 2].map((j) => (
+            <div key={j} data-plate aria-hidden className="pointer-events-none absolute inset-0 rounded-[30px] shadow-[0_-6px_18px_-10px_rgba(10,26,47,0.35),0_40px_80px_-40px_rgba(10,26,47,0.6)] ring-1 ring-white/15 will-change-transform"
+              style={{ background: ['linear-gradient(180deg,#10161d,#07090c)', 'linear-gradient(180deg,#0d1218,#06080a)', 'linear-gradient(180deg,#0a0e13,#050608)'][j] }} />
+          ))}
           {cards.map((c, i) => (
             <a key={c.name} data-stack-card href={links.products} aria-label={`Explore ${c.name}`} tabIndex={i === cur ? 0 : -1} draggable={false}
-              className="group absolute inset-0 block overflow-hidden rounded-[30px] text-white shadow-[0_40px_80px_-40px_rgba(10,26,47,0.6)] will-change-transform">
+              className="group absolute inset-0 block overflow-hidden rounded-[30px] text-white shadow-[0_-6px_18px_-10px_rgba(10,26,47,0.35),0_40px_80px_-40px_rgba(10,26,47,0.6)] ring-1 ring-white/15 will-change-transform">
               <Img base={c.photo} widths={[600, 1000]} sizes="(min-width: 1024px) 560px, 92vw" alt="" draggable={false} loading={i < 2 ? 'eager' : 'lazy'} className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105" />
               <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+              <div data-shade aria-hidden className="pointer-events-none absolute inset-0 z-[1] bg-black opacity-0 will-change-[opacity]" />
               <span className="absolute top-5 left-5 flex size-12 items-center justify-center rounded-full border border-white/30 bg-black/40 backdrop-blur-md sm:top-6 sm:left-6"><c.Icon /></span>
               <span className="absolute inset-x-5 bottom-5 flex flex-col items-start gap-3 sm:inset-x-7 sm:bottom-7 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
                 <span className="flex flex-col gap-2">
