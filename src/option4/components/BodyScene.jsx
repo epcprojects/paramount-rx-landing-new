@@ -90,7 +90,7 @@ float glowBlob(vec3 p, vec3 c, vec3 r) { return 1.0 - smoothstep(0.45, 1.0, leng
   return m
 }
 
-export default function BodyScene({ category, onSelect, scroll, reducedMotion }) {
+export default function BodyScene({ category, onSelect, scroll, reducedMotion, resetKey = 0, onInteract }) {
   const wrap = useRef(null)
   const pinEls = useRef([])
   const shadowEl = useRef(null)
@@ -333,12 +333,19 @@ export default function BodyScene({ category, onSelect, scroll, reducedMotion })
     api.current?.go(category)
   }, [category])
 
+  // "Reset view": replay the current category's camera shot and ease any drag-rotation back to the front
+  useEffect(() => {
+    if (resetKey) api.current?.go(category)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resetKey])
+
   // ---- drag to rotate (horizontal spin with inertia, slight vertical tilt on mouse) ----
   const drag = useRef(null)
   const onPointerDown = (e) => {
     if (e.button !== 0 || !api.current) return
     drag.current = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), touch: e.pointerType !== 'mouse' }
     Object.assign(api.current.spin, { dragging: true, home: false, velocity: 0 })
+    onInteract?.()
     setGrabbing(true)
     try { e.currentTarget.setPointerCapture(e.pointerId) } catch { /* noop */ }
   }

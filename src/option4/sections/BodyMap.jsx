@@ -350,12 +350,23 @@ export function BodyMap() {
   const scroll = useRef({ dolly: 0, lift: 0 })
   const info = getCategory(cat)
   const [sceneAnchor, sceneNear] = useNearViewport()
+  const [resetKey, setResetKey] = useState(0)
+  const [turned, setTurned] = useState(false) // the body has been dragged round
+  const onInteract = useCallback(() => setTurned(true), [])
 
   const topOffset = useCallback(() => {
     const el = stickyBar.current
     return el ? (parseFloat(getComputedStyle(el).top) || 0) + el.offsetHeight : 0
   }, [])
   const choose = useCallback((id) => { setCat(id); list.current?.scrollToCategory(id) }, [])
+  // back to the opening view: All, camera pulled back, body facing front
+  const resetView = useCallback(() => {
+    setTurned(false)
+    setResetKey((k) => k + 1)
+    setCat('all')
+    list.current?.scrollToCategory('all')
+  }, [])
+  const zoomed = cat !== 'all' || turned
 
   // desktop: the mouse wheel anywhere in this section — heading, category tabs, the body — scrolls the treatment
   // list on the right (the page only scrolls on once the list has reached its top or bottom). The list itself glides the same way,
@@ -417,9 +428,17 @@ export function BodyMap() {
             <div className="pointer-events-none absolute inset-x-[12%] bottom-[4%] h-[40%] rounded-[50%] bg-[radial-gradient(closest-side,rgba(16,69,132,0.09),rgba(47,143,224,0.06)_45%,transparent)]" />
             {sceneNear && (
               <Suspense fallback={null}>
-                <BodyScene category={cat} onSelect={choose} scroll={scroll} reducedMotion={reduced} />
+                <BodyScene category={cat} onSelect={choose} scroll={scroll} reducedMotion={reduced} resetKey={resetKey} onInteract={onInteract} />
               </Suspense>
             )}
+            {/* back to the opening view once a category has zoomed the camera in or the body has been turned */}
+            <div className={`absolute inset-x-0 top-2 z-[4] flex justify-center transition-all duration-300 lg:top-6 ${zoomed ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-2 opacity-0'}`}>
+              <button type="button" onClick={resetView} tabIndex={zoomed ? 0 : -1} aria-hidden={!zoomed}
+                className="font-manrope inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-neutral-200 bg-white/90 px-5 py-2.5 text-[15px] font-semibold text-navy shadow-[0_8px_20px_-12px_rgba(10,26,47,0.35)] backdrop-blur transition-colors hover:border-navy hover:bg-navy hover:text-white">
+                <svg viewBox="0 0 20 20" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3.5 10a6.5 6.5 0 1 0 2-4.7" /><path d="M3.5 3.5v3.8h3.8" /></svg>
+                Reset view
+              </button>
+            </div>
             {/* soft fades at the top and bottom edges so the body never ends in a hard cut when the camera zooms in (all sizes) */}
             <div className="pointer-events-none absolute inset-x-0 top-0 z-[2] h-12 bg-gradient-to-t from-white/0 to-white lg:h-32" />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 z-[2] h-16 bg-gradient-to-b from-white/0 to-white lg:h-40" />
