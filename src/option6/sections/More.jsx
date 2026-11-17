@@ -554,12 +554,12 @@ export function Biology() {
         <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.25)_45%,rgba(0,0,0,0.45))]" />
         <div className="mx-auto w-full max-w-[1336px] px-10" data-appear><BiologyHeader light /></div>
         {/* cards: same dark glass, three across, every one open with its description and link */}
-        <div className="mx-auto grid w-full max-w-[1336px] grid-cols-3 items-stretch gap-4 px-10">
+        <div className="mx-auto grid w-full max-w-[1336px] grid-cols-3 items-stretch gap-3 px-6 xl:px-4 min-[1400px]:gap-4 min-[1400px]:px-10">
           {families.map((f) => (
             <div key={f.name} className="relative min-w-0 overflow-hidden rounded-[26px] bg-[rgba(6,12,14,0.45)] text-white bio-glass bio-glass--no-rim" style={{ '--glass': 1 }}>
-              <div className="flex h-full flex-col gap-4 px-6 pt-[30px] pb-7">
+              <div className="flex h-full flex-col gap-4 px-[18px] pt-[30px] pb-7 min-[1400px]:px-5">
                 <span className="flex items-center gap-5"><FamilyIcon icon={f.icon} color={f.fill} /><h3 className="t-h3">{f.name}</h3></span>
-                <p className="t-body opacity-70">{f.body}</p>
+                <p className="t-body !text-[14.5px] opacity-70 min-[1400px]:!text-[15px]">{f.body}</p>{/* sized so every description fits on two lines from 1280px wide */}
                 <a href={links.products} className="t-small mt-auto self-start underline underline-offset-4 opacity-85 transition-opacity hover:opacity-100">Learn more about {f.name.toLowerCase()}</a>
               </div>
             </div>
