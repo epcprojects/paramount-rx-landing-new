@@ -140,16 +140,19 @@ export function SmartChoice() {
   useGSAP(() => {
     appear(root.current)
     if (reducedMotion()) return
-    // numbers count up from 0 the first time the cards come into view (as on the live site)
+    // numbers count up from 0 every time the cards come into view — scrolling down onto them or back up onto them —
+    // and quietly go back to 0 once they're fully off screen, so the next visit counts up again
     gsap.utils.toArray(root.current.querySelectorAll('[data-count]')).forEach((el) => {
       const to = Number(el.dataset.count)
       const o = { v: 0 }
-      gsap.to(o, {
-        v: to, duration: 1.6, ease: 'power2.out',
-        scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+      const tw = gsap.to(o, {
+        v: to, duration: 1.6, ease: 'power2.out', paused: true,
         onUpdate: () => { el.textContent = Math.round(o.v) },
-        onStart: () => { el.textContent = '0' },
       })
+      const play = () => tw.restart()
+      const rewind = () => { tw.pause(0); el.textContent = '0' }
+      ScrollTrigger.create({ trigger: el, start: 'top 90%', end: 'bottom 10%', onEnter: play, onEnterBack: play })
+      ScrollTrigger.create({ trigger: el, start: 'top bottom', end: 'bottom top', onLeave: rewind, onLeaveBack: rewind })
     })
   }, { scope: root })
 
@@ -517,157 +520,9 @@ function BiologyHeader({ center = false, light = false }) {
 
 export function Biology() {
   const root = useRef(null)
-  const stage = useRef(null)
-  const row = useRef(null)
-  const stepTo = useRef(null)
-  const [active, setActive] = useState(0)
-
-  // Option 5: the main page's scroll motion on this section — the panel holds in place while scrolling hands the
-  // "open" role from card to card: the open card widens, grows tall and shows its copy, the others shrink to short
-  // pills. Colours stay as they are here (all cards keep the same dark glass), only the motion is added.
-  useGSAP(() => {
-    appear(root.current)
-    const mm = gsap.matchMedia()
-    mm.add('(min-width: 1024px) and (prefers-reduced-motion: no-preference)', () => {
-      const cards = gsap.utils.toArray(row.current.children)
-      const ease = gsap.parseEase('sine.inOut') // soft start/finish to each card opening/closing
-      const paint = (p) => {
-        cards.forEach((el, i) => {
-          const w = ease(Math.max(0, 1 - Math.abs(p - i))) // 1 = this card is the open one
-          el.style.flexGrow = (1 + w).toFixed(3)
-          el.style.height = `${(104 + 92 * w).toFixed(1)}px` // open card fits title + 2-line description + link, no empty space
-          // the copy is fully faded by w = 0.78, before the shrinking card reaches the link (clipping starts ~0.73)
-          el.querySelector('[data-more]').style.opacity = Math.max(0, (w - 0.78) / 0.22).toFixed(3)
-        })
-        const a = Math.round(p)
-        setActive((cur) => (cur === a ? cur : a))
-      }
-      paint(0)
-      // Slideshow-style stepping. While the panel is held on screen the page's smooth scroll is paused and scroll
-      // input (mouse wheel or trackpad) is read as gestures: one gesture = one card, played as a calm, eased glide that
-      // runs on its own clock (no tug-of-war with the scroll position, so no jerks). Each separate scroll counts (see
-      // onWheel); one made mid-glide is queued, not lost. At the first/last card, scrolling on releases the page.
-      const last = families.length - 1
-      const s = { p: 0 }
-      let at = 0 // the card that's open
-      let gliding = false
-      let queued = 0 // a scroll made while a card was still gliding: played as soon as the glide ends
-      let held = false
-      let lastWheel = 0
-      // the wheel/trackpad stream currently being read (see onWheel)
-      let g = { acc: 0, fired: false, at: 0, peak: 0, floor: Infinity, decayed: false }
-      let st
-      const glide = (k) => {
-        at = k
-        gliding = true
-        gsap.to(s, {
-          p: k, duration: 0.6, ease: 'power2.inOut', overwrite: true, onUpdate: () => paint(s.p),
-          onComplete: () => { gliding = false; if (queued) { const d = queued; queued = 0; step(d) } },
-        })
-      }
-      const release = (dir) => {
-        held = false
-        queued = 0
-        obs.disable()
-        lenis?.start()
-        // hand the page back just outside the held range, so the next scroll carries straight on
-        const y = dir > 0 ? st.end + 2 : st.start - 2
-        if (lenis) lenis.scrollTo(y, { immediate: true, force: true }); else window.scrollTo(0, y)
-      }
-      // While held, pin the page's scroll position in place. Cancelling wheel events isn't enough on its own: Chrome
-      // won't cancel the rest of a scroll that was already under way when we took over, so it would slide past.
-      let holdY = 0
-      const keep = () => { if (held && Math.abs(window.scrollY - holdY) > 1) window.scrollTo(0, holdY) }
-      window.addEventListener('scroll', keep)
-      const hold = () => {
-        if (held) return
-        held = true
-        queued = 0
-        holdY = Math.round(Math.min(st.end - 2, Math.max(st.start + 2, window.scrollY)))
-        lastWheel = performance.now() // the scroll that carried the page in counts as one gesture, so it can't also flip a card
-        g = { acc: 0, fired: true, at: lastWheel, peak: 0, floor: Infinity, decayed: false }
-        lenis?.stop()
-        window.scrollTo(0, holdY)
-        obs.enable()
-      }
-      const step = (dir) => {
-        if (!held) return
-        const k = at + dir
-        if (k < 0 || k > last) { release(dir); return }
-        glide(k)
-      }
-      // each separate scroll gesture asks for one card; while a card is still gliding, remember the latest request
-      const request = (dir) => { if (!held) return; if (gliding) queued = dir; else step(dir) }
-      // One scroll gesture = one card. Mouse wheel: every notch is its own event, spaced out in time (a fast spin of
-      // several notches counts once). Trackpad: a swipe is a stream of events a few ms apart that keeps coasting
-      // (momentum) for a second or more — so a pause alone can't separate swipes, or a second swipe made while the
-      // first is still coasting gets swallowed. A new swipe is therefore also recognised when, after the stream has
-      // slowed down, it speeds up again.
-      const onWheel = (e) => {
-        if (!held) return
-        if (e.cancelable) e.preventDefault()
-        const now = performance.now()
-        const gap = now - lastWheel
-        lastWheel = now
-        const d = Math.abs(e.deltaY) * (e.deltaMode === 1 ? 16 : 1)
-        if (d < 1) return
-        let fresh = gap >= 140
-        if (!fresh && g.fired) {
-          g.peak = Math.max(g.peak, d)
-          if (!g.decayed && d < g.peak * 0.55) g.decayed = true // the swipe is coasting down
-          if (g.decayed) g.floor = Math.min(g.floor, d)
-          if (g.decayed && now - g.at > 220 && d > Math.max(8, g.floor * 2 + 4)) fresh = true // …and a new swipe lifts it again
-        }
-        if (fresh) g = { acc: 0, fired: false, at: 0, peak: 0, floor: Infinity, decayed: false }
-        if (g.fired) return // still the same gesture
-        g.acc += d
-        if (g.acc < 18) return // ignore the tiniest brushes of the trackpad
-        g.fired = true
-        g.at = now
-        g.peak = d
-        request(e.deltaY > 0 ? 1 : -1)
-      }
-      window.addEventListener('wheel', onWheel, { passive: false })
-      // touch screens wide enough for this layout: a swipe = one card
-      const obs = Observer.create({
-        target: window,
-        type: 'touch',
-        tolerance: 30,
-        preventDefault: true,
-        onUp: () => request(1), // finger moves up = scrolling down = next card
-        onDown: () => request(-1),
-      })
-      obs.disable()
-      st = ScrollTrigger.create({
-        id: 'bio-pin',
-        trigger: stage.current,
-        start: 'center center', // the rounded panel sits centred on screen while it's held
-        end: () => `+=${Math.round(window.innerHeight * 0.4)}`,
-        pin: true,
-        anticipatePin: 1,
-        onEnter: () => { gsap.killTweensOf(s); at = 0; s.p = 0; paint(0); hold() },
-        onEnterBack: () => { gsap.killTweensOf(s); at = last; s.p = last; paint(last); hold() },
-        // leaving (also by a jump, e.g. a header link): park the cards on the matching end card so it reads right on return
-        onLeave: () => { if (held) { held = false; obs.disable(); lenis?.start() } gsap.killTweensOf(s); at = last; s.p = last; paint(last) },
-        onLeaveBack: () => { if (held) { held = false; obs.disable(); lenis?.start() } gsap.killTweensOf(s); at = 0; s.p = 0; paint(0) },
-      })
-      stepTo.current = (k) => { if (held && !gliding && k !== at) glide(k) } // pill clicks
-      return () => {
-        stepTo.current = null
-        window.removeEventListener('wheel', onWheel)
-        window.removeEventListener('scroll', keep)
-        gsap.killTweensOf(s)
-        obs.kill()
-        st.kill()
-        if (held) lenis?.start()
-        cards.forEach((el) => { el.style.flexGrow = ''; el.style.height = ''; el.querySelector('[data-more]').style.opacity = '' })
-      }
-    })
-    return () => mm.revert()
-  }, { scope: root })
-
-  // clicking a closed pill glides to that card
-  const jump = (i) => stepTo.current?.(i)
+  // Option 6: no scroll motion here — the three cards sit side by side, all open and fully visible (as before the
+  // scroll-stepping version); only the usual fade-in of the heading is kept.
+  useGSAP(() => { appear(root.current) }, { scope: root })
 
   return (
     <section ref={root} className="relative z-10 bg-white">
@@ -693,24 +548,19 @@ export function Biology() {
       {/* Option 4: more white space above/below the panel and more room inside it, top and bottom */}
       <div className="hidden px-5 py-12 lg:block xl:py-16">
         {/* rounded panel inside a 20px side frame, matching the "4 easy steps" panel */}
-        <div ref={stage} className="relative isolate flex h-[calc(100svh-32px)] min-h-[680px] flex-col justify-between overflow-hidden rounded-[40px] pt-[clamp(110px,14vh,150px)] pb-[clamp(48px,8vh,88px)]">{/* held centred on screen during the card motion, 16px clear top and bottom */}
+        <div className="relative isolate flex min-h-[680px] flex-col justify-between gap-16 overflow-hidden rounded-[40px] pt-[clamp(110px,14vh,150px)] pb-[clamp(48px,8vh,88px)]">
         <img src="/img/biology-bg-1800.webp" srcSet="/img/biology-bg-900.webp 900w, /img/biology-bg-1800.webp 1800w" sizes="100vw" alt="" aria-hidden loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <div aria-hidden className="absolute inset-0 -z-10 opacity-30 mix-blend-multiply" style={{ backgroundColor: families[0].fill }} />
         <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.25)_45%,rgba(0,0,0,0.45))]" />
         <div className="mx-auto w-full max-w-[1336px] px-10" data-appear><BiologyHeader light /></div>
-        {/* cards: same dark glass as before; on scroll the open one widens + grows and the others become pills */}
-        <div ref={row} className="mx-auto flex w-full max-w-[1336px] items-center gap-4 px-10" role="tablist" aria-label="Treatment families">
-          {families.map((f, i) => (
-            <div key={f.name} role="tab" tabIndex={0} aria-selected={i === active}
-              onClick={() => i !== active && jump(i)} onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && i !== active) { e.preventDefault(); jump(i) } }}
-              className={`relative min-w-0 basis-0 flex-grow overflow-hidden rounded-[26px] bg-[rgba(6,12,14,0.45)] text-white bio-glass bio-glass--no-rim ${i === active ? '' : 'cursor-pointer'}`}
-              style={{ height: 196, '--glass': 1 }}>
-              <div className="flex h-full flex-col px-6 pt-[30px]">
-                <span className="flex items-center gap-5"><FamilyIcon icon={f.icon} color={f.fill} /><h3 className="t-h3 whitespace-nowrap">{f.name}</h3></span>
-                <div data-more className="mt-1.5 flex flex-col items-start gap-4 pl-16 pr-4" aria-hidden={i !== active}>
-                  <p className="t-body max-w-[410px] opacity-70">{f.body}</p>{/* width picked so every description wraps to exactly two lines */}
-                  <a href={links.products} tabIndex={i === active ? 0 : -1} className="t-small underline underline-offset-4 opacity-85 transition-opacity hover:opacity-100">Learn more about {f.name.toLowerCase()}</a>
-                </div>
+        {/* cards: same dark glass, three across, every one open with its description and link */}
+        <div className="mx-auto grid w-full max-w-[1336px] grid-cols-3 items-stretch gap-4 px-10">
+          {families.map((f) => (
+            <div key={f.name} className="relative min-w-0 overflow-hidden rounded-[26px] bg-[rgba(6,12,14,0.45)] text-white bio-glass bio-glass--no-rim" style={{ '--glass': 1 }}>
+              <div className="flex h-full flex-col gap-4 px-6 pt-[30px] pb-7">
+                <span className="flex items-center gap-5"><FamilyIcon icon={f.icon} color={f.fill} /><h3 className="t-h3">{f.name}</h3></span>
+                <p className="t-body opacity-70">{f.body}</p>
+                <a href={links.products} className="t-small mt-auto self-start underline underline-offset-4 opacity-85 transition-opacity hover:opacity-100">Learn more about {f.name.toLowerCase()}</a>
               </div>
             </div>
           ))}
