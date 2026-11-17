@@ -546,9 +546,9 @@ export function Biology() {
 
       {/* desktop: pinned stage over the swimmer photo; a tint layer shifts toward the current card's colour */}
       {/* Option 4: more white space above/below the panel and more room inside it, top and bottom */}
-      <div className="hidden px-5 py-12 lg:block xl:py-16">
+      <div className="hidden h-svh min-h-[760px] px-5 py-4 lg:block">{/* same frame as the "4 easy steps" panel above: full screen height, 20px sides, 16px top and bottom */}
         {/* rounded panel inside a 20px side frame, matching the "4 easy steps" panel */}
-        <div className="relative isolate flex min-h-[680px] flex-col justify-between gap-28 xl:gap-36 overflow-hidden rounded-[40px] pt-[clamp(120px,15vh,170px)] pb-[clamp(80px,11vh,130px)]">
+        <div className="relative isolate flex h-full flex-col justify-between gap-16 overflow-hidden rounded-[40px] pt-[clamp(110px,14vh,150px)] pb-[clamp(56px,9vh,110px)]">
         <img src="/img/biology-bg-1800.webp" srcSet="/img/biology-bg-900.webp 900w, /img/biology-bg-1800.webp 1800w" sizes="100vw" alt="" aria-hidden loading="lazy" className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <div aria-hidden className="absolute inset-0 -z-10 opacity-30 mix-blend-multiply" style={{ backgroundColor: families[0].fill }} />
         <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(0,0,0,0.55),rgba(0,0,0,0.25)_45%,rgba(0,0,0,0.45))]" />
