@@ -16,25 +16,17 @@ function ArrowUpRight() {
 
 function Hero() {
   return (
-    <section className="mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 pt-[120px] md:flex-row md:gap-12 md:pt-[160px] xl:px-8">
-      <div className="flex flex-1 flex-col items-start gap-6 md:gap-14">
+    <section className="mx-auto max-w-7xl px-4 pt-[120px] md:pt-[160px] xl:px-8">
+      {/* one row across the full width: heading on the left, the assessment CTA on the right (stacked on phones) */}
+      <div className="flex flex-col items-start gap-6 md:flex-row md:items-end md:justify-between md:gap-10">
         <div className="flex flex-col gap-2">
           <h1 className="text-[34px] leading-tight font-medium tracking-[-0.02em] text-ink xl:text-[54px]">Products</h1>
           <p className="text-base text-ink xl:text-xl">Peak performance isn't accidental. It's engineered.</p>
         </div>
-        <div className="relative flex w-fit max-w-full items-center rounded-full bg-gradient-to-b from-[#F5F5F5] to-[#E9EAEB] p-2 pl-[calc(clamp(7rem,30vw,12rem)+0.5rem)]">
-          <img alt="" src="https://www.paramounthealthrx.com/images/ProductsPageBoy.png" className="pointer-events-none absolute bottom-0 left-2 h-auto w-[clamp(7rem,30vw,12rem)]" />
-          <a href={links.assessment} className="group relative z-10 flex items-center gap-2.5 rounded-full bg-[#111111] py-2 pr-2 pl-4 whitespace-nowrap md:py-2.5 md:pr-2.5 md:pl-5">
-            <span className="text-xs font-semibold text-white md:text-sm">Start Your Assessment</span>
-            <span className="flex size-7 items-center justify-center rounded-full bg-white text-ink transition-transform duration-300 group-hover:rotate-45 md:size-9"><ArrowUpRight /></span>
-          </a>
-        </div>
-      </div>
-      <div className="w-full flex-1 overflow-hidden rounded-[20px] md:max-w-[520px]">
-        {/* the live /products page's hero video (served from paramounthealthrx.com) */}
-        <video autoPlay muted loop playsInline preload="metadata" poster="/img/medical-review-900.webp" aria-label="Paramount HealthRx members training and a provider explaining care" className="aspect-[16/10] h-full w-full object-cover">
-          <source src="https://www.paramounthealthrx.com/videos/Paramount_Hero_Video.mp4" type="video/mp4" />
-        </video>
+        <a href={links.assessment} className="group flex shrink-0 items-center gap-2.5 rounded-full bg-[#111111] py-2 pr-2 pl-4 whitespace-nowrap md:py-2.5 md:pr-2.5 md:pl-5">
+          <span className="text-xs font-semibold text-white md:text-sm">Start Your Assessment</span>
+          <span className="flex size-7 items-center justify-center rounded-full bg-white text-ink transition-transform duration-300 group-hover:rotate-45 md:size-9"><ArrowUpRight /></span>
+        </a>
       </div>
     </section>
   )
@@ -140,10 +132,11 @@ export default function Products() {
             <svg viewBox="0 0 24 24" className="h-5 w-5 text-neutral-500" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden><circle cx="11" cy="11" r="6.5" /><path d="M20 20l-4.2-4.2" /></svg>
             <input value={q} onChange={(e) => setQ(e.target.value)} type="search" placeholder="Search products" aria-label="Search products" className="w-full bg-transparent text-[15px] text-ink outline-none placeholder:text-neutral-500" />
           </label>
-          <p className="text-[14px] text-neutral-600" aria-live="polite">Showing {list.length} products</p>
         </div>
 
         <Categories cat={cat} setCat={setCat} />
+
+        <p className="text-[14px] text-neutral-600" aria-live="polite">Showing {list.length} products</p>
 
         {list.length ? (
           <div key={`${cat}|${q}`} className="grid grid-cols-[minmax(0,1fr)] gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
