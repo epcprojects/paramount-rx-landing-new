@@ -204,7 +204,7 @@ export function About() {
               ))}
             </div>
           </div>
-          {touch && <p className="-mt-1 text-[12px] text-neutral-500 lg:hidden">Swipe the cards or tap a name</p>}
+          {touch && <p className="-mt-1 w-full text-center text-[13px] text-neutral-500 lg:hidden">Tap a tab or swipe the cards left and right</p>}
         </div>
 
         <div ref={deck} data-deck className="relative mb-[60px] min-h-[320px] flex-1 lg:mr-16 lg:mb-0 lg:h-[min(560px,calc(100svh-230px))] lg:flex-none"

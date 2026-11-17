@@ -436,7 +436,7 @@ export function BodyMap() {
               <button type="button" onClick={resetView} tabIndex={zoomed ? 0 : -1} aria-hidden={!zoomed}
                 className="font-manrope inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-neutral-200 bg-white/90 px-5 py-2.5 text-[15px] font-semibold text-navy shadow-[0_8px_20px_-12px_rgba(10,26,47,0.35)] backdrop-blur transition-colors hover:border-navy hover:bg-navy hover:text-white">
                 <svg viewBox="0 0 20 20" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M16 10H4" /><path d="M9 5l-5 5 5 5" /></svg>
-                Back to full view
+                <span className="md:hidden">Back</span><span className="max-md:hidden">Back to full view</span>
               </button>
             </div>
             {/* soft fades at the top and bottom edges so the body never ends in a hard cut when the camera zooms in (all sizes) */}
