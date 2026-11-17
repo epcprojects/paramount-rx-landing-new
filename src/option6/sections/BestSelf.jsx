@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { gsap, useGSAP, appear, ease, reducedMotion } from '../motion.js'
+import { gsap, useGSAP, ScrollTrigger, appear, ease, reducedMotion } from '../motion.js'
 import { links } from '../content.js'
 import { Cta } from '../components/ui.jsx'
 
@@ -7,7 +7,7 @@ import { Cta } from '../components/ui.jsx'
 
 /** Floating glass stat cards over the runner photo — same "frosted glass + mini animated chart" language as
  *  the reference card analysed from goodlifemeds.com (bg-black/25, backdrop-blur, number + sparkline/ring
- *  animating in once scrolled into view), rebuilt in plain SVG + GSAP instead of a Lottie export. */
+ *  animating in each time it scrolls into view), rebuilt in plain SVG + GSAP instead of a Lottie export. */
 const floatingStats = [
   { key: 'metabolism', label: 'Boost Metabolism', to: 23, prefix: '+', suffix: '%', chart: 'up', deltaLabel: 'Metabolic rate', className: 'top-[calc(30%+30px)] left-[54%] xl:top-[calc(32%+30px)]' },
   { key: 'weight', label: 'Sustainable Weight Loss', to: 18, prefix: '-', suffix: '%', chart: 'down', deltaLabel: 'Avg. over 6 months', className: 'bottom-[32%] left-[78%]' },
@@ -50,7 +50,9 @@ function StatWidget({ label, to, prefix = '', suffix = '', chart, deltaLabel, cl
       return
     }
     const counter = { n: 0 }
-    const tl = gsap.timeline({ scrollTrigger: { trigger: wrap.current, start: 'top 85%', once: true } })
+    // plays every time the card comes into view — scrolling down onto it or back up onto it — and quietly rewinds
+    // once it's fully off screen, so the next visit plays it again
+    const tl = gsap.timeline({ paused: true })
     tl.from(wrap.current, { opacity: 0, y: 24, duration: 0.6, ease: ease.spring }, 0)
       .to(counter, {
         n: to, duration: 1.4, ease: ease.ui, snap: { n: 1 },
@@ -65,6 +67,14 @@ function StatWidget({ label, to, prefix = '', suffix = '', chart, deltaLabel, cl
       gsap.set(ringEl.current, { strokeDasharray: RING_C, strokeDashoffset: RING_C })
       tl.to(ringEl.current, { strokeDashoffset: RING_C * (1 - to / 100), duration: 1.4, ease: ease.ui }, 0.15)
     }
+    ScrollTrigger.create({
+      trigger: wrap.current, start: 'top 85%', end: 'bottom 15%',
+      onEnter: () => tl.restart(), onEnterBack: () => tl.restart(),
+    })
+    ScrollTrigger.create({
+      trigger: wrap.current, start: 'top bottom', end: 'bottom top',
+      onLeave: () => tl.pause(0), onLeaveBack: () => tl.pause(0),
+    })
   }, { scope: wrap })
 
   const marquee = variant === 'marquee'

@@ -140,16 +140,19 @@ export function SmartChoice() {
   useGSAP(() => {
     appear(root.current)
     if (reducedMotion()) return
-    // numbers count up from 0 the first time the cards come into view (as on the live site)
+    // numbers count up from 0 every time the cards come into view — scrolling down onto them or back up onto them —
+    // and quietly go back to 0 once they're fully off screen, so the next visit counts up again
     gsap.utils.toArray(root.current.querySelectorAll('[data-count]')).forEach((el) => {
       const to = Number(el.dataset.count)
       const o = { v: 0 }
-      gsap.to(o, {
-        v: to, duration: 1.6, ease: 'power2.out',
-        scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+      const tw = gsap.to(o, {
+        v: to, duration: 1.6, ease: 'power2.out', paused: true,
         onUpdate: () => { el.textContent = Math.round(o.v) },
-        onStart: () => { el.textContent = '0' },
       })
+      const play = () => tw.restart()
+      const rewind = () => { tw.pause(0); el.textContent = '0' }
+      ScrollTrigger.create({ trigger: el, start: 'top 90%', end: 'bottom 10%', onEnter: play, onEnterBack: play })
+      ScrollTrigger.create({ trigger: el, start: 'top bottom', end: 'bottom top', onLeave: rewind, onLeaveBack: rewind })
     })
   }, { scope: root })
 
