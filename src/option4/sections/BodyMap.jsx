@@ -432,11 +432,11 @@ export function BodyMap() {
               </Suspense>
             )}
             {/* back to the opening view once a category has zoomed the camera in or the body has been turned */}
-            <div className={`absolute inset-x-0 top-2 z-[4] flex justify-center transition-all duration-300 lg:top-6 ${zoomed ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-2 opacity-0'}`}>
+            <div className={`absolute inset-x-0 top-2 z-[20] flex justify-center transition-all duration-300 lg:top-6 ${zoomed ? 'translate-y-0 opacity-100' : 'pointer-events-none -translate-y-2 opacity-0'}`}>
               <button type="button" onClick={resetView} tabIndex={zoomed ? 0 : -1} aria-hidden={!zoomed}
                 className="font-manrope inline-flex cursor-pointer items-center gap-2.5 rounded-full border border-neutral-200 bg-white/90 px-5 py-2.5 text-[15px] font-semibold text-navy shadow-[0_8px_20px_-12px_rgba(10,26,47,0.35)] backdrop-blur transition-colors hover:border-navy hover:bg-navy hover:text-white">
-                <svg viewBox="0 0 20 20" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M3.5 10a6.5 6.5 0 1 0 2-4.7" /><path d="M3.5 3.5v3.8h3.8" /></svg>
-                Reset view
+                <svg viewBox="0 0 20 20" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M16 10H4" /><path d="M9 5l-5 5 5 5" /></svg>
+                Back to full view
               </button>
             </div>
             {/* soft fades at the top and bottom edges so the body never ends in a hard cut when the camera zooms in (all sizes) */}
