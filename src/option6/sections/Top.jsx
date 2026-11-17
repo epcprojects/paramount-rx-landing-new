@@ -4,7 +4,6 @@ import { introDone } from '../components/Intro.jsx'
 import { HeroFilm, addFilm, playFilmEntrance, FILM_LEN } from '../components/HeroFilm.jsx'
 import { menu, links } from '../content.js'
 import { Cta, Tag, Img } from '../components/ui.jsx'
-import { treat } from './Treatments.jsx'
 
 /** Medora header (measured): fixed dark bar, logo left, round menu button right, dropdown panel underneath. */
 export function Header() {
@@ -277,7 +276,7 @@ export function Hero() {
         }
       } else {
         tl = gsap.timeline({
-          scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=460%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1, invalidateOnRefresh: true }, // Option 6: long, to give the treatments section room to play
+          scrollTrigger: { id: 'hero-pin', trigger: stage, start: 'top top', end: '+=215%', pin: stage, scrub: 1.3, anticipatePin: 1, refreshPriority: 1, invalidateOnRefresh: true }, // Option 6: the page scroll no longer steps the cards (that happens on the deck itself), so the pin is only as long as the hero film + the cards rising in, at the same pace as before
         })
       }
       // 1 — the film: runner + orbiting pills, then he zooms out and the dark stage fades away (0.65 → 0.9)
@@ -292,30 +291,11 @@ export function Hero() {
       const T = 0.7
       const head = stage.querySelector('[data-fan-head]')
       if (head) tl.fromTo(head, { opacity: 0, y: 30 }, { opacity: 1, y: 0, ease: 'power2.out', duration: 0.35, immediateRender: true }, T)
-      // Option 6: the treatments section (Treatments.jsx) rises in, then on desktop the scroll drives it through
-      // treat.set (the deck throws one card after another). Touch screens tap / swipe it themselves.
+      // Option 6: the treatments section (Treatments.jsx) rises in; the cards are then switched on the deck itself
+      // (wheel over the cards, the up/down arrows, or a click on a name) — the page scroll doesn't step them
       const deck = stage.querySelector('[data-deck]')
       if (deck) tl.fromTo(deck, { y: 90, opacity: 0 }, { y: 0, opacity: 1, ease: 'power2.out', duration: 0.5, immediateRender: true }, T + 0.1)
-      if (!touch) {
-        const prog = { p: treat.from }
-        tl.fromTo(prog, { p: treat.from }, { p: treat.to, ease: 'none', duration: 1.6, immediateRender: false, onUpdate: () => treat.set?.(prog.p) }, T + 0.75)
-      }
-      tl.to({}, { duration: 0.2 }) // short hold at the end of the reel before the pin releases
-      // desktop: clicking a name in the treatments list scrolls straight to the point where that card is on top
-      treat.goTo = touch ? null : (i) => {
-        const st = tl.scrollTrigger
-        if (!st) return
-        const from = Math.round(treat.now?.() ?? treat.from)
-        if (i === from) return
-        const t = T + 0.75 + 1.6 * (i - treat.from) / (treat.to - treat.from)
-        const y = st.start + (st.end - st.start) * (t / tl.duration())
-        // jump the page to that card's spot at once (skipping the scrubbed glide through the cards in between),
-        // then let the deck play a single one-card move
-        if (lenis) lenis.scrollTo(y, { immediate: true, force: true }); else window.scrollTo(0, y)
-        ScrollTrigger.update()
-        st.getTween?.()?.progress(1)
-        treat.hop?.(from, i)
-      }
+      tl.to({}, { duration: 0.2 }) // short hold once the cards are in, before the pin releases
       ScrollTrigger.refresh()
     }
     const raf = requestAnimationFrame(build)

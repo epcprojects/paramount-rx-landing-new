@@ -13,7 +13,7 @@ const N = cards.length
 const clamp = (v) => Math.min(N - 1, Math.max(0, v))
 
 /** Hook for the hero timeline: Top.jsx calls treat.set(p) with p from 0 (first card on top) to N - 1. */
-export const treat = { set: null, goTo: null, hop: null, now: null, from: 0, to: N - 1 }
+export const treat = { set: null, hop: null, now: null, from: 0, to: N - 1 }
 
 function Explore() {
   return (
@@ -103,13 +103,59 @@ export function About() {
     return () => { treat.set = null; treat.hop = null; treat.now = null; hopping?.kill(); tween.current?.kill() }
   }, [])
 
-  // touch: glide the deck to card i
+  // switch the deck to card i: the next/previous card glides (one throw), a farther one hops so only one card moves
+  const target = useRef(0)
   const go = (i) => {
+    const k = clamp(i)
     const from = Math.round(st.current.p)
-    if (i !== from && Math.abs(i - from) > 1 && treat.hop) { tween.current?.kill(); treat.hop(from, clamp(i)); return } // far jump: one card moves
+    target.current = k
+    if (k === from && !tween.current?.isActive()) return
+    if (Math.abs(k - from) > 1 && treat.hop) { tween.current?.kill(); treat.hop(from, k); return }
     tween.current?.kill()
-    tween.current = gsap.to(st.current, { p: clamp(i), duration: 0.7, ease: 'power2.inOut', onUpdate: () => treat.set?.(st.current.p) })
+    tween.current = gsap.to(st.current, { p: k, duration: 0.6, ease: 'power2.inOut', onUpdate: () => treat.set?.(st.current.p) })
   }
+  const step = (dir) => go(target.current + dir)
+
+  // desktop: scrolling with the pointer over the cards steps one card per scroll gesture (mouse notch or trackpad
+  // swipe); at the first / last card the scroll goes on to the page as usual. Elsewhere the page just scrolls.
+  useEffect(() => {
+    const el = deck.current
+    if (!el) return
+    let last = 0
+    let g = { acc: 0, fired: false, at: 0, peak: 0, floor: Infinity, decayed: false }
+    const onWheel = (e) => {
+      const dir = e.deltaY > 0 ? 1 : -1
+      const k = target.current
+      if ((dir > 0 && k >= N - 1) || (dir < 0 && k <= 0)) return // nothing further this way: let the page scroll
+      e.preventDefault()
+      e.stopPropagation() // keep the smooth page scroller from moving the page meanwhile
+      const now = performance.now()
+      const gap = now - last
+      last = now
+      const d = Math.abs(e.deltaY) * (e.deltaMode === 1 ? 16 : 1)
+      if (d < 1) return
+      // one gesture = one card: a pause starts a new gesture, and so does a trackpad swipe that speeds up again
+      // after its coast has slowed down (so a second swipe made while the first is still coasting still counts)
+      let fresh = gap >= 140
+      if (!fresh && g.fired) {
+        g.peak = Math.max(g.peak, d)
+        if (!g.decayed && d < g.peak * 0.55) g.decayed = true
+        if (g.decayed) g.floor = Math.min(g.floor, d)
+        if (g.decayed && now - g.at > 220 && d > Math.max(8, g.floor * 2 + 4)) fresh = true
+      }
+      if (fresh) g = { acc: 0, fired: false, at: 0, peak: 0, floor: Infinity, decayed: false }
+      if (g.fired) return
+      g.acc += d
+      if (g.acc < 18) return
+      g.fired = true
+      g.at = now
+      g.peak = d
+      step(dir)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    return () => el.removeEventListener('wheel', onWheel)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   // touch: a sideways swipe on the deck moves one card (left = next, right = back)
   const start = useRef(null)
   const swiped = useRef(false)
@@ -137,10 +183,10 @@ export function About() {
           <ol className="mt-2 hidden flex-col lg:flex">
             {cards.map((c, i) => (
               <li key={c.name} className="border-b border-neutral-200">
-                <div className={`group flex items-center justify-between gap-4 transition-colors duration-500 hover:text-navy ${i === cur ? 'text-ink' : 'text-neutral-400'}`}>
+                <div className={`group flex items-center justify-between gap-4 transition-colors duration-500 ${i === cur ? 'text-ink' : 'text-ink hover:text-navy'}`}>{/* the others are black too and turn navy on hover; the selected one is bigger and bold */}
                   {/* the name brings that card to the top of the deck; the arrow goes on to the products page */}
-                  <button type="button" onClick={() => treat.goTo?.(i)} aria-current={i === cur ? 'true' : undefined}
-                    className={`flex-1 cursor-pointer py-3 text-left text-[20px] font-medium transition-all duration-500 [@media(min-height:820px)]:py-4 ${i === cur ? 'translate-x-2 text-[26px] font-semibold' : ''}`}>{c.name}</button>
+                  <button type="button" onClick={() => go(i)} aria-current={i === cur ? 'true' : undefined}
+                    className={`flex-1 cursor-pointer py-3 text-left text-[22px] font-medium transition-all duration-500 [@media(min-height:820px)]:py-4 ${i === cur ? 'translate-x-2 text-[30px] font-semibold' : ''}`}>{c.name}</button>
                   <a href={links.products} aria-label={`Explore ${c.name}`} className="-m-2 p-2"><svg width="18" height="18" viewBox="0 0 10 9" fill="none" aria-hidden className="shrink-0 transition-transform duration-300 group-hover:translate-x-1"><path fill="currentColor" d="M9.82143 4.73214L5.89286 8.48214C5.66964 8.68304 5.33482 8.68304 5.13393 8.45982C4.93304 8.23661 4.93304 7.90179 5.15625 7.70089L8.125 4.86607H0.535714C0.223214 4.86607 0 4.64286 0 4.33036C0 4.04018 0.223214 3.79464 0.535714 3.79464H8.125L5.15625 0.982143C4.93304 0.78125 4.93304 0.424107 5.13393 0.223214C5.33482 6.70552e-08 5.69196 6.70552e-08 5.89286 0.200893L9.82143 3.95089C9.93304 4.0625 10 4.19643 10 4.33036C10 4.48661 9.93304 4.62054 9.82143 4.73214Z" /></svg></a>
                 </div>
               </li>
@@ -161,16 +207,16 @@ export function About() {
           {touch && <p className="-mt-1 text-[12px] text-neutral-500 lg:hidden">Swipe the cards or tap a name</p>}
         </div>
 
-        <div data-deck className="relative mb-[60px] min-h-[320px] flex-1 lg:mb-0 lg:h-[min(560px,calc(100svh-230px))] lg:flex-none"
+        <div ref={deck} data-deck className="relative mb-[60px] min-h-[320px] flex-1 lg:mr-16 lg:mb-0 lg:h-[min(560px,calc(100svh-230px))] lg:flex-none"
           style={{ touchAction: touch ? 'pan-y' : undefined }} onPointerDown={onDown} onPointerUp={onUp} onPointerCancel={() => { start.current = null }} onClickCapture={onClickCapture}>
           {/* back plates: the stack's depth when the real cards behind run out */}
           {[0, 1, 2].map((j) => (
-            <div key={j} data-plate aria-hidden className="pointer-events-none absolute inset-0 rounded-[30px] shadow-[0_-6px_18px_-10px_rgba(10,26,47,0.35),0_40px_80px_-40px_rgba(10,26,47,0.6)] ring-1 ring-white/15 will-change-transform"
+            <div key={j} data-plate aria-hidden className="pointer-events-none absolute inset-0 rounded-[30px] shadow-[0_-8px_20px_-10px_rgba(10,26,47,0.45),0_40px_80px_-40px_rgba(10,26,47,0.6)] ring-[1.5px] ring-white/30 will-change-transform"
               style={{ background: ['linear-gradient(180deg,#10161d,#07090c)', 'linear-gradient(180deg,#0d1218,#06080a)', 'linear-gradient(180deg,#0a0e13,#050608)'][j] }} />
           ))}
           {cards.map((c, i) => (
             <a key={c.name} data-stack-card href={links.products} aria-label={`Explore ${c.name}`} tabIndex={i === cur ? 0 : -1} draggable={false}
-              className="group absolute inset-0 block overflow-hidden rounded-[30px] text-white shadow-[0_-6px_18px_-10px_rgba(10,26,47,0.35),0_40px_80px_-40px_rgba(10,26,47,0.6)] ring-1 ring-white/15 will-change-transform">
+              className="group absolute inset-0 block overflow-hidden rounded-[30px] text-white shadow-[0_-8px_20px_-10px_rgba(10,26,47,0.45),0_40px_80px_-40px_rgba(10,26,47,0.6)] ring-[1.5px] ring-white/30 will-change-transform">
               <Img base={c.photo} widths={[600, 1000]} sizes="(min-width: 1024px) 560px, 92vw" alt="" draggable={false} loading={i < 2 ? 'eager' : 'lazy'} className="absolute inset-0 h-full w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-105" />
               <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
               <div data-shade aria-hidden className="pointer-events-none absolute inset-0 z-[1] bg-black opacity-0 will-change-[opacity]" />
@@ -184,6 +230,18 @@ export function About() {
               </span>
             </a>
           ))}
+          {/* desktop: up / down arrows on the right of the deck switch to the previous / next card */}
+          <div className="absolute top-1/2 -right-16 z-[400] hidden -translate-y-1/2 flex-col gap-3 lg:flex">
+            {[[-1, 'Previous treatment', 'M5 12.5L10 7.5 15 12.5'], [1, 'Next treatment', 'M5 7.5L10 12.5 15 7.5']].map(([dir, label, d]) => {
+              const off = dir < 0 ? cur <= 0 : cur >= N - 1
+              return (
+                <button key={dir} type="button" aria-label={label} disabled={off} onClick={(e) => { e.preventDefault(); e.stopPropagation(); step(dir) }}
+                  className="flex size-11 cursor-pointer items-center justify-center rounded-full border border-neutral-200 bg-white text-navy shadow-[0_8px_20px_-12px_rgba(10,26,47,0.35)] transition-colors duration-300 hover:border-navy hover:bg-navy hover:text-white disabled:cursor-default disabled:opacity-35 disabled:hover:border-neutral-200 disabled:hover:bg-white disabled:hover:text-navy">
+                  <svg viewBox="0 0 20 20" className="size-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d={d} /></svg>
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
     </section>
