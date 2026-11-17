@@ -80,7 +80,7 @@ function StatWidget({ label, to, prefix = '', suffix = '', chart, deltaLabel, cl
   const marquee = variant === 'marquee'
   const wrapClassName = marquee
     ? 'flex w-[204px] shrink-0 flex-col gap-3 rounded-2xl bg-black/25 p-5 text-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] backdrop-blur-[30px]'
-    : `z-10 flex w-full flex-col gap-2 rounded-xl bg-black/80 p-3 text-white shadow-[0_12px_30px_-16px_rgba(0,0,0,0.5)] xl:absolute xl:w-[204px] xl:gap-3 xl:rounded-2xl xl:bg-black/25 xl:p-5 xl:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] xl:backdrop-blur-[30px] ${className}`
+    : `z-10 flex w-full flex-col gap-3 rounded-2xl bg-black/25 p-4 text-white shadow-[0_20px_50px_-20px_rgba(0,0,0,0.5)] backdrop-blur-[30px] xl:absolute xl:w-[204px] xl:p-5 ${className}`
 
   return (
     <div ref={wrap} className={wrapClassName}>
@@ -173,7 +173,7 @@ export function BestSelf() {
         <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-black/40 md:hidden" />
 
         <div className="relative z-10 mx-auto flex max-w-7xl flex-col items-start gap-6 px-4 md:gap-[120px] xl:px-8">
-          <div data-appear className="flex w-full flex-col items-start gap-4 rounded-2xl p-5 text-white md:bg-white/90 md:p-5 md:text-black md:backdrop-blur-sm xl:w-auto xl:gap-8 xl:rounded-none xl:bg-transparent xl:p-0 xl:backdrop-blur-none">
+          <div data-appear className="flex w-full flex-col items-start gap-4 rounded-2xl p-5 text-white md:w-auto md:gap-6 md:rounded-none md:p-0 md:text-black xl:gap-8">
             <div className="flex flex-col gap-2">
               <h2 className="t-h2 text-white md:text-black">
                 <span className="text-white/70 md:text-black/60">Be Your</span> Best Self
@@ -192,7 +192,7 @@ export function BestSelf() {
         ) : (
           /* Tablet: compact 3-up row. Desktop (xl): wrapper becomes display:contents so each card positions
              absolutely against the panel instead of this wrapper. */
-          <div className="relative z-10 mx-auto grid w-full max-w-7xl grid-cols-3 gap-2 px-4 xl:contents xl:px-0">
+          <div className="relative z-10 mx-auto mt-10 grid w-full max-w-7xl grid-cols-3 gap-3 px-4 lg:gap-4 xl:contents xl:px-0">
             {floatingStats.map(({ key, ...s }) => <StatWidget key={key} {...s} />)}
           </div>
         )}
